@@ -1,0 +1,5 @@
+package fr.univ.calcudoku.model;
+
+public class Operation {
+    
+}
