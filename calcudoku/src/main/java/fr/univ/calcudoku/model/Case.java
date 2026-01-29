@@ -30,6 +30,8 @@ public class Case {
     public int getX(){ return x;}
     public int getY(){ return y;}
 
+    public int getSolution(){ return solution;}
+
     public int getValeur(){ return valeur.get();}
     public void setValeur(int valeur){this.valeur.set(valeur);}
     public IntegerProperty valeurProperty(){ return valeur;}
