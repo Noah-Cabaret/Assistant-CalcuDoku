@@ -1,7 +1,3 @@
-/* Je mets pour l'instant mais si on n'ajoute aucun paramètre
- * on pourra juste retirer ce fichier
- */
-
 import java.io.FileWriter;
 import java.io.File;
 import java.io.IOException;
