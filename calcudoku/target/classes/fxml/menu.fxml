@@ -38,7 +38,6 @@
                         <VBox style="-fx-background-color: #66bb6a; -fx-padding: 5;">
                             <Button text="Jeu Libre" onAction="#onLibreClick" maxWidth="Infinity" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-alignment: CENTER_LEFT; -fx-cursor: hand;"/> 
                             <Button text="Aventure" onAction="#onAventureClick" maxWidth="Infinity" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-alignment: CENTER_LEFT; -fx-cursor: hand;"/>
-                            <Button text="Défi" onAction="#onDefiClick" maxWidth="Infinity" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-alignment: CENTER_LEFT; -fx-cursor: hand;"/>
                         </VBox>
                     </HBox>
                 </Pane>
