@@ -1,82 +1,86 @@
 package fr.univ.calcudoku.view;
 
 import fr.univ.calcudoku.model.Case;
+import javafx.beans.binding.Bindings;
 import javafx.collections.SetChangeListener;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
-import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 
 public class VueCase extends StackPane {
     private final Case caseModel;
-    private final Label labelIndice;
-    private final Label labelValeur;
-    private final FlowPane conteneurAnnotation;
+    private final Label labelIndice, labelValeur;
+    private final GridPane conteneurAnnotation; // On passe sur un GridPane
 
-    public VueCase(Case c) {
+    public VueCase(Case c, int tailleGrille) {
         this.caseModel = c;
         this.getStyleClass().add("case-grille");
-        this.setMinSize(10, 10);
-        this.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
 
-        this.labelIndice = new Label();
+        // 1. INDICE (ex: 12x)
+        labelIndice = new Label();
         labelIndice.getStyleClass().add("label-indice");
         StackPane.setAlignment(labelIndice, Pos.TOP_LEFT);
-        labelIndice.styleProperty().bind(this.widthProperty().divide(5).asString("-fx-font-size: %.0fpx;"));
+        
+        labelIndice.styleProperty().bind(
+            Bindings.concat("-fx-font-size: ", this.widthProperty().divide(6).asString(), "px;")
+        );
         initialiserIndice();
 
-        this.labelValeur = new Label();
+        // 2. VALEUR (Gros chiffre central)
+        labelValeur = new Label();
         labelValeur.getStyleClass().add("label-valeur");
         labelValeur.textProperty().bind(c.valeurProperty().asString());
         labelValeur.visibleProperty().bind(c.valeurProperty().isNotEqualTo(0));
-        labelValeur.styleProperty().bind(this.widthProperty().divide(1.8).asString("-fx-font-size: %.0fpx; -fx-font-weight: bold;"));
-
-        this.conteneurAnnotation = new FlowPane();
-        conteneurAnnotation.setAlignment(Pos.CENTER);
-        conteneurAnnotation.setHgap(1);
-        conteneurAnnotation.setVgap(1);
-
-        conteneurAnnotation.maxWidthProperty().bind(this.widthProperty().multiply(0.65));
-        conteneurAnnotation.prefWrapLengthProperty().bind(this.widthProperty().multiply(0.65));
         
+        labelValeur.styleProperty().bind(
+            Bindings.concat("-fx-font-size: ", this.widthProperty().divide(2).asString(), "px;")
+        );
+
+        int nbCols = (int) Math.ceil(Math.sqrt(tailleGrille));
+        conteneurAnnotation = new GridPane();
+        conteneurAnnotation.setAlignment(Pos.CENTER);
+
+        // AJUSTEMENT : On augmente la marge du haut pour baisser les notes
+        // Insets(top, right, bottom, left)
+        conteneurAnnotation.paddingProperty().bind(Bindings.createObjectBinding(() -> {
+            double p = this.getWidth() * 0.10; // Marge de base réduite
+            double topShift = this.getHeight() * 0.15; // Décalage vers le bas
+            return new Insets(topShift, p, p/2, p);
+        }, this.widthProperty(), this.heightProperty()));
+
+        // RÉDUCTION de l'écart : on divise par 40 au lieu de 20 pour serrer les chiffres
+        conteneurAnnotation.hgapProperty().bind(this.widthProperty().divide(40));
+        conteneurAnnotation.vgapProperty().bind(this.heightProperty().divide(40));
+
+        for (int i = 0; i < tailleGrille; i++) {
+            Label l = new Label(String.valueOf(i + 1));
+            l.getStyleClass().add("label-note");
+            
+            // On peut augmenter légèrement la taille de police car le pavé est plus serré
+            l.styleProperty().bind(
+                Bindings.concat("-fx-font-size: ", this.widthProperty().divide(7.5).asString(), "px;")
+            );
+
+            l.setAlignment(Pos.CENTER);
+            l.setVisible(false);
+            l.managedProperty().bind(l.visibleProperty());
+
+            conteneurAnnotation.add(l, i % nbCols, i / nbCols);
+        }
+
         conteneurAnnotation.visibleProperty().bind(c.valeurProperty().isEqualTo(0));
-
-        c.getNotes().addListener((SetChangeListener<Integer>) change -> { rafraichirAffichage(); });
+        c.getNotes().addListener((SetChangeListener.Change<? extends Integer> change) -> rafraichirAffichage());
+        
         rafraichirAffichage();
-
         this.getChildren().addAll(labelIndice, conteneurAnnotation, labelValeur);
     }
 
     private void rafraichirAffichage() {
-        conteneurAnnotation.getChildren().clear();
-        caseModel.getNotes().stream()
-             .sorted()
-             .forEach(n -> {
-                 Label l = new Label(String.valueOf(n));
-                 l.getStyleClass().add("label-note");
-                 l.prefWidthProperty().bind(conteneurAnnotation.maxWidthProperty().divide(3.2));                 
-                 l.styleProperty().bind(this.widthProperty().divide(8).asString("-fx-font-size: %.0fpx;")); 
-                 l.setAlignment(Pos.CENTER);
-                 conteneurAnnotation.getChildren().add(l);
-             });
-    }
-    
-    public void initialiserIndice() {
-        if (caseModel.getGroupement() != null && caseModel == caseModel.getGroupement().getCaseOp()) {
-            String texte = caseModel.getGroupement().getResultatCible() + caseModel.getGroupement().getOperation().getSymbole();
-            labelIndice.setText(texte);
-        } else {
-            labelIndice.setText(""); 
-        }
-    }
-    
-    public void setSelectionnee(boolean b) {
-        if (b) {
-            if (!getStyleClass().contains("case-selectionnee")) {
-                getStyleClass().add("case-selectionnee");
-            }
-        } else {
-            getStyleClass().remove("case-selectionnee");
+        for (int i = 0; i < conteneurAnnotation.getChildren().size(); i++) {
+            Label l = (Label) conteneurAnnotation.getChildren().get(i);
+            l.setVisible(caseModel.getNotes().contains(i + 1));
         }
     }
 
@@ -91,10 +95,15 @@ public class VueCase extends StackPane {
         String sg = (gauche != null && gauche.getGroupement() == caseModel.getGroupement()) ? "dashed" : "solid";
         String sd = (droite != null && droite.getGroupement() == caseModel.getGroupement()) ? "dashed" : "solid";
 
-        this.setStyle(
-            "-fx-border-color: black; " +
-            "-fx-border-width: " + th + " " + td + " " + tb + " " + tg + "; " +
-            "-fx-border-style: " + sh + " " + sd + " " + sb + " " + sg + ";"
-        );
+        this.setStyle("-fx-border-color: black; -fx-border-width: " + th + " " + td + " " + tb + " " + tg + 
+                      "; -fx-border-style: " + sh + " " + sd + " " + sb + " " + sg + ";");
+    }
+
+    public void initialiserIndice() {
+        if (caseModel.getGroupement() != null && caseModel == caseModel.getGroupement().getCaseOp()) {
+            labelIndice.setText(caseModel.getGroupement().getResultatCible() + caseModel.getGroupement().getOperation().getSymbole());
+        } else {
+            labelIndice.setText("");
+        }
     }
 }
