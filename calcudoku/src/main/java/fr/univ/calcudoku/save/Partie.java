@@ -10,7 +10,6 @@ public class Partie extends Donnees
 	{
 		LIBR,
 		AVEN,
-		DEFI,
 	};
 	public enum Difficulte
 	{
@@ -22,6 +21,7 @@ public class Partie extends Donnees
 	public Historique hist;
 	public Temps tmp;
 
+	private boolean terminee;
 	private int idGrille;
 	private ModeDeJeu mode;
 	private Difficulte diff;
@@ -31,6 +31,31 @@ public class Partie extends Donnees
 	{
 		this.tmp = new Temps();
 		this.hist = new Historique();
+	}
+
+	public boolean getTerminee()
+	{
+		return this.terminee;
+	}
+
+	public int getIdGrille()
+	{
+		return this.idGrille;
+	}
+
+	public Partie.ModeDeJeu getMode()
+	{
+		return this.mode;
+	}
+
+	public Partie.Difficulte getDiff()
+	{
+		return this.diff;
+	}
+
+	public void setTerminee(boolean newTerminee)
+	{
+		this.terminee = newTerminee;
 	}
 
 	public void setIdGrille(int newIdGrille)
@@ -51,15 +76,19 @@ public class Partie extends Donnees
 	@Override
 	public void enreg(String compte)
 	{
-		String nomIni = new String(this.mode.toString());
+		String cheminIni = new String("profils/" + compte + "/parties/");
 		if(this.mode == ModeDeJeu.LIBR)
-			nomIni += "_" + idGrille;
+			cheminIni += this.mode.toString() + "_" + idGrille;
+		else
+			cheminIni += "aventure/" + idGrille;
+		cheminIni += ".ini";
 
 		try
 		{
-			FileWriter ini = new FileWriter("profils/" + compte + "/parties/" + nomIni + ".ini");
+			FileWriter ini = new FileWriter(cheminIni);
 
 			ini.write("[Informations]\n");
+			ini.write("terminee=" + this.terminee + "\n");
 			ini.write("grille=" + this.idGrille + "\n");
 			ini.write("mode=" + this.mode + "\n");
 			ini.write("difficulte=" + this.diff + "\n");
@@ -87,6 +116,7 @@ public class Partie extends Donnees
 			sc.useDelimiter("[=\n]");
 
 			sc.next();
+			sc.next(); this.terminee = Boolean.valueOf(sc.next());
 			sc.next(); this.idGrille = sc.nextInt();
 			sc.next(); this.mode = ModeDeJeu.valueOf(sc.next());
 			sc.next(); this.diff = Difficulte.valueOf(sc.next());
@@ -113,5 +143,11 @@ public class Partie extends Donnees
 		{
 			System.out.println(e);
 		}
+	}
+
+	public void effacer(String compte)
+	{
+		File partie = new File("profils/" + compte + "/parties/" + this.mode + "_" + this.idGrille + ".ini");
+		partie.delete();
 	}
 }

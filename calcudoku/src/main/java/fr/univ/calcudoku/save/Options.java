@@ -14,9 +14,13 @@ public class Options extends Donnees
 
 	private AideAuCalcul aide;
 
+	private boolean themeSombre;
+
 	public Options()
 	{
 		this.aide = CALCULATRICE;
+		this.progressionAventure = 1;
+		this.themeSombre = false;
 	}
 
 	@Override
@@ -28,6 +32,7 @@ public class Options extends Donnees
 
 			ini.write("[Paramètres]\n");
 			ini.write("aide_au_calcul=" + this.aide + "\n");
+			ini.write("theme_sombre=" + this.themeSombre + "\n");
 
 			ini.close();
 		}
@@ -48,6 +53,7 @@ public class Options extends Donnees
 
 			sc.next();
 			sc.next(); this.aide = AideAuCalcul.valueOf(sc.next());
+			sc.next(); this.themeSombre = Boolean.valueOf(sc.next());
 
 			sc.close();
 		}
