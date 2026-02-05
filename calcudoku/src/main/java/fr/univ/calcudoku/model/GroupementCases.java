@@ -46,6 +46,7 @@ public class GroupementCases {
 
     public Operation getOperation() { return operation; }
     public int getResultatCible() { return resultatCible; }
+    public void setResultatCible(int res) { resultatCible = res ; }
     public List<Case> getListeCases() { return new ArrayList<>(listeCases); }
     public Case getCaseOp() { return caseOp; }
 
