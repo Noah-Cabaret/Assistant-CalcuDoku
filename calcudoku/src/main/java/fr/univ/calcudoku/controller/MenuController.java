@@ -44,13 +44,13 @@ public class MenuController {
     // --- Gestion du Clic sur le Profil (Retour Accueil) ---
     @FXML
     private void onProfilClick() {
-        // On retourne à l'écran de choix des profils
-        MainApp.changerScene("/fxml/accueil.fxml");
+        // Ça va vers la page de statistiques/profil
+        MainApp.changerScene("/fxml/profil.fxml");
     }
 
     @FXML private void onLibreClick() { System.out.println("Mode Libre"); }
     @FXML private void onAventureClick() { System.out.println("Mode Aventure"); }
-    @FXML private void onDefiClick() { System.out.println("Mode Défi"); }
+    
     
     @FXML
     private void onQuitterClick() {
