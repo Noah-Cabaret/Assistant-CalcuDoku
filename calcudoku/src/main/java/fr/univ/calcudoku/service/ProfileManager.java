@@ -4,17 +4,22 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+//import java.util.Map;
+//import java.util.HashMap;
+//import java.io.BufferedReader;
+///import java.io.FileReader;
 
 public class ProfileManager {
 
     private static final String DOSSIER_ROOT = "profils";
 
     // Fichiers à la racine du profil
-    private static final String FICHIER_OPTIONS = "options.ini";
+    private static final String FICHIER_OPTIONS = "profil.ini";
     private static final String FICHIER_STATS = "statistiques.ini";
     
     // Dossier et fichiers de sauvegardes
     private static final String DOSSIER_PARTIES = "parties";
+    private static final String DOSSIER_JEU = "jeu";
     private static final String SAVE_AVENTURE = "aventure.ini";
     private static final String SAVE_LIBRE = "libre.ini";
 
@@ -53,6 +58,10 @@ public class ProfileManager {
                 
                 // Libre : pour reprendre une partie libre en cours
                 new File(dossierParties, SAVE_LIBRE).createNewFile();
+
+                // Dossier "jeu" (NOUVEAU - POUR LES JSON)
+                File dossierJeu = new File(dossierProfil, DOSSIER_JEU);
+                dossierJeu.mkdirs();
 
                 System.out.println(" Profil créé avec succès : " + nom);
                 return true;
@@ -106,5 +115,35 @@ public class ProfileManager {
 
     public String getProfilActif() {
         return profilActif;
+    }
+
+    /**
+     * Lit le fichier profil.ini pour les stats
+     */
+    public java.util.Map<String, String> lireStatistiques(String nomProfil) {
+        java.util.Map<String, String> stats = new java.util.HashMap<>();
+        
+        // On lit le fichier profil.ini (change en statistiques.ini si tu préfères)
+        java.io.File fichierIni = new java.io.File("profils/" + nomProfil + "/" + FICHIER_OPTIONS);
+
+        if (!fichierIni.exists()) return stats;
+
+        try (java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.FileReader(fichierIni))) {
+            String ligne;
+            while ((ligne = reader.readLine()) != null) {
+                ligne = ligne.trim();
+                if (ligne.isEmpty() || ligne.startsWith(";") || ligne.startsWith("[")) continue;
+                
+                if (ligne.contains("=")) {
+                    String[] parts = ligne.split("=", 2);
+                    if (parts.length == 2) {
+                        stats.put(parts[0].trim(), parts[1].trim());
+                    }
+                }
+            }
+        } catch (java.io.IOException e) {
+            e.printStackTrace();
+        }
+        return stats;
     }
 }
