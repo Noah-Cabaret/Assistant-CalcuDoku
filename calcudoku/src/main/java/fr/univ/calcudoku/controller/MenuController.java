@@ -41,7 +41,7 @@ public class MenuController {
         boxSousMenu.setVisible(!boxSousMenu.isVisible());
     }
 
-    // --- Gestion du Clic sur le Profil (Retour Accueil) ---
+    //Gestion du Clic sur le Profil (Retour Accueil)
     @FXML
     private void onProfilClick() {
         // Ça va vers la page de statistiques/profil

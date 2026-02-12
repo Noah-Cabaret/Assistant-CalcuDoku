@@ -30,7 +30,7 @@ public class ProfilController {
     @FXML private Label lblDifficulteMax;
     @FXML private Label lblMeilleurScore;
     
-    // Checkbox Paramètres (NOUVEAU)
+    // Checkbox Paramètres=> mode sombre
     @FXML private CheckBox checkSombre;
     @FXML private CheckBox checkClair;
 
@@ -45,23 +45,23 @@ public class ProfilController {
 
         lblNomProfil.setText(nomActuel);
 
-        // 1. Avatar
+        // Avatar
         try {
             InputStream is = getClass().getResourceAsStream("/images/utilisateur.png");
             if (is != null) imgAvatar.setImage(new Image(is));
         } catch (Exception e) { }
 
-        // 2. Stats & Options (depuis profil.ini)
+        // Stats & Options (depuis profil.ini)
         chargerStatistiquesProfil(nomActuel, manager);
 
-        // 3. Parties (depuis profils/Nom/jeu/*.json)
+        // Parties (depuis profils/Nom/jeu/*.json)
         chargerPartiesSauvegardees(nomActuel);
     }
 
     private void chargerStatistiquesProfil(String nom, ProfileManager manager) {
         Map<String, String> stats = manager.lireStatistiques(nom);
 
-        // --- Remplissage des Stats ---
+        // Remplissage des Stats
         lblTempsMoyen.setText("Temps total : " + formatTemps(stats.getOrDefault("temps_total", "0")));
         
         try {
@@ -75,7 +75,7 @@ public class ProfilController {
         String d = stats.getOrDefault("difficulte_max", "1");
         lblDifficulteMax.setText("Difficulté max : " + (d.equals("3") ? "Difficile" : (d.equals("2") ? "Moyenne" : "Facile")));
 
-        // --- GESTION DU MODE SOMBRE (NOUVEAU) ---
+        // GESTION DU MODE SOMBRE
         // Lit la valeur "true" ou "false" du fichier profil.ini
         boolean isSombre = Boolean.parseBoolean(stats.getOrDefault("mode_sombre", "false"));
         
@@ -85,7 +85,7 @@ public class ProfilController {
     }
 
     private void chargerPartiesSauvegardees(String nomProfil) {
-        // Chemin : profils/Toto/jeu/
+        // Chemin : profils/"nomProfil"/jeu/
         File dossierJeux = new File("profils/" + nomProfil + "/jeu");
 
         // Si le dossier n'existe pas ou est vide, on arrête
@@ -103,7 +103,7 @@ public class ProfilController {
                     DonneesNiveau niveau = gson.fromJson(reader, DonneesNiveau.class);
                     VBox carte = creerCartePartie(niveau, fichier.getName());
                     
-                    // SÉCURITÉ : On vérifie que boxParties n'est pas null avant d'ajouter
+                    // On vérifie que boxParties n'est pas null avant d'ajouter
                     if (boxParties != null) {
                         boxParties.getChildren().add(carte);
                     } else {
@@ -122,13 +122,13 @@ public class ProfilController {
         VBox vBox = new VBox(5);
         vBox.setAlignment(Pos.CENTER);
 
-        // 1. La grille visuelle
+        // La grille visuelle
         GridPane grid = new GridPane();
         grid.setGridLinesVisible(true);
         grid.setStyle("-fx-border-color: black; -fx-padding: 2; -fx-background-color: white;");
         
         double taille = 25.0;
-
+        //positionner les chiffres dans les cases selon coord
         for (BlocData bloc : niveau.blocs) {
             boolean isFirst = true;
             for (Map.Entry<String, Integer> entry : bloc.nums.entrySet()) {
@@ -158,13 +158,22 @@ public class ProfilController {
         }
 
         String nomPropre = nomFichier.replace(".json", ""); 
-        Label titre = new Label(nomPropre + " (ID: " + niveau.id + ")"); 
+        Label titre = new Label("Grille " + nomPropre + " (" + niveau.dim + "x" + niveau.dim + ")"); 
         titre.setStyle("-fx-font-weight: bold;");
-        Label sousTitre = new Label("Dim: " + niveau.dim + "x" + niveau.dim);
 
-        vBox.getChildren().addAll(grid, titre, sousTitre);
+        // Temps
+        // On convertit les secondes
+        int min = niveau.temps / 60;
+        int sec = niveau.temps % 60;
+        String tempsFormatte = String.format("%d:%02d", min, sec);
+        
+        Label lblTemps = new Label("Temps : " + tempsFormatte);
+        lblTemps.setStyle("-fx-text-fill: black; -fx-font-size: 11px;"); // Un peu plus petit et gris
+
+        vBox.getChildren().addAll(grid, titre, lblTemps);
         return vBox;
     }
+    
 
     private String formatTemps(String s) {
         try {
@@ -176,9 +185,9 @@ public class ProfilController {
     @FXML private void onRetourClick() { MainApp.changerScene("/fxml/menu.fxml"); }
     @FXML private void onDeconnexionClick() { MainApp.changerScene("/fxml/accueil.fxml"); }
 
-    // --- CLASSES INTERNES GSON ---
+    // CLASSES INTERNES GSON 
     private static class DonneesNiveau {
-        int id;
+        int temps;
         int dim;
         //List<String> ops;
         List<BlocData> blocs;

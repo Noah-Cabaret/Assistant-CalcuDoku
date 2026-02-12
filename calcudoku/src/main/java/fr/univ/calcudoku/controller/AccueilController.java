@@ -43,7 +43,7 @@ public class AccueilController {
         // CHARGEMENT DE L'IMAGE UTILISATEUR
         Image avatarParDefaut = null;
         try {
-            // Le "/" signifie "racine du dossier resources"
+            // Le "/" = "racine du dossier resources"
             InputStream is = getClass().getResourceAsStream("/images/utilisateur.png");
             if (is != null) {
                 avatarParDefaut = new Image(is);
@@ -243,23 +243,22 @@ public class AccueilController {
                     } else {
                         // Petit feedback visuel en cas d'erreur (bordure rouge)
                         champPseudo.setStyle("-fx-background-color: #fff0f0; -fx-border-color: red; -fx-border-radius: 5; -fx-padding: 10; -fx-font-size: 14px; -fx-alignment: CENTER;");
-                        champPseudo.setText(""); // On vide
-                        msgErreur.setVisible(true); // affichage de msg erreur
-                        layout.requestFocus(); // le curseur quitte de boite saisi, ne focus plus
+                        champPseudo.setText("");
+                        msgErreur.setVisible(true);
+                        layout.requestFocus();
                     }
                     
                 }else{
                     champPseudo.setStyle("-fx-background-color: #fff0f0; -fx-border-color: red; -fx-border-radius: 5; -fx-padding: 10; -fx-font-size: 14px; -fx-alignment: CENTER;");
                     msgErreur.setText("Veuillez saisir votre pseudo");
-                    msgErreur.setVisible(true); // affichage de msg erreur
-                    layout.requestFocus(); // le curseur quitte de boite saisi, ne focus plus
+                    msgErreur.setVisible(true);
+                    layout.requestFocus();
                 }
             }
         });
 
         // Dès qu'on tape une touche, on remet tout en normal
         champPseudo.setOnKeyTyped(e -> {
-            // Si le message d'erreur est visible, on le cache et on remet le style gris
             if (msgErreur.isVisible()) {
                 champPseudo.setStyle("-fx-background-color: white; -fx-border-color: #ccc; -fx-border-radius: 5; -fx-padding: 10; -fx-font-size: 14px; -fx-alignment: CENTER;");
                 msgErreur.setVisible(false);
