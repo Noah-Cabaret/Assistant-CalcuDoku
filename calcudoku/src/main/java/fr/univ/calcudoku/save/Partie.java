@@ -6,6 +6,23 @@ import java.util.Locale;
 
 public class Partie extends Donnees
 {
+	/* Attributs :
+	 * hist : historique de la grille, rendu public pour pouvoir interagir
+	 * avec sans réadapter toutes ses méthodes
+	 *
+	 * tmp : timer, rendu public pour la même raison que hist
+	 * idGrille : numéro unique de la grille à charger, utile pour charger
+	 * la bonne sauvegarde
+	 *
+	 * terminee : variable indiquant si la partie a déjà été gagnée, pour
+	 * pouvoir proposer une réinitialisation de la grille
+	 *
+	 * mode : mode de jeu seléctionné permettant de sauvegarder en conséquence
+	 * diff : difficulté de la partie, le jeu s'adaptera en conséquence
+	 * bonus et malus : variables affectant le score final en fonction du
+	 * temps passé et du nombre d'aides demandées
+	 */
+
 	public enum ModeDeJeu
 	{
 		LIBR,
@@ -32,6 +49,8 @@ public class Partie extends Donnees
 		this.tmp = new Temps();
 		this.hist = new Historique();
 	}
+
+	/* Méthodes get() et set() */
 
 	public boolean getTerminee()
 	{
@@ -73,6 +92,10 @@ public class Partie extends Donnees
 		this.diff = newDiff;
 	}
 
+	/* Sauvegarde en format INI pour plus de facilité à scanner
+	 * le fichier dans le chargement
+	 */
+
 	@Override
 	public void enreg(String compte)
 	{
@@ -105,6 +128,11 @@ public class Partie extends Donnees
 			System.out.println(e);
 		}
 	}
+
+	/* Copie des données du fichier dans l'objet Partie
+	 * (utilisation de Scanner inspirée du fscanf du C pour
+	 * une lecture du code plus facile)
+	 */
 
 	@Override
 	public void charger(String compte)
@@ -145,9 +173,12 @@ public class Partie extends Donnees
 		}
 	}
 
+	/* Suppression de la partie en cours (si commencée ou terminée) */
+
 	public void effacer(String compte)
 	{
 		File partie = new File("profils/" + compte + "/parties/" + this.mode + "_" + this.idGrille + ".ini");
 		partie.delete();
+		terminee = false;
 	}
 }

@@ -1,5 +1,11 @@
 public class Etape
 {
+	/* Attributs :
+	 * x : position x sur la grille
+	 * y : position y sur la grille
+	 * n : valeur de la case à la position (x,y), 0 étant une case vide
+	 */
+
 	private int x, y, n;
 
 	public Etape() {}
@@ -11,12 +17,16 @@ public class Etape
 		this.n = n;
 	}
 
+	/* Constructeur surchargé pour pouvoir dupliquer une étape à partir d'une autre étape */
+
 	public Etape(Etape e)
 	{
 		this.x = e.getX();
 		this.y = e.getY();
 		this.n = e.getN();
 	}
+
+	/* Méthodes get() et set() */
 
 	public int getX()
 	{
@@ -61,6 +71,8 @@ public class Etape
 		this.y = newEtape.y;
 		this.n = newEtape.n;
 	}
+
+	/* Conversion en String pour la sauvegarde de l'historique */
 
 	public String toString()
 	{

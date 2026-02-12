@@ -6,6 +6,14 @@ import java.util.Locale;
 
 public class Options extends Donnees
 {
+	/* Attributs :
+	 * aide : sélection de l'aide en jeu correspondante :
+	 * - calculatrice interne à côté de la grille
+	 * - combinaisons possibles pour une partie de la grille
+	 *
+	 * themeSombre : change le blanc en noir et inversement
+	 */
+
 	public enum AideAuCalcul
 	{
 		CALCULATRICE,
@@ -22,6 +30,10 @@ public class Options extends Donnees
 		this.progressionAventure = 1;
 		this.themeSombre = false;
 	}
+
+	/* Sauvegarde en format INI pour plus de facilité à scanner
+	 * le fichier dans le chargement
+	 */
 
 	@Override
 	public void enreg(String compte)
@@ -41,6 +53,11 @@ public class Options extends Donnees
 			System.out.println(e);
 		}
 	}
+
+	/* Copie des données du fichier dans l'objet Options
+	 * (utilisation de Scanner inspirée du fscanf du C pour
+	 * une lecture du code plus facile)
+	 */
 
 	@Override
 	public void charger(String compte)

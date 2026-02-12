@@ -3,6 +3,12 @@ import java.util.*;
 
 public class Historique
 {
+	/* Attributs :
+	 * hist : historique des étapes du jeu
+	 * index : position dans l'historique, le jeu chargera toutes les
+	 * étapes entre 0 et index
+	 */
+
 	private List<Etape> hist;
 	private int index;
 
@@ -11,6 +17,8 @@ public class Historique
 		this.hist = new ArrayList<Etape>();
 		this.index = 0;
 	}
+
+	/* Méthodes get() et set() */
 
 	public int getIndex()
 	{
@@ -27,11 +35,29 @@ public class Historique
 		return Collections.unmodifiableList(this.hist);
 	}
 
+	/* Méthode pour retirer la dernière étape de l'historique */
+
+	public void removeEtape()
+	{
+		this.hist.remove(this.hist.size() - 1);
+
+		if(this.index > this.hist.size() - 1)
+			this.index--;
+	}
+
+	/* Méthode pour vider toute la partie de l'historique entre
+	 * (index + 1) et la fin de hist
+	 */
+
 	private void viderQueue()
 	{
 		while(this.hist.size() > this.index + 1)
-			this.hist.remove(this.hist.size());
+			this.removeEtape();
 	}
+
+	/* Méthode d'ajout d'une étape dans l'historique (surchargée pour
+	 * des envois de message plus faciles)
+	 */
 
 	public void addEtape(Etape e)
 	{
@@ -48,13 +74,7 @@ public class Historique
 		this.index = this.hist.size() - 1;
 	}
 
-	public void removeEtape()
-	{
-		this.hist.remove(this.hist.size() - 1);
-
-		if(this.index > this.hist.size() - 1)
-			this.index--;
-	}
+	/* Revenir à l'étape précédente de la grille */
 
 	public void annuler()
 	{
@@ -66,6 +86,8 @@ public class Historique
 		this.index--;
 	}
 
+	/* Revenir à l'étape suivante de la grille */
+
 	public void refaire()
 	{
 		/* TODO
@@ -73,6 +95,8 @@ public class Historique
 		 */
 		this.index++;
 	}
+
+	/* Conversion en String pour la sauvegarde */
 
 	public String toString()
 	{
