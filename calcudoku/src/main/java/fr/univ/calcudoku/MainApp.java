@@ -25,10 +25,9 @@ public class MainApp extends Application {
         stage.setMinHeight(500);
         stage.setTitle("Calcudoku");
 
-        // --- 1. PLEIN ÉCRAN AU DÉMARRAGE ---
+        //PLEIN ÉCRAN AU DÉMARRAGE
         stage.setMaximized(true);
         stage.setFullScreenExitHint(""); // Cache le message "Appuyez sur Echap"
-        // ------------------------------------
         
         stage.show();
     }
@@ -45,14 +44,12 @@ public class MainApp extends Application {
                 primaryStage.getScene().setRoot(root);
             }
 
-            // --- 2. MAINTENIR LE PLEIN ÉCRAN ---
-            // On le réactive à chaque changement de page par sécurité
+            // MAINTENIR LE PLEIN ÉCRAN
             if (primaryStage.isShowing()) {
                 primaryStage.setFullScreen(false);
                 primaryStage.setMaximized(true);
                 primaryStage.setFullScreenExitHint("");
             }
-            // -----------------------------------
 
         } catch (IOException e) {
             e.printStackTrace();

@@ -86,25 +86,23 @@ public class GestionnaireJeu {
             JeuController controller = loader.getController();
             controller.initialiserPartie(grille);
 
-            // --- CORRECTION MAJEURE ICI ---
             // Au lieu de créer une "new Scene()" qui réinitialise la taille de la fenêtre,
-            // on réutilise la scène existante (comme dans MainApp).
             Scene scene = stage.getScene();
             
             if (scene == null) {
-                // Cas rare (premier lancement), on crée la scène
+                // Cas rien, on crée la scène
                 scene = new Scene(root);
                 stage.setScene(scene);
             } else {
-                // Cas normal : on remplace juste le contenu.
-                // La fenêtre garde sa taille actuelle (Maximisée) !
+                // on remplace juste le contenu.
+                // La fenêtre garde sa taille actuelle
                 scene.setRoot(root);
             }
 
             // Gestion du CSS
             if (GestionnaireJeu.class.getResource("/style.css") != null) {
                 String css = GestionnaireJeu.class.getResource("/style.css").toExternalForm();
-                // On vérifie pour ne pas l'ajouter en double
+                // pour ne pas l'ajouter en double
                 if (!scene.getStylesheets().contains(css)) {
                     scene.getStylesheets().add(css);
                 }
@@ -113,7 +111,7 @@ public class GestionnaireJeu {
             stage.setTitle(titre);
             stage.show();
 
-            // Par sécurité, on réapplique l'état maximisé
+            // l'état maximisé
             if (!stage.isMaximized()) {
                 stage.setMaximized(true);
             }
