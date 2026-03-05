@@ -12,6 +12,10 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.util.Duration;
+import javafx.scene.control.Label;
 
 public class JeuController {
 
@@ -23,6 +27,7 @@ public class JeuController {
     @FXML private Button btnAnnoter;
     @FXML private Button btnEffacer;
     @FXML private Button btnCalculatrice;
+    @FXML private Label labelChrono;
 
     private Grille grilleModele;
     private VueGrille vueGrille;
@@ -30,6 +35,10 @@ public class JeuController {
 
     private VueCase vueCaseSelectionnee = null;
     private Case caseModeleSelectionnee = null;
+
+        
+    private Timeline timeline;
+    private int secondesEcoulees = 0;
 
     public void initialiserPartie(Grille grille) {
         this.grilleModele = grille;
@@ -53,6 +62,7 @@ public class JeuController {
         }
 
         genererBoutonsNombres(grille.getTaille());
+        demarrerChrono();
     }
 
     private void genererBoutonsNombres(int taille) {
@@ -71,6 +81,23 @@ public class JeuController {
         }
     }
 
+    private void demarrerChrono() {
+        secondesEcoulees = 0; 
+        
+        timeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
+            secondesEcoulees++;
+            
+            int minutes = secondesEcoulees / 60;
+            int secondes = secondesEcoulees % 60;
+            
+            labelChrono.setText(String.format("%02d:%02d", minutes, secondes));
+        }));
+        
+        timeline.setCycleCount(Timeline.INDEFINITE);
+        
+        timeline.play();
+    }
+
     private void selectionnerCase(VueCase vueCase, Case modeleCase) {
         if (vueCaseSelectionnee != null) {
             vueCaseSelectionnee.getStyleClass().remove("case-selectionnee");
@@ -82,7 +109,7 @@ public class JeuController {
         vueCaseSelectionnee.getStyleClass().add("case-selectionnee");
     }
 
-    //ACTIONS DES BOUTONS
+    
     private void actionChiffreClique(int valeur) {
         if (caseModeleSelectionnee != null) {
             if (modeAnnotationActif) {

@@ -16,7 +16,7 @@
             <Insets top="40.0" />
          </padding>
          <children>
-            <Label text="2:30">
+            <Label fx:id="labelChrono" text="00:00">
                <font>
                   <Font name="System Bold" size="18.0" />
                </font>
