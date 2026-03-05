@@ -2,6 +2,7 @@ package fr.univ.calcudoku.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Grille {
     private final int taille;
@@ -41,6 +42,28 @@ public class Grille {
         return taille;
     }
 
+    public List<Case> getLigne(int x) {
+        List<Case> colonne = new ArrayList<>();
+        for (int i = 0; i < taille; i++) {
+            Case c = matriceGrille[x][i];
+            if (c != null) {
+                colonne.add(c);
+            }
+        }
+        return colonne;
+    }
+
+    public List<Case> getColonne(int y) {
+        List<Case> colonne = new ArrayList<>();
+        for (int i = 0; i < taille; i++) {
+            Case c = matriceGrille[i][y];
+            if (c != null) {
+                colonne.add(c);
+            }
+        }
+        return colonne;
+    }
+
     public boolean estGagnee(){
         for (int x = 0; x < taille; x++) {
             for (int y = 0; y < taille; y++) {
@@ -55,7 +78,7 @@ public class Grille {
     if (valeur == 0) return true; 
 
     for (int i = 0; i < taille; i++) {
-        if (i != x && matriceGrille[i][y].getValeur() == valeur) {
+       if (i != x && matriceGrille[i][y].getValeur() == valeur) {
             return false; 
         }
     }
