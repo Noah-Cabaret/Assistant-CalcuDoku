@@ -8,7 +8,7 @@ public class AppTest extends Application {
 
     @Override
     public void start(Stage primaryStage){  
-        GestionnaireJeu.lancerNouvellePartie(primaryStage, 5);
+        GestionnaireJeu.chargerPartie(primaryStage, "1.json");
     }
 
     public static void main(String[] args) {
