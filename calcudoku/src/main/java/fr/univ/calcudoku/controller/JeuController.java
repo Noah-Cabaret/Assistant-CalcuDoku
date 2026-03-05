@@ -23,6 +23,7 @@ public class JeuController {
     @FXML private Button btnAnnoter;
     @FXML private Button btnEffacer;
     @FXML private Button btnCalculatrice;
+    @FXML private Button btnVerif;
 
     private Grille grilleModele;
     private VueGrille vueGrille;
@@ -128,5 +129,10 @@ public class JeuController {
     @FXML
     void actionCalculatrice(ActionEvent event) {
         System.out.println("Calculatrice cliquée");
+    }
+
+    @FXML 
+    void actionVerifErreurs(ActionEvent event) {
+        System.out.println("vérification cliquée");
     }
 }

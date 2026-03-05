@@ -15,6 +15,10 @@
     -fx-background-color: #bbdefb; 
 }
 
+.case-erreur {
+    -fx-background-color: #F4320B; 
+}
+
 /* Le chiffre */
 .label-valeur {
     -fx-font-size: 32px;
