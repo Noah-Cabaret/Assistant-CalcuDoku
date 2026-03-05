@@ -1,8 +1,6 @@
 package fr.univ.calcudoku.model;
 
 import java.util.HashSet;
-import java.util.Set;
-
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;

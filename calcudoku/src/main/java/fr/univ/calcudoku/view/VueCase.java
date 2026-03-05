@@ -12,13 +12,12 @@ import javafx.scene.layout.StackPane;
 public class VueCase extends StackPane {
     private final Case caseModel;
     private final Label labelIndice, labelValeur;
-    private final GridPane conteneurAnnotation; // On passe sur un GridPane
+    private final GridPane conteneurAnnotation; 
 
     public VueCase(Case c, int tailleGrille) {
         this.caseModel = c;
         this.getStyleClass().add("case-grille");
 
-        // 1. INDICE (ex: 12x)
         labelIndice = new Label();
         labelIndice.getStyleClass().add("label-indice");
         StackPane.setAlignment(labelIndice, Pos.TOP_LEFT);
@@ -28,7 +27,6 @@ public class VueCase extends StackPane {
         );
         initialiserIndice();
 
-        // 2. VALEUR (Gros chiffre central)
         labelValeur = new Label();
         labelValeur.getStyleClass().add("label-valeur");
         labelValeur.textProperty().bind(c.valeurProperty().asString());
@@ -42,15 +40,12 @@ public class VueCase extends StackPane {
         conteneurAnnotation = new GridPane();
         conteneurAnnotation.setAlignment(Pos.CENTER);
 
-        // AJUSTEMENT : On augmente la marge du haut pour baisser les notes
-        // Insets(top, right, bottom, left)
         conteneurAnnotation.paddingProperty().bind(Bindings.createObjectBinding(() -> {
-            double p = this.getWidth() * 0.10; // Marge de base réduite
-            double topShift = this.getHeight() * 0.15; // Décalage vers le bas
+            double p = this.getWidth() * 0.10; 
+            double topShift = this.getHeight() * 0.15; 
             return new Insets(topShift, p, p/2, p);
         }, this.widthProperty(), this.heightProperty()));
 
-        // RÉDUCTION de l'écart : on divise par 40 au lieu de 20 pour serrer les chiffres
         conteneurAnnotation.hgapProperty().bind(this.widthProperty().divide(40));
         conteneurAnnotation.vgapProperty().bind(this.heightProperty().divide(40));
 
@@ -58,7 +53,6 @@ public class VueCase extends StackPane {
             Label l = new Label(String.valueOf(i + 1));
             l.getStyleClass().add("label-note");
             
-            // On peut augmenter légèrement la taille de police car le pavé est plus serré
             l.styleProperty().bind(
                 Bindings.concat("-fx-font-size: ", this.widthProperty().divide(7.5).asString(), "px;")
             );
@@ -85,18 +79,30 @@ public class VueCase extends StackPane {
     }
 
     public void appliquerBordures(Case haut, Case bas, Case gauche, Case droite) {
-        String th = (haut == null) ? "4px" : (haut.getGroupement() != caseModel.getGroupement() ? "2px" : "0.5px");
-        String tb = (bas == null) ? "4px" : (bas.getGroupement() != caseModel.getGroupement() ? "2px" : "0.5px");
-        String tg = (gauche == null) ? "4px" : (gauche.getGroupement() != caseModel.getGroupement() ? "2px" : "0.5px");
-        String td = (droite == null) ? "4px" : (droite.getGroupement() != caseModel.getGroupement() ? "2px" : "0.5px");
-
         String sh = (haut != null && haut.getGroupement() == caseModel.getGroupement()) ? "dashed" : "solid";
         String sb = (bas != null && bas.getGroupement() == caseModel.getGroupement()) ? "dashed" : "solid";
         String sg = (gauche != null && gauche.getGroupement() == caseModel.getGroupement()) ? "dashed" : "solid";
         String sd = (droite != null && droite.getGroupement() == caseModel.getGroupement()) ? "dashed" : "solid";
 
-        this.setStyle("-fx-border-color: black; -fx-border-width: " + th + " " + td + " " + tb + " " + tg + 
-                      "; -fx-border-style: " + sh + " " + sd + " " + sb + " " + sg + ";");
+        this.styleProperty().bind(Bindings.createStringBinding(() -> {
+            double w = this.getWidth();
+            
+            if (w == 0) return "-fx-border-color: transparent;";
+
+            String epais = (w * 0.04) + "px"; 
+            String moyen = (w * 0.02) + "px"; 
+            String fin = (w * 0.005) + "px";  
+
+            String th = (haut == null) ? epais : (haut.getGroupement() != caseModel.getGroupement() ? moyen : fin);
+            String tb = (bas == null) ? epais : (bas.getGroupement() != caseModel.getGroupement() ? moyen : fin);
+            String tg = (gauche == null) ? epais : (gauche.getGroupement() != caseModel.getGroupement() ? moyen : fin);
+            String td = (droite == null) ? epais : (droite.getGroupement() != caseModel.getGroupement() ? moyen : fin);
+
+            return "-fx-border-color: black; " +
+                   "-fx-border-width: " + th + " " + td + " " + tb + " " + tg + "; " +
+                   "-fx-border-style: " + sh + " " + sd + " " + sb + " " + sg + ";";
+                   
+        }, this.widthProperty())); 
     }
 
     public void initialiserIndice() {
