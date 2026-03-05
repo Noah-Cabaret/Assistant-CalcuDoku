@@ -11,6 +11,8 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.text.Font;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.RowConstraints;
 
 import java.io.File;
 import java.io.FileReader;
@@ -122,56 +124,117 @@ public class ProfilController {
         VBox vBox = new VBox(5);
         vBox.setAlignment(Pos.CENTER);
 
-        // La grille visuelle
+        // 1. La Grille
         GridPane grid = new GridPane();
-        grid.setGridLinesVisible(true);
-        grid.setStyle("-fx-border-color: black; -fx-padding: 2; -fx-background-color: white;");
+        // Plus besoin de setHgap/Vgap car les contraintes gèrent l'espace
+        grid.setStyle("-fx-border-color: black; -fx-border-width: 1.5px; -fx-background-color: white;");
+
+        // --- TECHNIQUE RESPONSIVE (INSPIRÉE DE VueGrille) ---
+        // On définit une taille fixe pour le conteneur, mais l'intérieur est en %
+        double tailleConteneur = 120.0; // Taille globale de la miniature
+        grid.setPrefSize(tailleConteneur, tailleConteneur);
+        grid.setMinSize(tailleConteneur, tailleConteneur);
+        grid.setMaxSize(tailleConteneur, tailleConteneur);
+
+        // Ajout des contraintes de colonnes (Largeur en %)
+        for (int i = 0; i < niveau.dim; i++) {
+            ColumnConstraints col = new ColumnConstraints();
+            col.setPercentWidth(100.0 / niveau.dim); // Ex: 25% pour grille de 4
+            grid.getColumnConstraints().add(col);
+            
+            RowConstraints row = new RowConstraints();
+            row.setPercentHeight(100.0 / niveau.dim); // Ex: 25% pour grille de 4
+            grid.getRowConstraints().add(row);
+        }
         
-        double taille = 25.0;
-        //positionner les chiffres dans les cases selon coord
-        for (BlocData bloc : niveau.blocs) {
-            boolean isFirst = true;
-            for (Map.Entry<String, Integer> entry : bloc.nums.entrySet()) {
-                String[] coords = entry.getKey().split(",");
-                int x = Integer.parseInt(coords[0]);
-                int y = Integer.parseInt(coords[1]);
+        // Calcul taille police (approximatif selon la taille de case théorique)
+        double tailleCaseTheorique = tailleConteneur / niveau.dim;
+        double taillePoliceIndice = Math.max(7, tailleCaseTheorique * 0.35);
 
-                StackPane cell = new StackPane();
-                cell.setPrefSize(taille, taille);
-
-                if (isFirst) {
-                    Label l = new Label(bloc.result + bloc.op);
-                    l.setFont(new Font("Arial", 8));
-                    StackPane.setAlignment(l, Pos.TOP_LEFT);
-                    StackPane.setMargin(l, new javafx.geometry.Insets(1,0,0,2));
-                    cell.getChildren().add(l);
-                    isFirst = false;
-                }
+        for (int y = 0; y < niveau.dim; y++) {
+            for (int x = 0; x < niveau.dim; x++) {
                 
-                Label v = new Label(String.valueOf(entry.getValue()));
-                v.setFont(new Font("Arial", 10));
-                v.setStyle("-fx-font-weight: bold;");
-                cell.getChildren().add(v);
+                int indexBloc = getBlocIndex(x, y, niveau);
+                BlocData bloc = niveau.blocs.get(indexBloc);
+                
+                StackPane cell = new StackPane();
+                
+                // NOTE : Avec les contraintes %, on n'a plus besoin de fixer la taille des cellules ici.
+                // Elles vont remplir leur case automatiquement.
+                
+                // --- GESTION DES BORDURES (Style KenKen) ---
+                String styleDroit = "none";
+                int widthDroit = 0;
+                if (x < niveau.dim - 1) {
+                    int indexVoisin = getBlocIndex(x + 1, y, niveau);
+                    if (indexVoisin == indexBloc) { styleDroit = "dashed"; widthDroit = 1; }
+                    else { styleDroit = "solid"; widthDroit = 1; }
+                }
+
+                String styleBas = "none";
+                int widthBas = 0;
+                if (y < niveau.dim - 1) {
+                    int indexVoisin = getBlocIndex(x, y + 1, niveau);
+                    if (indexVoisin == indexBloc) { styleBas = "dashed"; widthBas = 1; }
+                    else { styleBas = "solid"; widthBas = 1; }
+                }
+
+                cell.setStyle(String.format(
+                    "-fx-background-color: white; " +
+                    "-fx-border-color: black; " +
+                    "-fx-border-style: solid %s %s solid; " +
+                    "-fx-border-width: 0 %d %d 0;",
+                    styleDroit, styleBas, widthDroit, widthBas
+                ));
+
+                // --- CONTENU ---
+                if (isFirstCellOfBlock(x, y, bloc)) {
+                    Label l = new Label(bloc.result + bloc.op);
+                    l.setFont(new Font("Arial", taillePoliceIndice));
+                    l.setStyle("-fx-font-weight: bold;");
+                    StackPane.setAlignment(l, Pos.TOP_LEFT);
+                    StackPane.setMargin(l, new javafx.geometry.Insets(1, 0, 0, 2));
+                    cell.getChildren().add(l);
+                }
 
                 grid.add(cell, x, y);
             }
         }
 
-        String nomPropre = nomFichier.replace(".json", ""); 
-        Label titre = new Label("Grille " + nomPropre + " (" + niveau.dim + "x" + niveau.dim + ")"); 
-        titre.setStyle("-fx-font-weight: bold;");
+        // 2. Textes
+        String nomPropre = nomFichier.replace(".json", "");
+        Label titre = new Label("Grille " + nomPropre);
+        titre.setStyle("-fx-font-family: 'Arial'; -fx-font-weight: bold; -fx-font-size: 11px;");
 
-        // Temps
-        // On convertit les secondes
         int min = niveau.temps / 60;
         int sec = niveau.temps % 60;
-        String tempsFormatte = String.format("%d:%02d", min, sec);
-        
-        Label lblTemps = new Label("Temps : " + tempsFormatte);
-        lblTemps.setStyle("-fx-text-fill: black; -fx-font-size: 11px;"); // Un peu plus petit et gris
+        Label lblTemps = new Label(String.format("Temps : %d:%02d", min, sec));
+        lblTemps.setStyle("-fx-font-family: 'Arial'; -fx-font-size: 10px; -fx-text-fill: #333333;");
 
         vBox.getChildren().addAll(grid, titre, lblTemps);
         return vBox;
+    }
+
+    // Trouve l'index du bloc pour une coordonnée donnée
+    private int getBlocIndex(int x, int y, DonneesNiveau niveau) {
+        if (x < 0 || y < 0 || x >= niveau.dim || y >= niveau.dim) return -1;
+        for (int i = 0; i < niveau.blocs.size(); i++) {
+            if (niveau.blocs.get(i).nums.containsKey(x + "," + y)) return i;
+        }
+        return -1;
+    }
+
+    // Détermine si c'est la case "principale" pour afficher l'indice (ex: "8+")
+    private boolean isFirstCellOfBlock(int x, int y, BlocData bloc) {
+        int minX = 1000, minY = 1000;
+        for (String key : bloc.nums.keySet()) {
+            String[] parts = key.split(",");
+            int cx = Integer.parseInt(parts[0]);
+            int cy = Integer.parseInt(parts[1]);
+            if (cy < minY) { minY = cy; minX = cx; }
+            else if (cy == minY && cx < minX) { minX = cx; }
+        }
+        return (x == minX && y == minY);
     }
     
 

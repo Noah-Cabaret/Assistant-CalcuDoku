@@ -3,64 +3,69 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
-<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" 
-      fx:controller="fr.univ.calcudoku.controller.ProfilController"
-      style="-fx-background-color: white; -fx-padding: 20;" spacing="20" alignment="TOP_CENTER">
+<VBox alignment="TOP_CENTER" spacing="10.0" style="-fx-background-color: white; -fx-padding: 20;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fr.univ.calcudoku.controller.ProfilController">
 
     <BorderPane maxWidth="800">
         <left>
-            <Button text="⬅" onAction="#onRetourClick" style="-fx-background-color: transparent; -fx-font-size: 30px; -fx-cursor: hand; -fx-text-fill: black;"/>
+            <Button onAction="#onRetourClick" style="-fx-background-color: transparent; -fx-font-size: 30px; -fx-cursor: hand; -fx-text-fill: black;" text="⬅" />
         </left>
         <center>
             <VBox alignment="CENTER" spacing="5">
-                <ImageView fx:id="imgAvatar" fitWidth="80" fitHeight="80" preserveRatio="true"/>
-                <Label fx:id="lblNomProfil" text="Profil" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+                <ImageView fx:id="imgAvatar" fitHeight="50.0" fitWidth="50.0" preserveRatio="true" />
+                <Label fx:id="lblNomProfil" style="-fx-font-size: 18px; -fx-font-weight: bold;" text="Profil">
+               <font>
+                  <Font size="8.0" />
+               </font></Label>
             </VBox>
         </center>
         <right>
-            <Button text="⎋" onAction="#onDeconnexionClick" style="-fx-background-color: transparent; -fx-font-size: 30px; -fx-cursor: hand; -fx-text-fill: black; -fx-rotate: 90;"/> 
+            <Button onAction="#onDeconnexionClick" style="-fx-background-color: transparent; -fx-font-size: 30px; -fx-cursor: hand; -fx-text-fill: black; -fx-rotate: 90;" text="⎋" /> 
         </right>
     </BorderPane>
 
-    <HBox spacing="30" alignment="CENTER" maxWidth="800">
+    <HBox alignment="CENTER" maxWidth="800" spacing="20.0" VBox.vgrow="ALWAYS">
         
-        <VBox HBox.hgrow="ALWAYS" alignment="TOP_CENTER" spacing="15" 
-              style="-fx-border-color: black; -fx-border-radius: 20; -fx-border-width: 1; -fx-padding: 20;">
-            <Label text="Statistiques :" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
-            <VBox spacing="10" alignment="CENTER">
-                <Label fx:id="lblTempsMoyen" text="Temps moyen : --:--" style="-fx-font-size: 14px;"/>
-                <Label fx:id="lblTauxReussite" text="Taux de réussite : 0%" style="-fx-font-size: 14px;"/>
-                <Label fx:id="lblNiveauAventure" text="Niveau mode aventure : 1" style="-fx-font-size: 14px;"/>
-                <Label fx:id="lblDifficulteMax" text="Difficulté max : Facile" style="-fx-font-size: 14px;"/>
-                <Label fx:id="lblMeilleurScore" text="Meilleur score : 0" style="-fx-font-size: 14px;"/>
+        <VBox alignment="TOP_CENTER" spacing="5.0" style="-fx-border-color: black; -fx-border-radius: 20; -fx-border-width: 1; -fx-padding: 20;" HBox.hgrow="ALWAYS">
+            <Label style="-fx-font-size: 18px; -fx-font-weight: bold;" text="Statistiques :" />
+            <VBox alignment="CENTER" spacing="5.0">
+                <Label fx:id="lblTempsMoyen" style="-fx-font-size: 14px;" text="Temps moyen : --:--" />
+                <Label fx:id="lblTauxReussite" style="-fx-font-size: 14px;" text="Taux de réussite : 0%" />
+                <Label fx:id="lblNiveauAventure" style="-fx-font-size: 14px;" text="Niveau mode aventure : 1" />
+                <Label fx:id="lblDifficulteMax" style="-fx-font-size: 14px;" text="Difficulté max : Facile" />
+                <Label fx:id="lblMeilleurScore" style="-fx-font-size: 14px;" text="Meilleur score : 0" />
             </VBox>
         </VBox>
 
-        <VBox HBox.hgrow="ALWAYS" alignment="TOP_CENTER" spacing="15" 
-              style="-fx-border-color: black; -fx-border-radius: 20; -fx-border-width: 1; -fx-padding: 20;">
-            <Label text="Paramètres :" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+        <VBox alignment="TOP_CENTER" style="-fx-border-color: black; -fx-border-radius: 20; -fx-border-width: 1; -fx-padding: 20;" HBox.hgrow="ALWAYS">
+            <Label style="-fx-font-size: 18px; -fx-font-weight: bold;" text="Paramètres :" />
             
-            <VBox spacing="10" alignment="CENTER">
-                <CheckBox fx:id="checkSombre" text="Mode sombre" style="-fx-font-size: 14px;"/>
-                <CheckBox fx:id="checkClair" text="Mode claire" style="-fx-font-size: 14px;"/>
+            <VBox alignment="CENTER" spacing="5.0">
+                <CheckBox fx:id="checkSombre" style="-fx-font-size: 14px;" text="Mode sombre" />
+                <CheckBox fx:id="checkClair" style="-fx-font-size: 14px;" text="Mode claire   " />
                 
-                <Label text="Configuration bouton" style="-fx-font-weight: bold; -fx-padding: 10 0 0 0;"/>
+                <Label style="-fx-font-weight: bold; -fx-padding: 10 0 0 0;" text="Configuration bouton" />
                 <Label text="d'aide au calcul" />
             </VBox>
         </VBox>
     </HBox>
 
-    <VBox maxWidth="800" spacing="15" alignment="TOP_CENTER"
-          style="-fx-border-color: black; -fx-border-radius: 20; -fx-border-width: 1; -fx-padding: 20;">
-        <Label text="Partie en cours" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+    <VBox alignment="TOP_CENTER" maxWidth="800" minHeight="280" style="-fx-border-color: black; -fx-border-radius: 20; -fx-border-width: 1; -fx-padding: 20;">
+        
+        <Label style="-fx-font-size: 18px; -fx-font-weight: bold;" text="Partie en cours" />
 
-        <HBox fx:id="boxParties" spacing="40" alignment="CENTER" minHeight="100">
-        </HBox>
+        <ScrollPane fitToHeight="true" hbarPolicy="AS_NEEDED" pannable="true" style="-fx-background-color: transparent; -fx-background: white;" vbarPolicy="NEVER">
+            
+            <HBox fx:id="boxParties" alignment="CENTER_LEFT" spacing="30" style="-fx-background-color: white; -fx-padding: 10;">
+            </HBox>
+            
+        </ScrollPane>
     </VBox>
 
 </VBox>
