@@ -83,21 +83,40 @@ public class GestionnaireJeu {
             FXMLLoader loader = new FXMLLoader(GestionnaireJeu.class.getResource("/fxml/VuePartie.fxml"));
             Parent root = loader.load();
 
-            // On récupère le contrôleur du jeu pour lui passer la grille
             JeuController controller = loader.getController();
             controller.initialiserPartie(grille);
 
-            Scene scene = new Scene(root, 1000, 800);
+            // --- CORRECTION MAJEURE ICI ---
+            // Au lieu de créer une "new Scene()" qui réinitialise la taille de la fenêtre,
+            // on réutilise la scène existante (comme dans MainApp).
+            Scene scene = stage.getScene();
+            
+            if (scene == null) {
+                // Cas rare (premier lancement), on crée la scène
+                scene = new Scene(root);
+                stage.setScene(scene);
+            } else {
+                // Cas normal : on remplace juste le contenu.
+                // La fenêtre garde sa taille actuelle (Maximisée) !
+                scene.setRoot(root);
+            }
 
-            // Chargement du CSS s'il existe
+            // Gestion du CSS
             if (GestionnaireJeu.class.getResource("/style.css") != null) {
-                scene.getStylesheets().add(GestionnaireJeu.class.getResource("/style.css").toExternalForm());
+                String css = GestionnaireJeu.class.getResource("/style.css").toExternalForm();
+                // On vérifie pour ne pas l'ajouter en double
+                if (!scene.getStylesheets().contains(css)) {
+                    scene.getStylesheets().add(css);
+                }
             }
 
             stage.setTitle(titre);
-            stage.setScene(scene);
-            // stage.setFullScreen(true); // Décommentez si vous voulez le plein écran
             stage.show();
+
+            // Par sécurité, on réapplique l'état maximisé
+            if (!stage.isMaximized()) {
+                stage.setMaximized(true);
+            }
 
         } catch (Exception e) {
             e.printStackTrace();

@@ -9,11 +9,11 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane prefHeight="800.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fr.univ.calcudoku.controller.JeuController">
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fr.univ.calcudoku.controller.JeuController">
    <center>
-      <VBox alignment="TOP_CENTER" spacing="15.0" BorderPane.alignment="CENTER">
+      <VBox alignment="CENTER" spacing="15.0" BorderPane.alignment="CENTER">
          <padding>
-            <Insets top="40.0" />
+            <Insets top="20.0" bottom="20.0" />
          </padding>
          <children>
             <Label text="2:30">
@@ -22,7 +22,11 @@
                </font>
             </Label>
 
-            <StackPane fx:id="conteneurGrille" prefHeight="600.0" prefWidth="600.0" VBox.vgrow="NEVER" />
+            <StackPane fx:id="conteneurGrille" VBox.vgrow="ALWAYS">
+               <padding>
+                  <Insets top="10.0" right="20.0" bottom="10.0" left="20.0" />
+               </padding>
+            </StackPane>
 
             <VBox alignment="CENTER" spacing="10.0">
                <children>

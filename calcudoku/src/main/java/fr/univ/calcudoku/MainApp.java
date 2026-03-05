@@ -17,13 +17,19 @@ public class MainApp extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         primaryStage = stage;
-        profileManager = new ProfileManager(); // Initialisation du service
+        profileManager = new ProfileManager(); 
 
-        changerScene("/fxml/accueil.fxml"); // Démarrage
+        changerScene("/fxml/accueil.fxml"); 
         
         stage.setMinWidth(600);
         stage.setMinHeight(500);
         stage.setTitle("Calcudoku");
+
+        // --- 1. PLEIN ÉCRAN AU DÉMARRAGE ---
+        stage.setMaximized(true);
+        stage.setFullScreenExitHint(""); // Cache le message "Appuyez sur Echap"
+        // ------------------------------------
+        
         stage.show();
     }
 
@@ -33,12 +39,21 @@ public class MainApp extends Application {
             FXMLLoader loader = new FXMLLoader(MainApp.class.getResource(fxmlPath));
             Parent root = loader.load();
             
-            // Si la scène existe déjà, on remplace juste la racine
             if (primaryStage.getScene() == null) {
                 primaryStage.setScene(new Scene(root, 800, 600));
             } else {
                 primaryStage.getScene().setRoot(root);
             }
+
+            // --- 2. MAINTENIR LE PLEIN ÉCRAN ---
+            // On le réactive à chaque changement de page par sécurité
+            if (primaryStage.isShowing()) {
+                primaryStage.setFullScreen(false);
+                primaryStage.setMaximized(true);
+                primaryStage.setFullScreenExitHint("");
+            }
+            // -----------------------------------
+
         } catch (IOException e) {
             e.printStackTrace();
             System.err.println("Impossible de charger le FXML : " + fxmlPath);
