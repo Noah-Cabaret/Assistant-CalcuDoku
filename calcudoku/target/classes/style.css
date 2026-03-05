@@ -1,0 +1,38 @@
+/* style.css */
+.root {
+    -fx-font-family: 'Segoe UI', Arial, sans-serif;
+    -fx-background-color: white; 
+}
+
+/* La case */
+.case-grille {
+    -fx-background-color: white;
+    -fx-min-width: 0;
+    -fx-min-height: 0;
+}
+
+.case-selectionnee {
+    -fx-background-color: #bbdefb; 
+}
+
+/* Le chiffre */
+.label-valeur {
+    -fx-font-size: 32px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+}
+
+/* L'indice en haut à gauche */
+.label-indice {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+    -fx-padding: 2 0 0 5;
+}
+
+/* Les notes  */
+.label-note {
+    -fx-font-size: 11px;
+    -fx-text-fill: #474848;
+    -fx-background-color: transparent;
+}
