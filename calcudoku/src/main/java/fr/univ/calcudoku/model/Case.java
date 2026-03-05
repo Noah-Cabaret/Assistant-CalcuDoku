@@ -1,10 +1,12 @@
 package fr.univ.calcudoku.model;
 
 import java.util.HashSet;
-import java.util.Set;
+//import java.util.Set;
 
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableSet;
 
 public class Case {
 
@@ -14,14 +16,13 @@ public class Case {
     private final int solution;
     private GroupementCases groupement;
 
-    private final Set<Integer> annotations;
+    private final ObservableSet<Integer> annotations = FXCollections.observableSet(new HashSet<>());
 
     public Case(int x,int y,int solution){
         this.y = y;
         this.x = x;
         this.valeur = new SimpleIntegerProperty(0);
         this.solution = solution;
-        this.annotations = new HashSet<>();
     }
     public boolean estCorrecte() {
         return valeur.get() == solution;
@@ -51,8 +52,12 @@ public class Case {
         annotations.clear();
     }
 
-    public Set<Integer> getNotes() {
-        return new HashSet<>(annotations); 
+    public void ajouterNote(int note) {
+        annotations.add(note);
+    }
+
+    public ObservableSet<Integer> getNotes() {
+        return annotations; 
     }
 
     @Override
@@ -60,5 +65,3 @@ public class Case {
         return "Case[" + x + "," + y + "] Val=" + getValeur();
     }
 }
-
-
