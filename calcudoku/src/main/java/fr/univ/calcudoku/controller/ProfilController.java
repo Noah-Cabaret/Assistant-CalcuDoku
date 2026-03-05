@@ -3,14 +3,18 @@ package fr.univ.calcudoku.controller;
 import com.google.gson.Gson;
 import fr.univ.calcudoku.MainApp;
 import fr.univ.calcudoku.model.DonneesNiveau; // Import du modèle
-import fr.univ.calcudoku.service.MiniGridFactory; // Import de la factory
+import fr.univ.calcudoku.model.Grille;
+import fr.univ.calcudoku.service.JsonToModelAdapter;
 import fr.univ.calcudoku.service.ProfileManager;
+import fr.univ.calcudoku.view.VueGrille;
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
 import java.io.File;
@@ -46,24 +50,63 @@ public class ProfilController {
 
         if (fichiersJson != null && boxParties != null) {
             Gson gson = new Gson();
-            boxParties.getChildren().clear(); // Nettoyer avant d'ajouter
+            boxParties.getChildren().clear();
 
             for (File fichier : fichiersJson) {
                 try (FileReader reader = new FileReader(fichier)) {
-                    // 1. Désérialisation via le Modèle (POO)
+                    // 1. Charger JSON
                     DonneesNiveau niveau = gson.fromJson(reader, DonneesNiveau.class);
                     
-                    // 2. Création visuelle via la Factory (POO)
-                    VBox carte = MiniGridFactory.createMiniature(niveau, fichier.getName());
+                    // 2. Appeler la méthode de création qui utilise l'Adaptateur
+                    VBox carte = creerCartePartie(niveau, fichier.getName());
                     
-                    // 3. Ajout à la vue
                     boxParties.getChildren().add(carte);
 
                 } catch (Exception e) {
-                    System.err.println("Erreur lecture fichier : " + fichier.getName());
+                    e.printStackTrace();
                 }
             }
         }
+    }
+
+    private VBox creerCartePartie(DonneesNiveau niveau, String nomFichier) {
+        VBox vBox = new VBox(5);
+        vBox.setAlignment(Pos.CENTER);
+
+        // --- ADAPTATEUR ---
+        // On transforme les données brutes en "Vraie Grille" sans toucher aux classes Grille/Case
+        Grille grilleModele = JsonToModelAdapter.convertir(niveau);
+
+        // --- VUE ---
+        VueGrille vueGrille = new VueGrille(grilleModele);
+        
+        // On demande à la vue de dessiner les bordures
+        vueGrille.rafraichirToutesLesBordures();
+
+        // --- MINIATURE (ZOOM) ---
+        // VueGrille est trop grande. On la met dans un conteneur fixe et on dézoome.
+        StackPane conteneur = new StackPane(vueGrille);
+        double tailleMiniature = 160.0;
+        conteneur.setPrefSize(tailleMiniature, tailleMiniature);
+        conteneur.setMaxSize(tailleMiniature, tailleMiniature);
+        
+        // Facteur de zoom (0.35 = 35% de la taille originale)
+        // Tu peux ajuster ce chiffre si c'est trop gros ou trop petit
+        vueGrille.setScaleX(0.90); 
+        vueGrille.setScaleY(0.90);
+
+        // --- TEXTES ---
+        String nomPropre = nomFichier.replace(".json", "");
+        Label titre = new Label("Grille " + nomPropre);
+        titre.setStyle("-fx-font-family: 'Arial'; -fx-font-weight: bold; -fx-font-size: 11px;");
+
+        int min = niveau.temps / 60;
+        int sec = niveau.temps % 60;
+        Label lblTemps = new Label(String.format("Temps : %d:%02d", min, sec));
+        lblTemps.setStyle("-fx-font-family: 'Arial'; -fx-font-size: 10px; -fx-text-fill: #333333;");
+
+        vBox.getChildren().addAll(conteneur, titre, lblTemps);
+        return vBox;
     }
 
     private void chargerStatistiquesProfil(String nom, ProfileManager manager) {

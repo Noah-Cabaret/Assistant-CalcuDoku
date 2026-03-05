@@ -27,7 +27,7 @@ public class MainApp extends Application {
         stage.show();
     }
 
-    // Méthode pour changer de page facilement
+    // Méthode pour changer de page
     public static void changerScene(String fxmlPath) {
         try {
             FXMLLoader loader = new FXMLLoader(MainApp.class.getResource(fxmlPath));
