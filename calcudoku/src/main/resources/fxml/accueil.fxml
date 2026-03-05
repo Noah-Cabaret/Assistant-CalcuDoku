@@ -9,7 +9,7 @@
     <top>
         <Label text="Calcudoku" 
                BorderPane.alignment="CENTER"
-               style="-fx-font-size: 30px; -fx-font-weight: bold; -fx-padding: 20;"/>
+               style="-fx-font-size: 50px; -fx-font-weight: bold; -fx-padding: 20;"/>
     </top>
 
     <center>
