@@ -80,7 +80,7 @@ public class GestionnaireJeu {
      */
     public static void lancerPartie(Stage stage, Grille grille, String titre) {
         try {
-            FXMLLoader loader = new FXMLLoader(GestionnaireJeu.class.getResource("/fxml/VuePartie.fxml"));
+            FXMLLoader loader = new FXMLLoader(GestionnaireJeu.class.getResource("/fxml/vuePartie.fxml"));
             Parent root = loader.load();
 
             JeuController controller = loader.getController();
