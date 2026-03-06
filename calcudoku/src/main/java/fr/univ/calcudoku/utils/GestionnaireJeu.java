@@ -26,7 +26,7 @@ public class GestionnaireJeu {
             Gson gson = new Gson();
             
             // On lit le fichier qui est DANS le .jar (dossier resources)
-            InputStream is = GestionnaireJeu.class.getResourceAsStream("/json/" + fichierJsonRessource);
+            InputStream is = GestionnaireJeu.class.getResourceAsStream("/grilles/json/" + fichierJsonRessource);
             if (is == null) {
                 System.err.println("Erreur : Fichier ressource introuvable -> " + fichierJsonRessource);
                 return;
@@ -86,11 +86,9 @@ public class GestionnaireJeu {
             JeuController controller = loader.getController();
             controller.initialiserPartie(grille);
 
-            // Au lieu de créer une "new Scene()" qui réinitialise la taille de la fenêtre,
             Scene scene = stage.getScene();
             
             if (scene == null) {
-                // Cas rien, on crée la scène
                 scene = new Scene(root);
                 stage.setScene(scene);
             } else {
@@ -100,8 +98,8 @@ public class GestionnaireJeu {
             }
 
             // Gestion du CSS
-            if (GestionnaireJeu.class.getResource("/style.css") != null) {
-                String css = GestionnaireJeu.class.getResource("/style.css").toExternalForm();
+            if (GestionnaireJeu.class.getResource("/styles/style.css") != null) {
+                String css = GestionnaireJeu.class.getResource("/styles/style.css").toExternalForm();
                 // pour ne pas l'ajouter en double
                 if (!scene.getStylesheets().contains(css)) {
                     scene.getStylesheets().add(css);

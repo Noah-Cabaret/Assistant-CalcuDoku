@@ -71,24 +71,15 @@ public class ProfilController {
         vBox.setAlignment(Pos.CENTER);
 
         String nomPng = fichierJson.getName().replace(".json", ".png");
+
+        File dossierJeu = fichierJson.getParentFile().getParentFile();
         
-        File dossierImages = new File(fichierJson.getParentFile(), "images");
+        File dossierImages = new File(dossierJeu, "images");
         File fichierImage = new File(dossierImages, nomPng);
 
         ImageView vueMiniature = new ImageView();
 
-        if (fichierImage.exists()) {
-            vueMiniature.setImage(new Image(fichierImage.toURI().toString()));
-        } else {
-            try {
-                InputStream is = getClass().getResourceAsStream("/grilles/images/" + nomPng);
-                if (is != null) {
-                    vueMiniature.setImage(new Image(is));
-                }
-            } catch (Exception e) {
-                System.err.println("Image introuvable pour " + nomPng);
-            }
-        }
+        vueMiniature.setImage(new Image(fichierImage.toURI().toString()));
 
         vueMiniature.setFitWidth(160);
         vueMiniature.setFitHeight(160);

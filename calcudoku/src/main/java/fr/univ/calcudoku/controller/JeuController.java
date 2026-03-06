@@ -13,6 +13,14 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 
+import fr.univ.calcudoku.MainApp;
+import javafx.scene.SnapshotParameters;
+import javafx.scene.image.WritableImage;
+import javafx.scene.paint.Color;
+import javafx.embed.swing.SwingFXUtils;
+import javax.imageio.ImageIO;
+import java.io.File;
+
 public class JeuController {
 
     @FXML private StackPane conteneurGrille;
@@ -71,6 +79,51 @@ public class JeuController {
         }
     }
 
+
+    public void sauvegarderImageGrille(String nomFichier) {
+        try {
+            String nomJoueur = MainApp.getProfileManager().getProfilActif();
+            if (nomJoueur == null) nomJoueur = "Invité";
+
+            File dossierImages = new File("profils/" + nomJoueur + "/jeu/images");
+            if (!dossierImages.exists()) {
+                dossierImages.mkdirs();
+            }
+
+            String nomImage = nomFichier;
+            if (nomImage.endsWith(".json")) {
+                nomImage = nomImage.replace(".json", ".png");
+            } else if (!nomImage.endsWith(".png")) {
+                nomImage += ".png";
+            }
+            
+            File fichierFinal = new File(dossierImages, nomImage);
+
+
+            if (vueCaseSelectionnee != null) {
+                vueCaseSelectionnee.getStyleClass().remove("case-selectionnee");
+            }
+            
+            vueGrille.setStyle("-fx-background-color: white;");
+
+            SnapshotParameters params = new SnapshotParameters();
+            params.setFill(Color.WHITE); 
+            WritableImage image = vueGrille.snapshot(params, null);
+
+            if (vueCaseSelectionnee != null) {
+                vueCaseSelectionnee.getStyleClass().add("case-selectionnee");
+            }
+
+            ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", fichierFinal);
+            
+            System.out.println("Snapshot sauvegardé");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("Erreur capture de la grille ");
+        }
+    }
+
     private void selectionnerCase(VueCase vueCase, Case modeleCase) {
         if (vueCaseSelectionnee != null) {
             vueCaseSelectionnee.getStyleClass().remove("case-selectionnee");
@@ -82,7 +135,6 @@ public class JeuController {
         vueCaseSelectionnee.getStyleClass().add("case-selectionnee");
     }
 
-    //ACTIONS DES BOUTONS
     private void actionChiffreClique(int valeur) {
         if (caseModeleSelectionnee != null) {
             if (modeAnnotationActif) {
@@ -128,5 +180,6 @@ public class JeuController {
     @FXML
     void actionCalculatrice(ActionEvent event) {
         System.out.println("Calculatrice cliquée");
+        sauvegarderImageGrille("1.png");
     }
 }

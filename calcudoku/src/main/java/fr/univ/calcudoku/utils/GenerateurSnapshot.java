@@ -64,11 +64,13 @@ public class GenerateurSnapshot extends Application {
                 scene.getStylesheets().add(css.toURI().toString());
             }
 
+            vueGrille.setStyle("-fx-background-color: white;");
+
             vueGrille.applyCss();
             vueGrille.layout();
 
             SnapshotParameters params = new SnapshotParameters();
-            params.setFill(Color.TRANSPARENT); 
+            params.setFill(Color.WHITE); 
             WritableImage image = vueGrille.snapshot(params, null);
 
             String nomImage = nomFichierJson.replace(".json", ".png");
