@@ -8,7 +8,19 @@ public class Grille {
     private final List<GroupementCases> listeGroupements;
     private final Case[][] matriceGrille;
 
-    public Grille(int taille, int [][] matriceSolution,int[][] matriceDepart){
+    public Grille(int taille) {
+        this.taille = taille;
+        this.matriceGrille = new Case[taille][taille];
+        this.listeGroupements = new ArrayList<>();
+
+        for (int x = 0; x < taille; x++) {
+            for (int y = 0; y < taille; y++) {
+                matriceGrille[x][y] = new Case(x, y, 0); 
+            }
+        }
+    }
+
+    public Grille(int taille, int[][] matriceSolution, int[][] matriceDepart) {
         this.taille = taille;
         this.matriceGrille = new Case[taille][taille];
         this.listeGroupements = new ArrayList<>();
@@ -16,7 +28,6 @@ public class Grille {
         for (int x = 0; x < taille; x++) {
             for (int y = 0; y < taille; y++) {
                 int solution = matriceSolution[x][y];
-                
                 int valeurInitiale = (matriceDepart == null) ? 0 : matriceDepart[x][y];
                 
                 matriceGrille[x][y] = new Case(x, y, solution);
@@ -24,6 +35,7 @@ public class Grille {
             }
         }
     }
+    
     public void ajouterGroupement(GroupementCases groupement){
         this.listeGroupements.add(groupement);
     }
@@ -37,6 +49,12 @@ public class Grille {
         }
         return matriceGrille[x][y];
     }
+    public void setCase(int x, int y, Case nouvelleCase) {
+        if(x >= 0 && x < taille && y >= 0 && y < taille) {
+            this.matriceGrille[x][y] = nouvelleCase;
+        }
+    }
+
     public int getTaille(){
         return taille;
     }

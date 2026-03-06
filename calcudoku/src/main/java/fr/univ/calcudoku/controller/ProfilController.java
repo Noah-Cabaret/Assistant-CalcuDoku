@@ -43,10 +43,11 @@ public class ProfilController {
     }
 
     private void chargerPartiesSauvegardees(String nomProfil) {
-        File dossierJeux = new File("profils/" + nomProfil + "/jeu");
-        if (!dossierJeux.exists() || !dossierJeux.isDirectory()) return;
+        File dossierJson = new File("profils/" + nomProfil + "/jeu/json");
+        
+        if (!dossierJson.exists() || !dossierJson.isDirectory()) return;
 
-        File[] fichiersJson = dossierJeux.listFiles((dir, name) -> name.endsWith(".json"));
+        File[] fichiersJson = dossierJson.listFiles((dir, name) -> name.endsWith(".json"));
 
         if (fichiersJson != null && boxParties != null) {
             Gson gson = new Gson();
@@ -54,12 +55,8 @@ public class ProfilController {
 
             for (File fichier : fichiersJson) {
                 try (FileReader reader = new FileReader(fichier)) {
-                    // 1. Charger JSON
                     DonneesNiveau niveau = gson.fromJson(reader, DonneesNiveau.class);
-                    
-                    // 2. Appeler la méthode de création qui utilise l'Adaptateur
-                    VBox carte = creerCartePartie(niveau, fichier.getName());
-                    
+                    VBox carte = creerCartePartie(niveau, fichier);
                     boxParties.getChildren().add(carte);
 
                 } catch (Exception e) {
@@ -69,34 +66,35 @@ public class ProfilController {
         }
     }
 
-    private VBox creerCartePartie(DonneesNiveau niveau, String nomFichier) {
+    private VBox creerCartePartie(DonneesNiveau niveau, File fichierJson) {
         VBox vBox = new VBox(5);
         vBox.setAlignment(Pos.CENTER);
 
-        // --- ADAPTATEUR ---
-        // On transforme les données brutes en "Vraie Grille" sans toucher aux classes Grille/Case
-        Grille grilleModele = JsonToModelAdapter.convertir(niveau);
-
-        // --- VUE ---
-        VueGrille vueGrille = new VueGrille(grilleModele);
+        String nomPng = fichierJson.getName().replace(".json", ".png");
         
-        // On demande à la vue de dessiner les bordures
-        vueGrille.rafraichirToutesLesBordures();
+        File dossierImages = new File(fichierJson.getParentFile(), "images");
+        File fichierImage = new File(dossierImages, nomPng);
 
-        // --- MINIATURE (ZOOM) ---
-        // VueGrille est trop grande. On la met dans un conteneur fixe et on dézoome.
-        StackPane conteneur = new StackPane(vueGrille);
-        double tailleMiniature = 160.0;
-        conteneur.setPrefSize(tailleMiniature, tailleMiniature);
-        conteneur.setMaxSize(tailleMiniature, tailleMiniature);
-        
-        // Facteur de zoom (0.35 = 35% de la taille originale)
-        // Tu peux ajuster ce chiffre si c'est trop gros ou trop petit
-        vueGrille.setScaleX(0.90); 
-        vueGrille.setScaleY(0.90);
+        ImageView vueMiniature = new ImageView();
 
-        // --- TEXTES ---
-        String nomPropre = nomFichier.replace(".json", "");
+        if (fichierImage.exists()) {
+            vueMiniature.setImage(new Image(fichierImage.toURI().toString()));
+        } else {
+            try {
+                InputStream is = getClass().getResourceAsStream("/grilles/images/" + nomPng);
+                if (is != null) {
+                    vueMiniature.setImage(new Image(is));
+                }
+            } catch (Exception e) {
+                System.err.println("Image introuvable pour " + nomPng);
+            }
+        }
+
+        vueMiniature.setFitWidth(160);
+        vueMiniature.setFitHeight(160);
+        vueMiniature.setPreserveRatio(true);
+
+        String nomPropre = fichierJson.getName().replace(".json", "");
         Label titre = new Label("Grille " + nomPropre);
         titre.setStyle("-fx-font-family: 'Arial'; -fx-font-weight: bold; -fx-font-size: 11px;");
 
@@ -105,7 +103,7 @@ public class ProfilController {
         Label lblTemps = new Label(String.format("Temps : %d:%02d", min, sec));
         lblTemps.setStyle("-fx-font-family: 'Arial'; -fx-font-size: 10px; -fx-text-fill: #333333;");
 
-        vBox.getChildren().addAll(conteneur, titre, lblTemps);
+        vBox.getChildren().addAll(vueMiniature, titre, lblTemps);
         return vBox;
     }
 
