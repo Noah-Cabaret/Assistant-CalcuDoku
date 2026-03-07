@@ -22,51 +22,28 @@ public class VueCase extends StackPane {
         labelIndice.getStyleClass().add("label-indice");
         StackPane.setAlignment(labelIndice, Pos.TOP_LEFT);
         
-        labelIndice.styleProperty().bind(
-            Bindings.concat("-fx-font-size: ", this.widthProperty().divide(6).asString(), "px;")
-        );
         initialiserIndice();
 
         labelValeur = new Label();
         labelValeur.getStyleClass().add("label-valeur");
         labelValeur.textProperty().bind(c.valeurProperty().asString());
         labelValeur.visibleProperty().bind(c.valeurProperty().isNotEqualTo(0));
-        
-        labelValeur.styleProperty().bind(
-            Bindings.concat("-fx-font-size: ", this.widthProperty().divide(2).asString(), "px;")
-        );
 
         int nbCols = (int) Math.ceil(Math.sqrt(tailleGrille));
         conteneurAnnotation = new GridPane();
         conteneurAnnotation.setAlignment(Pos.CENTER);
 
-        conteneurAnnotation.paddingProperty().bind(Bindings.createObjectBinding(() -> {
-            double p = this.getWidth() * 0.10; 
-            double topShift = this.getHeight() * 0.15; 
-            return new Insets(topShift, p, p/2, p);
-        }, this.widthProperty(), this.heightProperty()));
-
-        conteneurAnnotation.hgapProperty().bind(this.widthProperty().divide(40));
-        conteneurAnnotation.vgapProperty().bind(this.heightProperty().divide(40));
-
         for (int i = 0; i < tailleGrille; i++) {
             Label l = new Label(String.valueOf(i + 1));
             l.getStyleClass().add("label-note");
-            
-            l.styleProperty().bind(
-                Bindings.concat("-fx-font-size: ", this.widthProperty().divide(7.5).asString(), "px;")
-            );
-
             l.setAlignment(Pos.CENTER);
             l.setVisible(false);
             l.managedProperty().bind(l.visibleProperty());
-
             conteneurAnnotation.add(l, i % nbCols, i / nbCols);
         }
 
         conteneurAnnotation.visibleProperty().bind(c.valeurProperty().isEqualTo(0));
         c.getNotes().addListener((SetChangeListener.Change<? extends Integer> change) -> rafraichirAffichage());
-        
         rafraichirAffichage();
         this.getChildren().addAll(labelIndice, conteneurAnnotation, labelValeur);
     }
@@ -78,31 +55,45 @@ public class VueCase extends StackPane {
         }
     }
 
-    public void appliquerBordures(Case haut, Case bas, Case gauche, Case droite) {
+    public void redimensionner(double w) {
+        if (w <= 0) return;
+
+        labelIndice.setStyle("-fx-font-size: " + (w / 6) + "px;");
+        labelValeur.setStyle("-fx-font-size: " + (w / 2) + "px;");
+
+        double p = w * 0.10; 
+        double topShift = w * 0.15; 
+        conteneurAnnotation.setPadding(new Insets(topShift, p, p/2, p));
+        conteneurAnnotation.setHgap(w / 40);
+        conteneurAnnotation.setVgap(w / 40);
+
+        // Polices des annotations fixes
+        for (int i = 0; i < conteneurAnnotation.getChildren().size(); i++) {
+            Label l = (Label) conteneurAnnotation.getChildren().get(i);
+            l.setStyle("-fx-font-size: " + (w / 7.5) + "px;");
+        }
+    }
+
+    public void appliquerBordures(Case haut, Case bas, Case gauche, Case droite, double w) {
+        if (w <= 0) return;
+
         String sh = (haut != null && haut.getGroupement() == caseModel.getGroupement()) ? "dashed" : "solid";
         String sb = (bas != null && bas.getGroupement() == caseModel.getGroupement()) ? "dashed" : "solid";
         String sg = (gauche != null && gauche.getGroupement() == caseModel.getGroupement()) ? "dashed" : "solid";
         String sd = (droite != null && droite.getGroupement() == caseModel.getGroupement()) ? "dashed" : "solid";
 
-        this.styleProperty().bind(Bindings.createStringBinding(() -> {
-            double w = this.getWidth();
-            
-            if (w == 0) return "-fx-border-color: transparent;";
+        String epais = (w * 0.04) + "px"; 
+        String moyen = (w * 0.02) + "px"; 
+        String fin = (w * 0.005) + "px";  
 
-            String epais = (w * 0.04) + "px"; 
-            String moyen = (w * 0.02) + "px"; 
-            String fin = (w * 0.005) + "px";  
+        String th = (haut == null) ? epais : (haut.getGroupement() != caseModel.getGroupement() ? moyen : fin);
+        String tb = (bas == null) ? epais : (bas.getGroupement() != caseModel.getGroupement() ? moyen : fin);
+        String tg = (gauche == null) ? epais : (gauche.getGroupement() != caseModel.getGroupement() ? moyen : fin);
+        String td = (droite == null) ? epais : (droite.getGroupement() != caseModel.getGroupement() ? moyen : fin);
 
-            String th = (haut == null) ? epais : (haut.getGroupement() != caseModel.getGroupement() ? moyen : fin);
-            String tb = (bas == null) ? epais : (bas.getGroupement() != caseModel.getGroupement() ? moyen : fin);
-            String tg = (gauche == null) ? epais : (gauche.getGroupement() != caseModel.getGroupement() ? moyen : fin);
-            String td = (droite == null) ? epais : (droite.getGroupement() != caseModel.getGroupement() ? moyen : fin);
-
-            return "-fx-border-color: black; " +
-                   "-fx-border-width: " + th + " " + td + " " + tb + " " + tg + "; " +
-                   "-fx-border-style: " + sh + " " + sd + " " + sb + " " + sg + ";";
-                   
-        }, this.widthProperty())); 
+        this.setStyle("-fx-border-color: black; " +
+                      "-fx-border-width: " + th + " " + td + " " + tb + " " + tg + "; " +
+                      "-fx-border-style: " + sh + " " + sd + " " + sb + " " + sg + ";");
     }
 
     public void initialiserIndice() {

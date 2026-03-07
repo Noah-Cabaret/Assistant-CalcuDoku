@@ -43,7 +43,6 @@ public class JeuController {
         this.grilleModele = grille;
         
         this.vueGrille = new VueGrille(grille);
-        vueGrille.rafraichirToutesLesBordures();
         conteneurGrille.getChildren().add(vueGrille);
 
         NumberBinding tailleCarree = Bindings.min(conteneurGrille.widthProperty(), conteneurGrille.heightProperty());

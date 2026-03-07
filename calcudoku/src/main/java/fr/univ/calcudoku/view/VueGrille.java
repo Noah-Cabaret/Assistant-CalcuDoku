@@ -34,9 +34,22 @@ public class VueGrille extends GridPane {
                 this.add(vc, x, y);
             }
         }
+        this.widthProperty().addListener((obs, oldVal, newVal) -> {
+            double largeurGrille = newVal.doubleValue();
+            if (largeurGrille > 0) {
+                double tailleCaseFixe = largeurGrille / taille;
+                
+                for (int y = 0; y < taille; y++) {
+                    for (int x = 0; x < taille; x++) {
+                        grilleVueCases[x][y].redimensionner(tailleCaseFixe);
+                    }
+                }
+                rafraichirToutesLesBordures(tailleCaseFixe);
+            }
+        });
     }
 
-    public void rafraichirToutesLesBordures() {
+    public void rafraichirToutesLesBordures(double tailleCase) {
         int t = grilleModel.getTaille();
         for (int y = 0; y < t; y++) {
             for (int x = 0; x < t; x++) {
@@ -44,7 +57,7 @@ public class VueGrille extends GridPane {
                 Case b = (y < t-1) ? grilleModel.getCase(x, y+1) : null;
                 Case g = (x > 0) ? grilleModel.getCase(x-1, y) : null;
                 Case d = (x < t-1) ? grilleModel.getCase(x+1, y) : null;
-                grilleVueCases[x][y].appliquerBordures(h, b, g, d);
+                grilleVueCases[x][y].appliquerBordures(h, b, g, d, tailleCase);
                 grilleVueCases[x][y].initialiserIndice();
             }
         }

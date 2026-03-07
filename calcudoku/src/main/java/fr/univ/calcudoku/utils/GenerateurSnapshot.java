@@ -54,7 +54,6 @@ public class GenerateurSnapshot extends Application {
             Grille grilleModele = JsonToModelAdapter.convertir(data);
 
             VueGrille vueGrille = new VueGrille(grilleModele);
-            vueGrille.rafraichirToutesLesBordures();
 
             vueGrille.setPrefSize(500, 500);
 
