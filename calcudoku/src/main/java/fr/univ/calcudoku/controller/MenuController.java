@@ -42,6 +42,7 @@ public class MenuController {
         } else {
             labelNomProfil.setText("Invité");
         }
+        GestionnaireJeu.prechargerPageJeu();
     }
 
     @FXML

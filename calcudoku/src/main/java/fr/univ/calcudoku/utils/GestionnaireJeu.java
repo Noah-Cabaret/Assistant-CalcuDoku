@@ -18,6 +18,22 @@ import java.io.InputStreamReader;
 public class GestionnaireJeu {
 
     private static final Gson GSON = new Gson();
+    private static Parent vueJeuCachee = null;
+    private static JeuController controleurJeuCache = null;
+
+    public static void prechargerPageJeu() {
+        javafx.application.Platform.runLater(() -> {
+            try {
+                if (vueJeuCachee == null) {
+                    FXMLLoader loader = new FXMLLoader(GestionnaireJeu.class.getResource("/fxml/partie.fxml")); 
+                    vueJeuCachee = loader.load();
+                    controleurJeuCache = loader.getController();
+                }
+            } catch (Exception e) {
+                System.err.println("Erreur préchargement du FXML");
+            }
+        });
+    }
 
     /**
      * Charger une partie depuis les RESSOURCES (src/main/resources/json/)
@@ -78,10 +94,17 @@ public class GestionnaireJeu {
      */
     public static void lancerPartie(Stage stage, Grille grille, String titre) {
         try {
-            FXMLLoader loader = new FXMLLoader(GestionnaireJeu.class.getResource("/fxml/vuePartie.fxml"));
-            Parent root = loader.load();
+            Parent root;
+            JeuController controller;
+            if (vueJeuCachee != null && controleurJeuCache != null) {
+                root = vueJeuCachee;
+                controller = controleurJeuCache;
+            } else {
+                FXMLLoader loader = new FXMLLoader(GestionnaireJeu.class.getResource("/fxml/partie.fxml"));
+                root = loader.load();
+                controller = loader.getController();
+            }
 
-            JeuController controller = loader.getController();
             controller.initialiserPartie(grille);
 
             Scene scene = stage.getScene();
@@ -90,15 +113,11 @@ public class GestionnaireJeu {
                 scene = new Scene(root);
                 stage.setScene(scene);
             } else {
-                // on remplace juste le contenu.
-                // La fenêtre garde sa taille actuelle
                 scene.setRoot(root);
             }
 
-            // Gestion du CSS
             if (GestionnaireJeu.class.getResource("/styles/style.css") != null) {
                 String css = GestionnaireJeu.class.getResource("/styles/style.css").toExternalForm();
-                // pour ne pas l'ajouter en double
                 if (!scene.getStylesheets().contains(css)) {
                     scene.getStylesheets().add(css);
                 }
@@ -107,14 +126,13 @@ public class GestionnaireJeu {
             stage.setTitle(titre);
             stage.show();
 
-            // l'état maximisé
             if (!stage.isMaximized()) {
                 stage.setMaximized(true);
             }
 
         } catch (Exception e) {
             e.printStackTrace();
-            System.err.println("Erreur lors de l'ouverture de la fenêtre de jeu : " + e.getMessage());
+            System.err.println("Erreur ouverture jeu : " + e.getMessage());
         }
     }
 }

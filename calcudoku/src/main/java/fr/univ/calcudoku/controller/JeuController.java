@@ -41,24 +41,25 @@ public class JeuController {
 
     public void initialiserPartie(Grille grille) {
         this.grilleModele = grille;
-        
         this.vueGrille = new VueGrille(grille);
+        
+        conteneurGrille.getChildren().clear(); 
         conteneurGrille.getChildren().add(vueGrille);
-
         NumberBinding tailleCarree = Bindings.min(conteneurGrille.widthProperty(), conteneurGrille.heightProperty());
+        
         vueGrille.prefWidthProperty().bind(tailleCarree);
         vueGrille.prefHeightProperty().bind(tailleCarree);
+        
         vueGrille.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+        vueGrille.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
 
         for (int y = 0; y < grille.getTaille(); y++) {
             for (int x = 0; x < grille.getTaille(); x++) {
                 VueCase vc = vueGrille.getGrilleVueCases(x, y);
                 final Case modeleCase = grille.getCase(x, y);
-                
                 vc.setOnMouseClicked(event -> selectionnerCase(vc, modeleCase));
             }
         }
-
         genererBoutonsNombres(grille.getTaille());
     }
 
