@@ -17,14 +17,14 @@ import java.io.InputStreamReader;
 
 public class GestionnaireJeu {
 
+    private static final Gson GSON = new Gson();
+
     /**
      * Charger une partie depuis les RESSOURCES (src/main/resources/json/)
      * Utilisé pour le mode "Jeu Libre" de base.
      */
     public static void chargerPartie(Stage stage, String fichierJsonRessource) {
-        try {
-            Gson gson = new Gson();
-            
+        try {            
             // On lit le fichier qui est DANS le .jar (dossier resources)
             InputStream is = GestionnaireJeu.class.getResourceAsStream("/grilles/json/" + fichierJsonRessource);
             if (is == null) {
@@ -33,7 +33,7 @@ public class GestionnaireJeu {
             }
 
             // Lecture JSON -> DTO
-            DonneesNiveau data = gson.fromJson(new InputStreamReader(is), DonneesNiveau.class);
+            DonneesNiveau data = GSON.fromJson(new InputStreamReader(is), DonneesNiveau.class);
 
             // Conversion DTO -> Modèle (Via l'Adaptateur)
             Grille grille = JsonToModelAdapter.convertir(data);
@@ -58,10 +58,8 @@ public class GestionnaireJeu {
         }
 
         try {
-            Gson gson = new Gson();
-
             // Lecture JSON -> DTO (Depuis le disque dur)
-            DonneesNiveau data = gson.fromJson(new FileReader(fichier), DonneesNiveau.class);
+            DonneesNiveau data = GSON.fromJson(new FileReader(fichier), DonneesNiveau.class);
 
             // Conversion DTO -> Modèle (Via l'Adaptateur)
             Grille grille = JsonToModelAdapter.convertir(data);
