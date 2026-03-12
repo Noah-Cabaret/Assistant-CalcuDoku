@@ -1,6 +1,7 @@
 package fr.univ.calcudoku.controller;
 
 import fr.univ.calcudoku.MainApp;
+import fr.univ.calcudoku.utils.CacheRessources;
 //import fr.univ.calcudoku.model.DonneesNiveau;
 //import fr.univ.calcudoku.model.Grille;
 //import fr.univ.calcudoku.service.JsonToModelAdapter;
@@ -31,11 +32,8 @@ public class MenuController {
 
     @FXML
     public void initialize() {
-        // Charger l'image
-        try {
-            InputStream is = getClass().getResourceAsStream("/images/utilisateur.png");
-            if (is != null) imgAvatar.setImage(new Image(is));
-        } catch (Exception e) { }
+
+        imgAvatar.setImage(CacheRessources.getImage("/images/utilisateur.png"));
 
         // Récupérer le nom du profil connecté via le Manager
         String nomActuel = MainApp.getProfileManager().getProfilActif();
@@ -44,6 +42,7 @@ public class MenuController {
         } else {
             labelNomProfil.setText("Invité");
         }
+        GestionnaireJeu.prechargerPageJeu();
     }
 
     @FXML

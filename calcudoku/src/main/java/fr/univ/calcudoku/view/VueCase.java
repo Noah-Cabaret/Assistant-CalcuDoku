@@ -11,17 +11,19 @@ import javafx.scene.layout.StackPane;
 
 public class VueCase extends StackPane {
     private final Case caseModel;
+    private final int tailleGrille;
     private final Label labelIndice, labelValeur;
-    private final GridPane conteneurAnnotation; 
+    private GridPane conteneurAnnotation = null; 
+    private double wCourant = 0;
 
     public VueCase(Case c, int tailleGrille) {
         this.caseModel = c;
+        this.tailleGrille = tailleGrille;
         this.getStyleClass().add("case-grille");
 
         labelIndice = new Label();
         labelIndice.getStyleClass().add("label-indice");
         StackPane.setAlignment(labelIndice, Pos.TOP_LEFT);
-        
         initialiserIndice();
 
         labelValeur = new Label();
@@ -29,6 +31,28 @@ public class VueCase extends StackPane {
         labelValeur.textProperty().bind(c.valeurProperty().asString());
         labelValeur.visibleProperty().bind(c.valeurProperty().isNotEqualTo(0));
 
+        this.getChildren().addAll(labelIndice, labelValeur);
+
+        c.getNotes().addListener((SetChangeListener.Change<? extends Integer> change) -> rafraichirAffichage());
+        
+        if (!c.getNotes().isEmpty()) {
+            rafraichirAffichage();
+        }
+    }
+
+    private void rafraichirAffichage() {
+        if (!caseModel.getNotes().isEmpty() && conteneurAnnotation == null) {
+            creerConteneurAnnotations();
+        }
+        if (conteneurAnnotation != null) {
+            for (int i = 0; i < conteneurAnnotation.getChildren().size(); i++) {
+                Label l = (Label) conteneurAnnotation.getChildren().get(i);
+                l.setVisible(caseModel.getNotes().contains(i + 1));
+            }
+        }
+    }
+
+    private void creerConteneurAnnotations() {
         int nbCols = (int) Math.ceil(Math.sqrt(tailleGrille));
         conteneurAnnotation = new GridPane();
         conteneurAnnotation.setAlignment(Pos.CENTER);
@@ -42,32 +66,34 @@ public class VueCase extends StackPane {
             conteneurAnnotation.add(l, i % nbCols, i / nbCols);
         }
 
-        conteneurAnnotation.visibleProperty().bind(c.valeurProperty().isEqualTo(0));
-        c.getNotes().addListener((SetChangeListener.Change<? extends Integer> change) -> rafraichirAffichage());
-        rafraichirAffichage();
-        this.getChildren().addAll(labelIndice, conteneurAnnotation, labelValeur);
-    }
+        conteneurAnnotation.visibleProperty().bind(caseModel.valeurProperty().isEqualTo(0));
+        
+        this.getChildren().add(1, conteneurAnnotation);
 
-    private void rafraichirAffichage() {
-        for (int i = 0; i < conteneurAnnotation.getChildren().size(); i++) {
-            Label l = (Label) conteneurAnnotation.getChildren().get(i);
-            l.setVisible(caseModel.getNotes().contains(i + 1));
+        if (wCourant > 0) {
+            appliquerTailleAnnotations(wCourant);
         }
     }
 
     public void redimensionner(double w) {
         if (w <= 0) return;
+        this.wCourant = w; 
 
         labelIndice.setStyle("-fx-font-size: " + (w / 6) + "px;");
         labelValeur.setStyle("-fx-font-size: " + (w / 2) + "px;");
 
+        if (conteneurAnnotation != null) {
+            appliquerTailleAnnotations(w);
+        }
+    }
+
+    private void appliquerTailleAnnotations(double w) {
         double p = w * 0.10; 
         double topShift = w * 0.15; 
         conteneurAnnotation.setPadding(new Insets(topShift, p, p/2, p));
         conteneurAnnotation.setHgap(w / 40);
         conteneurAnnotation.setVgap(w / 40);
 
-        // Polices des annotations fixes
         for (int i = 0; i < conteneurAnnotation.getChildren().size(); i++) {
             Label l = (Label) conteneurAnnotation.getChildren().get(i);
             l.setStyle("-fx-font-size: " + (w / 7.5) + "px;");

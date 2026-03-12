@@ -6,6 +6,7 @@ import fr.univ.calcudoku.model.DonneesNiveau; // Import du modèle
 import fr.univ.calcudoku.model.Grille;
 import fr.univ.calcudoku.service.JsonToModelAdapter;
 import fr.univ.calcudoku.service.ProfileManager;
+import fr.univ.calcudoku.utils.CacheRessources;
 import fr.univ.calcudoku.view.VueGrille;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
@@ -23,6 +24,8 @@ import java.io.InputStream;
 import java.util.Map;
 
 public class ProfilController {
+
+    private static final Gson GSON = new Gson();
 
     @FXML private ImageView imgAvatar;
     @FXML private Label lblNomProfil;
@@ -50,12 +53,11 @@ public class ProfilController {
         File[] fichiersJson = dossierJson.listFiles((dir, name) -> name.endsWith(".json"));
 
         if (fichiersJson != null && boxParties != null) {
-            Gson gson = new Gson();
             boxParties.getChildren().clear();
 
             for (File fichier : fichiersJson) {
                 try (FileReader reader = new FileReader(fichier)) {
-                    DonneesNiveau niveau = gson.fromJson(reader, DonneesNiveau.class);
+                    DonneesNiveau niveau = GSON.fromJson(reader, DonneesNiveau.class);
                     VBox carte = creerCartePartie(niveau, fichier);
                     boxParties.getChildren().add(carte);
 
@@ -79,7 +81,14 @@ public class ProfilController {
 
         ImageView vueMiniature = new ImageView();
 
-        vueMiniature.setImage(new Image(fichierImage.toURI().toString()));
+        if (fichierImage.exists()) {
+            vueMiniature.setImage(new Image(fichierImage.toURI().toString(), true));
+        } else {
+            Image imageParDefaut = CacheRessources.getImage("/grilles/images/" + nomPng);
+            if (imageParDefaut != null) {
+                vueMiniature.setImage(imageParDefaut);
+            }
+        }
 
         vueMiniature.setFitWidth(160);
         vueMiniature.setFitHeight(160);
@@ -120,10 +129,7 @@ public class ProfilController {
     }
     
     private void chargerAvatar() {
-        try {
-            InputStream is = getClass().getResourceAsStream("/images/utilisateur.png");
-            if (is != null) imgAvatar.setImage(new Image(is));
-        } catch (Exception e) { }
+        imgAvatar.setImage(CacheRessources.getImage("/images/utilisateur.png"));
     }
     
     private String formatTemps(String s) {
