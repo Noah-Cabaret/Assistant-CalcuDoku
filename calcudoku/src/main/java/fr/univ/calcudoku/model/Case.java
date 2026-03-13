@@ -5,8 +5,9 @@ import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableSet;
+import fr.univ.calcudoku.service.aide.visitor.VisiteurGrille;
 
-public class Case {
+public class Case implements ElementVisitable {
 
     private final int x;
     private final int y;
@@ -61,5 +62,10 @@ public class Case {
     @Override
     public String toString() {
         return "Case[" + x + "," + y + "] Val=" + getValeur();
+    }
+
+    @Override
+    public void accepter(VisiteurGrille visiteur) {
+        visiteur.visiter(this);
     }
 }

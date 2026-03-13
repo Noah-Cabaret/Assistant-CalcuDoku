@@ -3,8 +3,10 @@ package fr.univ.calcudoku.model;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import fr.univ.calcudoku.service.aide.visitor.VisiteurGrille;
 
-public class GroupementCases {
+
+public class GroupementCases  implements ElementVisitable {
     private Operation operation;
     private int resultatCible;
     private Case caseOp;
@@ -50,4 +52,8 @@ public class GroupementCases {
     public List<Case> getListeCases() { return new ArrayList<>(listeCases); }
     public Case getCaseOp() { return caseOp; }
 
+    @Override
+    public void accepter(VisiteurGrille visiteur) {
+        visiteur.visiter(this);
+    }
 }

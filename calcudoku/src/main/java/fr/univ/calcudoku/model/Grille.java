@@ -2,8 +2,9 @@ package fr.univ.calcudoku.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import fr.univ.calcudoku.service.aide.visitor.VisiteurGrille;
 
-public class Grille {
+public class Grille implements ElementVisitable {
     private final int taille;
     private final List<GroupementCases> listeGroupements;
     private final Case[][] matriceGrille;
@@ -85,6 +86,24 @@ public class Grille {
     }
     return true;
 }
+
+    @Override
+    public void accepter(VisiteurGrille visiteur) {
+        // Le visiteur analyse la grille globale
+        visiteur.visiter(this);
+        
+        // On propage le visiteur à tous les groupements
+        for (GroupementCases g : listeGroupements) {
+            g.accepter(visiteur);
+        }
+        
+        // Et on le propage à toutes les cases
+        for (int x = 0; x < taille; x++) {
+            for (int y = 0; y < taille; y++) {
+                matriceGrille[x][y].accepter(visiteur);
+            }
+        }
+    }
     
     @Override
     public String toString() {
