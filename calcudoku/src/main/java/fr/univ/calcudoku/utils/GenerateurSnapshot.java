@@ -23,6 +23,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.List;
 
+/**
+ * Utilitaire pour générer des images PNG des grilles de Calcudoku.
+ * Convertit les données JSON en grille visuelle, puis en fichier image.
+ */
 public class GenerateurSnapshot extends Application {
 
     @Override

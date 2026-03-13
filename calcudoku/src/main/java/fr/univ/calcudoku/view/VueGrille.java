@@ -7,10 +7,20 @@ import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.RowConstraints;
 
+/**
+ * Vue JavaFX de la grille complète de Calcudoku.
+ * Affiche toutes les cases en grille avec les bordures des groupements.
+ */
 public class VueGrille extends GridPane {
+    /** Le modèle de grille associé */
     private final Grille grilleModel;
+    /** Matrice 2D des vues de cases */
     private final VueCase[][] grilleVueCases;
 
+    /**
+     * Constructeur d'une vue de grille complète.
+     * @param grille la grille modéliser
+     */
     public VueGrille(Grille grille) {
         this.grilleModel = grille;
         int taille = grilleModel.getTaille();
@@ -49,6 +59,10 @@ public class VueGrille extends GridPane {
         });
     }
 
+    /**
+     * Rafraîchit l'affichage de toutes les bordures des groupements.
+     * @param tailleCase la dimension d'une case
+     */
     public void rafraichirToutesLesBordures(double tailleCase) {
         int t = grilleModel.getTaille();
         for (int y = 0; y < t; y++) {
@@ -63,6 +77,12 @@ public class VueGrille extends GridPane {
         }
     }
 
+    /**
+     * Récupère la vue de case aux coordonnées spécifiées.
+     * @param x la coordonnée x
+     * @param y la coordonnée y
+     * @return la vue de case demandée
+     */
     public VueCase getGrilleVueCases(int x, int y) {
         return grilleVueCases[x][y];
     }
