@@ -67,7 +67,9 @@ public class GestionnaireJeu {
                 }
 
                 grille.ajouterGroupement(group);
+                group.calculerPossibilites(dim);
             }
+
 
             lancerPartie(stage, grille, "Calcudoku - Partie chargée");
 
