@@ -2,9 +2,10 @@ package fr.univ.calcudoku.model;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import fr.univ.calcudoku.service.aide.visitor.VisiteurGrille;
-
 
 /**
  * Représente un groupement de cases (cage) dans la grille Calcudoku.
@@ -42,6 +43,7 @@ public class GroupementCases  implements ElementVisitable {
         this.operation = source.getOperation();           
         this.resultatCible = source.getResultatCible();   
         this.listeCases = new ArrayList<>(); 
+        this.combinaisonsMaths = new ArrayList<>(source.getCombinaisonsMaths());
     }
 
     /**
@@ -115,5 +117,47 @@ public class GroupementCases  implements ElementVisitable {
     @Override
     public void accepter(VisiteurGrille visiteur) {
         visiteur.visiter(this);
+    }
+
+    public void calculerPossibilites(int tailleGrille) {
+        this.combinaisonsMaths.clear();
+        Set<List<Integer>> setUnique = new HashSet<>();
+        // On récupère la liste des cases pour connaître leurs coordonnées (x, y)
+        List<Case> casesDuGroupe = getListeCases();
+        trouverCombinaisons(new ArrayList<>(), casesDuGroupe, tailleGrille, setUnique);
+        this.combinaisonsMaths.addAll(setUnique);
+    }
+    
+    private void trouverCombinaisons(List<Integer> valeursActuelles, List<Case> toutesLesCases, int max, Set<List<Integer>> setUnique) {
+        if (valeursActuelles.size() == listeCases.size()) {
+            if (operation.calculer(valeursActuelles) == resultatCible) {
+                List<Integer> copie = new ArrayList<>(valeursActuelles);
+                copie.sort(Integer::compareTo);
+                setUnique.add(copie);
+            }
+            return;
+        }
+        int indexCaseActuelle = valeursActuelles.size();
+        Case caseAremplir = toutesLesCases.get(indexCaseActuelle);
+        for (int v = 1; v <= max; v++) {
+            if (estPossible(v, caseAremplir, valeursActuelles, toutesLesCases)) {
+                valeursActuelles.add(v);
+                trouverCombinaisons(valeursActuelles, toutesLesCases, max, setUnique);
+                valeursActuelles.remove(valeursActuelles.size() - 1); // Backtracking
+            }
+        }
+    }
+    
+    private boolean estPossible(int valeur, Case caseCible, List<Integer> valeursPlacees, List<Case> toutesLesCases) {
+        for (int i = 0; i < valeursPlacees.size(); i++) {
+            Case casePrecedente = toutesLesCases.get(i);
+            int valeurPrecedente = valeursPlacees.get(i);
+            if (valeur == valeurPrecedente) {
+                if (caseCible.getX() == casePrecedente.getX() || caseCible.getY() == casePrecedente.getY()) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }

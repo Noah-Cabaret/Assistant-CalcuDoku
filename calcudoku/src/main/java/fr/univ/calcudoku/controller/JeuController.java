@@ -55,6 +55,7 @@ public class JeuController {
 
     private final AideService aideService = new AideService();
     private List<CommandeAide> listeAides = new ArrayList<>();
+    private List<Indice> indicesEnAttente = new ArrayList<>();
     private int indexAideActuelle = 0;
 
     public void initialiserPartie(Grille grille) {
@@ -83,27 +84,12 @@ public class JeuController {
         bulleAide.setVisible(false);
 
         aideService.setOnSucceeded(event -> {
-            List<Indice> indicesTrouves = aideService.getValue();
-            
-            if (!listeAides.isEmpty()) {
-                listeAides.get(indexAideActuelle).masquer();
-            }
-
-            listeAides.clear();
-            indexAideActuelle = 0;
-
-            if (indicesTrouves != null) {
-                for (Indice ind : indicesTrouves) {
-                    listeAides.add(new CommandeAfficherIndice(ind, labelMessageAide, vueGrille));
-                }
-            }
-            
-            mettreAJourBoutonsNavigation();
-            
-            if (bulleAide.isVisible() && !listeAides.isEmpty()) {
-                listeAides.get(indexAideActuelle).afficher();
-            }
+            indicesEnAttente = aideService.getValue();
         });
+
+        for (fr.univ.calcudoku.model.GroupementCases bloc : grilleModele.getListeGroupements()) {
+            bloc.calculerPossibilites(grilleModele.getTaille());
+        }
 
         aideService.lancerAnalyse(grilleModele);
     }
@@ -224,54 +210,20 @@ public class JeuController {
 
     @FXML
     public void actionBoutonAidePointInterrogation() {
-        // 👇 --- DÉBUT DU BLOC DE TEST FICTIF --- 👇
-        if (listeAides.isEmpty() && grilleModele != null) {
-            
-            // --- AIDE TEST N°1 ---
-            Case case1 = grilleModele.getCase(0, 0);
-            Case case2 = grilleModele.getCase(1, 0);
+        if (!listeAides.isEmpty() && indexAideActuelle < listeAides.size()) {
+            listeAides.get(indexAideActuelle).masquer();
+        }
 
-            java.util.List<Case> listeCasesTest1 = new java.util.ArrayList<>();
-            listeCasesTest1.add(case1);
-            listeCasesTest1.add(case2);
+        listeAides.clear();
+        indexAideActuelle = 0;
 
-            java.util.Map<Case, Integer> mapSolutionsTest1 = new java.util.HashMap<>();
-            mapSolutionsTest1.put(case1, 4);
-
-            Indice indiceTest1 = new Indice(
-                "Technique Visuelle (Test 1)", 
-                "Ceci est la PREMIÈRE fausse aide. Observe les deux cases en haut à gauche.", 
-                listeCasesTest1, 
-                mapSolutionsTest1
-            );
-            listeAides.add(new CommandeAfficherIndice(indiceTest1, labelMessageAide, vueGrille));
-
-
-            // --- AIDE TEST N°2 ---
-            // On vérifie que la grille est assez grande pour ne pas crasher
-            if (grilleModele.getTaille() > 2) {
-                Case case3 = grilleModele.getCase(2, 2); // Une case au milieu
-                
-                java.util.List<Case> listeCasesTest2 = new java.util.ArrayList<>();
-                listeCasesTest2.add(case3); // Niveau 2 : Surbrillance
-                
-                java.util.Map<Case, Integer> mapSolutionsTest2 = new java.util.HashMap<>();
-                mapSolutionsTest2.put(case3, 2); // Niveau 3 : Solution
-
-                Indice indiceTest2 = new Indice(
-                    "Déduction Logique (Test 2)", 
-                    "Ceci est la DEUXIÈME fausse aide ! Tu as réussi à naviguer jusqu'ici.", 
-                    listeCasesTest2, 
-                    mapSolutionsTest2
-                );
-                listeAides.add(new CommandeAfficherIndice(indiceTest2, labelMessageAide, vueGrille));
+        if (indicesEnAttente != null) {
+            for (Indice ind : indicesEnAttente) {
+                listeAides.add(new CommandeAfficherIndice(ind, labelMessageAide, vueGrille));
             }
         }
-        // 👆 --- FIN DU BLOC DE TEST FICTIF --- 👆
-
 
         if (listeAides.isEmpty()) {
-            System.out.println("Aucune aide disponible.");
             return;
         }
         

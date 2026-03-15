@@ -15,15 +15,19 @@ public enum Operation {
             return valeurs.stream().mapToInt(Integer::intValue).sum();
         }
     },
+    
     /** Soustraction (valeur max - valeur min) */
     SOUSTRACTION("-") {
         @Override
         public int calculer(List<Integer> valeurs) {
             if (valeurs.isEmpty()) return 0;
-            Collections.sort(valeurs);
-            return valeurs.get(valeurs.size() - 1) - valeurs.get(0);
+            // CORRECTION : On cherche juste le min et le max sans modifier la liste !
+            int max = Collections.max(valeurs);
+            int min = Collections.min(valeurs);
+            return max - min;
         }
     },
+    
     /** Multiplication des valeurs */
     MULTIPLICATION("×") {
         @Override
@@ -34,22 +38,23 @@ public enum Operation {
             return res;
         }
     },
+    
     /** Division (valeur max / valeur min) */
     DIVISION("÷") { 
         @Override
         public int calculer(List<Integer> valeurs) {
             if (valeurs.isEmpty()) return 0;
-            Collections.sort(valeurs);
-            int min = valeurs.get(0);
-            int max = valeurs.get(valeurs.size() - 1);
+            // CORRECTION : On cherche juste le min et le max sans modifier la liste !
+            int max = Collections.max(valeurs);
+            int min = Collections.min(valeurs);
             
             if (min == 0) return 0; 
-            
             if (max % min != 0) return -1;
             
             return max / min;
         }
     },
+    
     /** Aucune opération, retourne simplement la seule valeur */
     RIEN("") { 
         @Override

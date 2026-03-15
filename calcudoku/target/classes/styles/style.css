@@ -1,0 +1,32 @@
+.case-grille {
+    -fx-background-color: white; 
+}
+
+.case-selectionnee {
+    -fx-background-color: #bbdefb; 
+}
+
+.label-valeur {
+    -fx-font-family: 'Arial', sans-serif;
+    -fx-font-weight: bold;
+    -fx-text-fill: black;
+    -fx-alignment: center;
+}
+
+.label-indice {
+    -fx-font-family: 'Arial', sans-serif;
+    -fx-font-weight: bold;
+    -fx-text-fill: #333333; 
+    -fx-padding: 2px 0 0 4px; 
+}
+
+.label-note {
+    -fx-font-family: 'Arial', sans-serif;
+    -fx-font-weight: normal;
+    -fx-text-fill: #666666; 
+    -fx-alignment: center;
+}
+
+.case-indice-surbrillance {
+    -fx-background-color: #7dec91; /* Un petit bleu très clair */
+}

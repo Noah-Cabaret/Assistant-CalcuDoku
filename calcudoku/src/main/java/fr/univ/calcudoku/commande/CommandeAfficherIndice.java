@@ -6,59 +6,41 @@ import fr.univ.calcudoku.model.Indice;
 import fr.univ.calcudoku.view.VueCase;
 import fr.univ.calcudoku.view.VueGrille;
 import javafx.scene.control.Label;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 
-/**
- * Implémentation de la commande d'affichage d'indice.
- * Gère les 3 niveaux d'aide progressifs : texte, surbrillance, et solutions.
- */
 public class CommandeAfficherIndice implements CommandeAide {
-    /** L'indice à afficher */
     private final Indice indice;
-    /** Label pour afficher le texte de l'indice */
     private final Label labelMessageAide;
-    /** Grille visuelle pour surbriller les cases */
     private final VueGrille vueGrille;
     
-    /** Étape actuelle : 1=texte, 2=surbrillance, 3=solutions */
     private int etapeActuelle = 1; 
 
-    /**
-     * Constructeur d'une commande d'indice.
-     * @param indice l'indice à afficher
-     * @param labelMessageAide le label pour le message
-     * @param vueGrille la grille visuelle
-     */
     public CommandeAfficherIndice(Indice indice, Label labelMessageAide, VueGrille vueGrille){
         this.indice = indice;
         this.labelMessageAide = labelMessageAide;
         this.vueGrille = vueGrille;
     }
 
-    /**
-     * Vérifie si ce groupement possède un niveau 2 d'aide (surbrillance).
-     * @return true si des cases peuvent être surbrillees
-     */
     private boolean possedeNiveau2() {
         return indice.getCasesASurbriller() != null && !indice.getCasesASurbriller().isEmpty();
     }
 
-    /**
-     * Vérifie si ce groupement possède un niveau 3 d'aide (solutions).
-     * @return true si des solutions sont disponibles
-     */
     private boolean possedeNiveau3() {
         return indice.getSolutions() != null && !indice.getSolutions().isEmpty();
     }
 
     @Override
-    /**
-     * Affiche l'indice au niveau d'aide actuellement déverrouillé.
-     */
     public void afficher() {
-        // 1. On affiche TOUJOURS le texte du Niveau 1
-        String texteComplet = "[" + indice.getNomTechnique() + "] \n" + indice.getMessageExplicatif();
+        labelMessageAide.setText("");
+
+        Text texteBase = new Text("[" + indice.getNomTechnique() + "] \n" + indice.getMessageExplicatif());
+        texteBase.setFill(Color.web("#2c3e50"));
+        texteBase.setStyle("-fx-font-weight: bold; -fx-font-size: 13px;");
+
+        TextFlow textFlow = new TextFlow(texteBase);
         
-        // 2. Si on a débloqué le Niveau 2, on met en surbrillance
         if (etapeActuelle >= 2 && possedeNiveau2()) {
             for (Case c : indice.getCasesASurbriller()) {
                 VueCase vueCase = vueGrille.getGrilleVueCases(c.getX(), c.getY());
@@ -66,26 +48,34 @@ public class CommandeAfficherIndice implements CommandeAide {
                     vueCase.getStyleClass().add("case-indice-surbrillance");
                 }
             }
-        }
-
-        // 3. Si on a débloqué le Niveau 3, on ajoute la solution au texte
-        if (etapeActuelle >= 3 && possedeNiveau3()) {
-            texteComplet += "\n\nSolution : ";
-            for (Map.Entry<Case, Integer> reponse : indice.getSolutions().entrySet()) {
-                Case c = reponse.getKey();
-                texteComplet += "Saisissez " + reponse.getValue() + " dans la case (" + (c.getX() + 1) + "," + (c.getY() + 1) + "). ";
+            
+            if (indice.aUneErreur()) {
+                Text texteErreur = new Text("\n\nAttention, vous avez une erreur dans une case applicable à cette technique !");
+                texteErreur.setFill(Color.RED); 
+                texteErreur.setStyle("-fx-font-weight: bold; -fx-font-size: 13px;");
+                textFlow.getChildren().add(texteErreur);
             }
         }
 
-        labelMessageAide.setText(texteComplet);
+        if (etapeActuelle >= 3 && possedeNiveau3()) {
+            StringBuilder texteSol = new StringBuilder("\n\nSolution : ");
+            for (Map.Entry<Case, Integer> reponse : indice.getSolutions().entrySet()) {
+                Case c = reponse.getKey();
+                texteSol.append("Saisissez ").append(reponse.getValue()).append(" dans la case (").append(c.getX() + 1).append(",").append(c.getY() + 1).append("). ");
+            }
+            Text texteSolution = new Text(texteSol.toString());
+            texteSolution.setFill(Color.web("#2c3e50"));
+            texteSolution.setStyle("-fx-font-weight: bold; -fx-font-size: 13px;");
+            textFlow.getChildren().add(texteSolution);
+        }
+
+        labelMessageAide.setGraphic(textFlow);
     }
 
     @Override
-    /**
-     * Masque l'indice actuellement affiché.
-     */
     public void masquer() {
         labelMessageAide.setText("");
+        labelMessageAide.setGraphic(null);
         if (possedeNiveau2()) {
             for (Case c : indice.getCasesASurbriller()) {
                 VueCase vueCase = vueGrille.getGrilleVueCases(c.getX(), c.getY());
@@ -95,25 +85,16 @@ public class CommandeAfficherIndice implements CommandeAide {
     }
 
     @Override
-    /**
-     * Améliore le niveau d'aide au niveau suivant s'il est disponible.
-     */
     public void ameliorerNiveau() {
         if (peutEtreAmeliore()) {
             etapeActuelle++;
-            afficher(); // Met à jour l'écran avec le nouveau niveau
+            afficher(); 
         }
     }
 
     @Override
-    /**
-     * Vérifie si l'aide peut être améliorée vers le niveau suivant.
-     * @return true s'il reste un niveau d'aide disponible
-     */
     public boolean peutEtreAmeliore() {
-        // Bloqué au niv 1 si pas de niv 2
         if (etapeActuelle == 1 && !possedeNiveau2()) return false; 
-        // Bloqué au niv 2 si pas de niv 3
         if (etapeActuelle == 2 && !possedeNiveau3()) return false; 
         
         return etapeActuelle < 3;

@@ -2,7 +2,7 @@ package fr.univ.calcudoku.service.aide;
 
 import fr.univ.calcudoku.model.Grille;
 import fr.univ.calcudoku.model.Indice;
-import fr.univ.calcudoku.service.aide.technique.TechniqueAide;
+import fr.univ.calcudoku.service.aide.technique.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +21,15 @@ public class MoteurAide {
      */
     public MoteurAide(){
         this.techniques = new ArrayList<>();
-        //Ajout technique à la liste
+        this.techniques.add(new TechniqueBlocDe1());
+        this.techniques.add(new TechniqueDerniereCaseLigneCol());
+        this.techniques.add(new TechniqueDernierChiffreGrille());
+        this.techniques.add(new TechniqueDerniereCaseBloc());
+
+
+        this.techniques.add(new TechniquePlaceUniqueLigneColonne());
+        this.techniques.add(new TechniqueIntraBloc_1_3());
+        //ajout autres techniques
     }
 
     /**
