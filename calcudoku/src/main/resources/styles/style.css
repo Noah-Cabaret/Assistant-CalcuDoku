@@ -26,3 +26,7 @@
     -fx-text-fill: #666666; 
     -fx-alignment: center;
 }
+
+.case-indice-surbrillance {
+    -fx-background-color: #7dec91; /* Un petit bleu très clair */
+}

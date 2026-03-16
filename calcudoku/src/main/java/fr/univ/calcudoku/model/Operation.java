@@ -3,13 +3,19 @@ package fr.univ.calcudoku.model;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Énumération des opérations mathématiques disponibles dans Calcudoku.
+ * Chaque opération définit comment calculer le résultat à partir des valeurs.
+ */
 public enum Operation {
+    /** Addition des valeurs */
     ADDITION("+") {
         @Override
         public int calculer(List<Integer> valeurs) {
             return valeurs.stream().mapToInt(Integer::intValue).sum();
         }
     },
+    /** Soustraction (valeur max - valeur min) */
     SOUSTRACTION("-") {
         @Override
         public int calculer(List<Integer> valeurs) {
@@ -18,6 +24,7 @@ public enum Operation {
             return valeurs.get(valeurs.size() - 1) - valeurs.get(0);
         }
     },
+    /** Multiplication des valeurs */
     MULTIPLICATION("×") {
         @Override
         public int calculer(List<Integer> valeurs) {
@@ -27,6 +34,7 @@ public enum Operation {
             return res;
         }
     },
+    /** Division (valeur max / valeur min) */
     DIVISION("÷") { 
         @Override
         public int calculer(List<Integer> valeurs) {
@@ -42,6 +50,7 @@ public enum Operation {
             return max / min;
         }
     },
+    /** Aucune opération, retourne simplement la seule valeur */
     RIEN("") { 
         @Override
         public int calculer(List<Integer> valeurs) {
@@ -49,15 +58,29 @@ public enum Operation {
         }
     };
 
+    /** Le symbole visuel de l'opération */
     private final String symbole;
 
+    /**
+     * Constructeur d'une opération.
+     * @param symbole le symbole visuel (+, -, *, /)
+     */
     Operation(String symbole) {
         this.symbole = symbole;
     }
 
+    /**
+     * Retourne le symbole de l'opération.
+     * @return le symbole visuel
+     */
     public String getSymbole() {
         return symbole;
     }
 
+    /**
+     * Calcule le résultat de l'opération sur une liste de valeurs.
+     * @param valeurs la liste des valeurs de la cage
+     * @return le résultat de l'opération
+     */
     public abstract int calculer(List<Integer> valeurs);
 }

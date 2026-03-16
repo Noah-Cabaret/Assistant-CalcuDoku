@@ -15,6 +15,10 @@ import java.io.FileReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+/**
+ * Gestionnaire du jeu pour charger et lancer les parties.
+ * Supporte le chargement depuis les ressources (livrées avec l'app) et depuis des fichiers externes (profils).
+ */
 public class GestionnaireJeu {
 
     private static final Gson GSON = new Gson();

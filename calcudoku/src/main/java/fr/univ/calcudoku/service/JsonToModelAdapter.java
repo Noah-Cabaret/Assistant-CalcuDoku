@@ -3,6 +3,10 @@ package fr.univ.calcudoku.service;
 import fr.univ.calcudoku.model.*; 
 import java.util.Map;
 
+/**
+ * Adaptateur de conversion des données JSON vers le modèle objet.
+ * Transforme les données brutes JSON en objets métier (Grille, GroupementCases, Case).
+ */
 public class JsonToModelAdapter {
 
     /**

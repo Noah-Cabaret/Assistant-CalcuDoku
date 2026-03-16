@@ -9,13 +9,29 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 
+/**
+ * Vue JavaFX d'une seule case du Calcudoku.
+ * Affiche la valeur, les annotations et appelle les styles CSS dynamiquement.
+ */
 public class VueCase extends StackPane {
+    /** Le modèle de case associé */
     private final Case caseModel;
+    /** La dimension de la grille parente */
     private final int tailleGrille;
-    private final Label labelIndice, labelValeur;
+    /** Label affichant les annotations (petits chiffres) */
+    private final Label labelIndice;
+    /** Label affichant la valeur principale de la case */
+    private final Label labelValeur;
+    /** Conteneur GridPane pour les annotations */
     private GridPane conteneurAnnotation = null; 
+    /** Largeur courante pour le redimensionnement */
     private double wCourant = 0;
 
+    /**
+     * Constructeur d'une vue de case.
+     * @param c la case modéliser
+     * @param tailleGrille la dimension de la grille
+     */
     public VueCase(Case c, int tailleGrille) {
         this.caseModel = c;
         this.tailleGrille = tailleGrille;
@@ -40,6 +56,9 @@ public class VueCase extends StackPane {
         }
     }
 
+    /**
+     * Rafraîchit l'affichage des annotations (notes) de la case.
+     */
     private void rafraichirAffichage() {
         if (!caseModel.getNotes().isEmpty() && conteneurAnnotation == null) {
             creerConteneurAnnotations();
@@ -52,6 +71,9 @@ public class VueCase extends StackPane {
         }
     }
 
+    /**
+     * Crée le conteneur GridPane pour afficher les annotations (petits chiffres).
+     */
     private void creerConteneurAnnotations() {
         int nbCols = (int) Math.ceil(Math.sqrt(tailleGrille));
         conteneurAnnotation = new GridPane();
@@ -75,6 +97,11 @@ public class VueCase extends StackPane {
         }
     }
 
+    /**
+     * Redimensionne la case en fonction de la largeur fournie.
+     * Appelle aussi le redimensionnement des annotations.
+     * @param w la nouvelle largeur en pixels
+     */
     public void redimensionner(double w) {
         if (w <= 0) return;
         this.wCourant = w; 
@@ -87,6 +114,10 @@ public class VueCase extends StackPane {
         }
     }
 
+    /**
+     * Applique les tailles de police pour le conteneur des annotations.
+     * @param w la largeur de la case
+     */
     private void appliquerTailleAnnotations(double w) {
         double p = w * 0.10; 
         double topShift = w * 0.15; 
@@ -100,6 +131,15 @@ public class VueCase extends StackPane {
         }
     }
 
+    /**
+     * Applique les bordures de la case selon les groupements voisins.
+     * Les bordures sont plus épaisses entre les groupements différents.
+     * @param haut la case du haut (peut être null)
+     * @param bas la case du bas (peut être null)
+     * @param gauche la case de gauche (peut être null)
+     * @param droite la case de droite (peut être null)
+     * @param w la largeur de la case
+     */
     public void appliquerBordures(Case haut, Case bas, Case gauche, Case droite, double w) {
         if (w <= 0) return;
 
@@ -122,6 +162,10 @@ public class VueCase extends StackPane {
                       "-fx-border-style: " + sh + " " + sd + " " + sb + " " + sg + ";");
     }
 
+    /**
+     * Initialise et affiche l'indice de la cage (résultat et opération).
+     * Seule la première case de la cage (en haut à gauche) affiche l'indice.
+     */
     public void initialiserIndice() {
         if (caseModel.getGroupement() != null && caseModel == caseModel.getGroupement().getCaseOp()) {
             labelIndice.setText(caseModel.getGroupement().getResultatCible() + caseModel.getGroupement().getOperation().getSymbole());
