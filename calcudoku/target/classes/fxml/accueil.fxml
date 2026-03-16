@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="fr.univ.calcudoku.controller.AccueilController"
+            style="-fx-padding: 20;">
+
+    <top>
+        <Label text="Calcudoku" 
+               BorderPane.alignment="CENTER"
+               style="-fx-font-size: 50px; -fx-font-weight: bold; -fx-padding: 20;"/>
+    </top>
+
+    <center>
+        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: white;" 
+            hbarPolicy="NEVER" vbarPolicy="AS_NEEDED">
+
+            <FlowPane fx:id="boxProfils" alignment="CENTER" hgap="20" vgap="20" 
+                    style="-fx-background-color: white; -fx-padding: 20;">
+                    
+                </FlowPane>
+        </ScrollPane>
+    </center>
+
+    <bottom>
+        <Label text="Sélectionnez un profil pour commencer" BorderPane.alignment="CENTER"/>
+    </bottom>
+
+</BorderPane>
