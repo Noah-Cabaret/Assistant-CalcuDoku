@@ -2,6 +2,7 @@ package fr.univ.calcudoku.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Grille {
     private final int taille;
@@ -33,12 +34,34 @@ public class Grille {
 
     public Case getCase(int x,int y){
         if(x < 0 || x >= taille || y < 0 || y >= taille){
-            throw new IllegalArgumentException("Coordonnées hors grille : " + x + "," + y);     //throw renvoies une erreur propre
+            throw new IllegalArgumentException("Coordonnées hors grille : " + x + "," + y);     //throw renvoie une erreur propre
         }
         return matriceGrille[x][y];
     }
     public int getTaille(){
         return taille;
+    }
+
+    public List<Case> getLigne(int x) {
+        List<Case> colonne = new ArrayList<>();
+        for (int i = 0; i < taille; i++) {
+            Case c = matriceGrille[x][i];
+            if (c != null) {
+                colonne.add(c);
+            }
+        }
+        return colonne;
+    }
+
+    public List<Case> getColonne(int y) {
+        List<Case> colonne = new ArrayList<>();
+        for (int i = 0; i < taille; i++) {
+            Case c = matriceGrille[i][y];
+            if (c != null) {
+                colonne.add(c);
+            }
+        }
+        return colonne;
     }
 
     public boolean estGagnee(){
@@ -55,7 +78,7 @@ public class Grille {
     if (valeur == 0) return true; 
 
     for (int i = 0; i < taille; i++) {
-        if (i != x && matriceGrille[i][y].getValeur() == valeur) {
+       if (i != x && matriceGrille[i][y].getValeur() == valeur) {
             return false; 
         }
     }

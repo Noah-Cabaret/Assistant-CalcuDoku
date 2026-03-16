@@ -1,3 +1,5 @@
+package fr.univ.calcudoku.save;
+
 public class Etape
 {
 	/* Attributs :
@@ -21,9 +23,12 @@ public class Etape
 
 	public Etape(Etape e)
 	{
-		this.x = e.getX();
-		this.y = e.getY();
-		this.n = e.getN();
+		if(e != null)
+		{
+			this.x = e.getX();
+			this.y = e.getY();
+			this.n = e.getN();
+		}
 	}
 
 	/* Méthodes get() et set() */
@@ -70,6 +75,26 @@ public class Etape
 		this.x = newEtape.x;
 		this.y = newEtape.y;
 		this.n = newEtape.n;
+	}
+
+	/* Vérifications du type d'étape */
+
+	/* Aucun mode activé */
+	public boolean normale()
+	{
+		return this.n >= 0 && this.n <= 9;
+	}
+
+	/* Mode annotation activé */
+	public boolean annotation()
+	{
+		return this.n >= 10 && this.n <= 19;
+	}
+
+	/* Mode hypothèse activé */
+	public boolean hypothese()
+	{
+		return this.n >= 20 && this.n <= 29;
 	}
 
 	/* Conversion en String pour la sauvegarde de l'historique */

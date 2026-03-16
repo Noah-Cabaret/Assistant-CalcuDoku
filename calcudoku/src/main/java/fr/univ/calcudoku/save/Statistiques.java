@@ -1,3 +1,5 @@
+package fr.univ.calcudoku.save;
+
 import java.io.FileWriter;
 import java.io.File;
 import java.io.IOException;
@@ -20,9 +22,9 @@ public class Statistiques extends Donnees
 	private int partiesJouees;
 	private int victoires;
 	private Double ratioVictoires;
-	public Double moyenne;
+	private Double moyenne;
 	private int progressionAventure;
-	private Partie.Difficulte diffMax;
+	private Sauvegarde.Difficulte diffMax;
 	private long score;
 
 	public Statistiques() {}
@@ -56,7 +58,7 @@ public class Statistiques extends Donnees
 
 	public void setRatioVictoires()
 	{
-		this.ratioVictoires = this.partiesJouees / this.victoires;
+		this.ratioVictoires = Double.valueOf(this.partiesJouees / this.victoires);
 	}
 
 	public Double getMoyenne()
@@ -79,12 +81,12 @@ public class Statistiques extends Donnees
 		this.progressionAventure = newProgressionAventure;
 	}
 
-	public Partie.Difficulte getDiffMax()
+	public Sauvegarde.Difficulte getDiffMax()
 	{
 		return this.diffMax;
 	}
 
-	public void setDiffMax(Partie.Difficulte newDiffMax)
+	public void setDiffMax(Sauvegarde.Difficulte newDiffMax)
 	{
 		this.diffMax = newDiffMax;
 	}
@@ -147,7 +149,7 @@ public class Statistiques extends Donnees
 			sc.next(); this.ratioVictoires = sc.nextDouble();
 			sc.next(); this.moyenne = sc.nextDouble();
 			sc.next(); this.progressionAventure = Integer.parseInt(sc.next());
-			sc.next(); this.diffMax = Difficulte.valueOf(sc.next());
+			sc.next(); this.diffMax = Sauvegarde.Difficulte.valueOf(sc.next());
 			sc.next(); this.score = Long.valueOf(sc.next());
 
 			sc.close();

@@ -1,5 +1,8 @@
-import java.io.*;
-import java.util.*;
+package fr.univ.calcudoku.save;
+
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
 
 public class Historique
 {
@@ -16,6 +19,7 @@ public class Historique
 	{
 		this.hist = new ArrayList<Etape>();
 		this.index = 0;
+		this.addEtape(null); // Ajout d'une étape vide pour l'état d'une grille vide (ne sera jamais traité)
 	}
 
 	/* Méthodes get() et set() */
@@ -35,23 +39,36 @@ public class Historique
 		return Collections.unmodifiableList(this.hist);
 	}
 
+	/* Getter avec copie pour ne pas pouvoir modifier l'historique */
+
+	public Etape getEtapeCourante()
+	{
+		return new Etape(this.hist.toArray(new Etape[0])[this.index]);
+	}
+
+	public int taille()
+	{
+		return this.hist.size();
+	}
+
 	/* Méthode pour retirer la dernière étape de l'historique */
 
 	public void removeEtape()
 	{
-		this.hist.remove(this.hist.size() - 1);
+		this.hist.remove(this.taille() - 1);
 
-		if(this.index > this.hist.size() - 1)
+		if(this.index > this.taille() - 1)
 			this.index--;
 	}
 
 	/* Méthode pour vider toute la partie de l'historique entre
-	 * (index + 1) et la fin de hist
+	 * (index + 1) et la fin de hist, utile uniquement pour
+	 * ajouter une étape après avoir utilisé precedent()
 	 */
 
-	private void viderQueue()
+	public void viderQueue()
 	{
-		while(this.hist.size() > this.index + 1)
+		while(this.taille() > this.index + 1)
 			this.removeEtape();
 	}
 
@@ -61,39 +78,41 @@ public class Historique
 
 	public void addEtape(Etape e)
 	{
-		this.viderQueue();
-		this.hist.add(new Etape(e));
-		this.index = this.hist.size() - 1;
+		if(e == null || this.getEtapeCourante().getX() != e.getX() || this.getEtapeCourante().getY() != e.getY() || this.getEtapeCourante().getN() != e.getN() || e.annotation())
+		{
+			this.viderQueue();
+			this.hist.add(new Etape(e));
+			this.index = this.taille() - 1;
+		}
 	}
 
 	public void addEtape(int x, int y, int n)
 	{
-		this.viderQueue();
-		Etape e = new Etape(x,y,n);
-		this.hist.add(e);
-		this.index = this.hist.size() - 1;
+		Etape etapeCourante = this.getEtapeCourante();
+		if(etapeCourante.getX() != x || etapeCourante.getY() != y || etapeCourante.getN() != n || etapeCourante.annotation())
+		{
+			this.viderQueue();
+			Etape e = new Etape(x,y,n);
+			this.hist.add(e);
+			this.index = this.taille() - 1;
+		}
 	}
 
 	/* Revenir à l'étape précédente de la grille */
 
-	public void annuler()
+	public Etape precedent()
 	{
-		/* TODO
-		 * vider graphiquement la case à l'étape this.index sans pour
-		 * autant changer l'historique, sinon impossible d'utiliser
-		 * refaire()
-		 */
 		this.index--;
+		return getEtapeCourante();
 	}
 
 	/* Revenir à l'étape suivante de la grille */
 
-	public void refaire()
+	public Etape suivant()
 	{
-		/* TODO
-		 * même chose que annuler() mais pour le contraire
-		 */
-		this.index++;
+		if(this.index < this.taille() - 1)
+			this.index++;
+		return getEtapeCourante();
 	}
 
 	/* Conversion en String pour la sauvegarde */
@@ -103,10 +122,10 @@ public class Historique
 		String etapes = new String();
 		Object[] ha = this.hist.toArray();
 
-		for(int i = 0; i < this.hist.size(); i++)
+		for(int i = 1; i < this.taille(); i++)
 		{
 			etapes += "[" + ha[i].toString() + "]";
-			if(i == this.hist.size() - 1)
+			if(i == this.taille() - 1)
 				etapes += "|";
 			else
 				etapes += "-";

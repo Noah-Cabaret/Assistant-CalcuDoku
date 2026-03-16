@@ -1,3 +1,5 @@
+package fr.univ.calcudoku.save;
+
 import java.io.FileWriter;
 import java.io.File;
 import java.io.IOException;
@@ -9,7 +11,7 @@ public class Options extends Donnees
 	/* Attributs :
 	 * aide : sélection de l'aide en jeu correspondante :
 	 * - calculatrice interne à côté de la grille
-	 * - combinaisons possibles pour une partie de la grille
+	 * - combinaisons possibles pour un bloc de la grille
 	 *
 	 * themeSombre : change le blanc en noir et inversement
 	 */
@@ -26,8 +28,7 @@ public class Options extends Donnees
 
 	public Options()
 	{
-		this.aide = CALCULATRICE;
-		this.progressionAventure = 1;
+		this.aide = AideAuCalcul.CALCULATRICE;
 		this.themeSombre = false;
 	}
 

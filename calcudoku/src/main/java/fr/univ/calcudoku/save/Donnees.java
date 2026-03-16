@@ -1,3 +1,5 @@
+package fr.univ.calcudoku.save;
+
 /* Mise en commun des méthodes servant à la manipulation de fichiers de sauvegarde */
 
 public abstract class Donnees
