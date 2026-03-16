@@ -18,7 +18,10 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.scene.control.Label;
+import javafx.util.Duration;
 import fr.univ.calcudoku.MainApp;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.image.WritableImage;
@@ -28,6 +31,8 @@ import javax.imageio.ImageIO;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import javafx.animation.PauseTransition;
+
 
 public class JeuController {
 
@@ -45,6 +50,19 @@ public class JeuController {
     @FXML private Button btnAmeliorerAide;
     @FXML private Button btnAidePrecedente;
     @FXML private Button btnAideSuivante;
+
+    @FXML private Button btnValider;
+
+    @FXML private Button btnHypothese;
+    @FXML private HBox conteneurBoutonsHypothese;
+    @FXML private Button btnValiderHypothese;
+    @FXML private Button btnAnnulerHypothese;
+
+    private boolean modeHypotheseActif = false;
+     
+    @FXML private Label labelChrono;
+    private Timeline timeline;
+    private int secondesEcoulees = 0;
 
     private Grille grilleModele;
     private VueGrille vueGrille;
@@ -90,7 +108,7 @@ public class JeuController {
         for (fr.univ.calcudoku.model.GroupementCases bloc : grilleModele.getListeGroupements()) {
             bloc.calculerPossibilites(grilleModele.getTaille());
         }
-
+        demarrerChrono();
         aideService.lancerAnalyse(grilleModele);
     }
 
@@ -108,6 +126,21 @@ public class JeuController {
             
             conteneurBoutonsNombres.getChildren().add(btnChiffre);
         }
+    }
+
+    private void demarrerChrono() {
+        secondesEcoulees = 0; 
+        
+        timeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
+            secondesEcoulees++;
+            
+            int minutes = secondesEcoulees / 60;
+            int secondes = secondesEcoulees % 60;
+                        labelChrono.setText(String.format("%02d:%02d", minutes, secondes));
+        }));
+        
+        timeline.setCycleCount(Timeline.INDEFINITE); 
+        timeline.play(); 
     }
 
     public void sauvegarderImageGrille(String nomFichier) {
@@ -129,19 +162,22 @@ public class JeuController {
             
             File fichierFinal = new File(dossierImages, nomImage);
 
+            actionFermerBulleAide(); 
+
             if (vueCaseSelectionnee != null) {
                 vueCaseSelectionnee.getStyleClass().remove("case-selectionnee");
             }
             
+            for (int y = 0; y < grilleModele.getTaille(); y++) {
+                for (int x = 0; x < grilleModele.getTaille(); x++) {
+                    vueGrille.getGrilleVueCases(x, y).getStyleClass().remove("case-erreur");
+                }
+            }
             vueGrille.setStyle("-fx-background-color: white;");
 
             SnapshotParameters params = new SnapshotParameters();
-            params.setFill(Color.WHITE); 
+            params.setFill(Color.TRANSPARENT); 
             WritableImage image = vueGrille.snapshot(params, null);
-
-            if (vueCaseSelectionnee != null) {
-                vueCaseSelectionnee.getStyleClass().add("case-selectionnee");
-            }
 
             ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", fichierFinal);
             
@@ -168,6 +204,12 @@ public class JeuController {
             } else {
                 caseModeleSelectionnee.setValeur(valeur);   
                 
+                if (modeHypotheseActif) {
+                    vueCaseSelectionnee.setEstHypothese(true);
+                } else {
+                    vueCaseSelectionnee.setEstHypothese(false);
+                }
+
                 if (grilleModele.estGagnee()) {
                     System.out.println("VICTOIRE ! La grille est complétée correctement !");
                 }
@@ -268,11 +310,74 @@ public class JeuController {
         }
     }
 
+    @FXML
+    void actionVerifier(ActionEvent event) {
+        List<VueCase> casesEnErreur = new ArrayList<>();
+        int taille = grilleModele.getTaille();
+
+        for (int y = 0; y < taille; y++) {
+            for (int x = 0; x < taille; x++) {
+                Case c = grilleModele.getCase(x, y);
+                int valeurJoueur = c.getValeur();
+                
+                if (valeurJoueur != 0 && valeurJoueur != c.getSolution()) {
+                    casesEnErreur.add(vueGrille.getGrilleVueCases(x, y));
+                }
+            }
+        }
+
+        for (VueCase vc : casesEnErreur) {
+            if (!vc.getStyleClass().contains("case-erreur")) {
+                vc.getStyleClass().add("case-erreur");
+            }
+        }
+
+        PauseTransition pause = new PauseTransition(Duration.seconds(3));
+        pause.setOnFinished(e -> {
+            for (VueCase vc : casesEnErreur) {
+                vc.getStyleClass().remove("case-erreur");
+            }
+        });
+        pause.play();
+    }
+
     private void mettreAJourBoutonsNavigation() {
         if (listeAides.isEmpty()) return;
 
         btnAidePrecedente.setDisable(indexAideActuelle == 0);
         btnAideSuivante.setDisable(indexAideActuelle == listeAides.size() - 1);
         btnAmeliorerAide.setDisable(!listeAides.get(indexAideActuelle).peutEtreAmeliore());
+    }
+
+    @FXML
+    void actionHypothese(ActionEvent event) {
+        modeHypotheseActif = true;
+        btnHypothese.setDisable(true); 
+        
+        conteneurBoutonsHypothese.setVisible(true);
+        
+    }
+
+    @FXML
+    void actionValiderHypothese(ActionEvent event) {
+        quitterModeHypotheseVisuel();
+    }
+
+    @FXML
+    void actionAnnulerHypothese(ActionEvent event) {
+        quitterModeHypotheseVisuel();
+    }
+
+    private void quitterModeHypotheseVisuel() {
+        modeHypotheseActif = false;
+        btnHypothese.setDisable(false);
+        
+        conteneurBoutonsHypothese.setVisible(false);
+
+        for (int y = 0; y < grilleModele.getTaille(); y++) {
+            for (int x = 0; x < grilleModele.getTaille(); x++) {
+                vueGrille.getGrilleVueCases(x, y).setEstHypothese(false);
+            }
+        }
     }
 }

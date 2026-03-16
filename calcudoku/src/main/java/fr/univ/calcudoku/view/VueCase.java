@@ -173,4 +173,17 @@ public class VueCase extends StackPane {
             labelIndice.setText("");
         }
     }
+
+    /**
+     * Applique ou retire le style visuel du mode hypothèse sur cette case.
+     */
+    public void setEstHypothese(boolean estHyp) {
+        if (estHyp) {
+            if (!labelValeur.getStyleClass().contains("label-hypothese")) {
+                labelValeur.getStyleClass().add("label-hypothese");
+            }
+        } else {
+            labelValeur.getStyleClass().remove("label-hypothese");
+        }
+    }
 }
