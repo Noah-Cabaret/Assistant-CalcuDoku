@@ -3,11 +3,11 @@ package fr.univ.calcudoku.controller;
 import com.google.gson.Gson;
 import fr.univ.calcudoku.MainApp;
 import fr.univ.calcudoku.model.DonneesNiveau; // Import du modèle
-import fr.univ.calcudoku.model.Grille;
-import fr.univ.calcudoku.service.JsonToModelAdapter;
+//import fr.univ.calcudoku.model.Grille;
+//import fr.univ.calcudoku.service.JsonToModelAdapter;
 import fr.univ.calcudoku.service.ProfileManager;
 import fr.univ.calcudoku.utils.CacheRessources;
-import fr.univ.calcudoku.view.VueGrille;
+//import fr.univ.calcudoku.view.VueGrille;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.CheckBox;
@@ -15,12 +15,12 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
+//import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
 import java.io.File;
 import java.io.FileReader;
-import java.io.InputStream;
+//import java.io.InputStream;
 import java.util.Map;
 
 public class ProfilController {

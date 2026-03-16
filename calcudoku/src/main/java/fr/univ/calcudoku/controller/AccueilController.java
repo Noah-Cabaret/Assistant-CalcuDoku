@@ -2,7 +2,7 @@ package fr.univ.calcudoku.controller;
 
 import fr.univ.calcudoku.MainApp;
 import fr.univ.calcudoku.service.ProfileManager;
-import fr.univ.calcudoku.utils.CacheRessources; // <-- NOUVEL IMPORT
+import fr.univ.calcudoku.utils.CacheRessources;
 
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
@@ -39,8 +39,7 @@ public class AccueilController {
     private void rafraichirAffichage() {
         boxProfils.getChildren().clear();
 
-        // --- 1. CHARGEMENT OPTIMISÉ DE L'IMAGE UTILISATEUR ---
-        // Plus de try/catch ni d'InputStream. Le cache gère tout !
+        // CHARGEMENT OPTIMISÉ DE L'IMAGE UTILISATEUR
         Image avatarParDefaut = CacheRessources.getImage("/images/utilisateur.png");
 
         // Créer une carte pour chaque profil avec l'image chargée
@@ -129,7 +128,7 @@ public class AccueilController {
         carte.setMaxHeight(VBox.USE_PREF_SIZE);
         carte.setStyle("-fx-cursor: hand; -fx-padding: 15; -fx-background-color: transparent; -fx-background-radius: 10;");
 
-        // --- 2. IMAGE PLUS OPTIMISÉE ---
+        // IMAGE "+" OPTIMISÉE
         ImageView viewPlus = new ImageView();
         viewPlus.setImage(CacheRessources.getImage("/images/plus-symbole-noir.png"));
 
@@ -162,7 +161,7 @@ public class AccueilController {
         Label titre = new Label("Calcudoku");
         titre.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: black; -fx-border-color: transparent transparent transparent; -fx-border-width: 0 0 2 0;");
 
-        // --- 3. IMAGE AVATAR OPTIMISÉE POUR LE POPUP ---
+        // IMAGE AVATAR OPTIMISÉE POUR LE POPUP 
         ImageView iconView = new ImageView();
         iconView.setImage(CacheRessources.getImage("/images/utilisateur.png"));
         

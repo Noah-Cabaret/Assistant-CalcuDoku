@@ -28,7 +28,7 @@ public class MenuLibreController {
 
     private static final Gson GSON = new Gson();
 
-    // --- LES STYLES VISUELS DES BOUTONS ---
+    // LES STYLES VISUELS DES BOUTONS
     private final String STYLE_NORMAL = "-fx-background-color: transparent; -fx-text-fill: #555555; -fx-cursor: hand; -fx-background-radius: 50em; -fx-pref-width: 40px; -fx-pref-height: 40px; -fx-font-size: 14px;";
     private final String STYLE_SELECTIONNE = "-fx-background-color: white; -fx-border-color: black; -fx-border-radius: 50em; -fx-background-radius: 50em; -fx-text-fill: black; -fx-cursor: hand; -fx-pref-width: 40px; -fx-pref-height: 40px; -fx-font-weight: bold; -fx-font-size: 14px;";
 
@@ -52,19 +52,19 @@ public class MenuLibreController {
         // Écouter les clics de l'utilisateur
         groupe.selectedToggleProperty().addListener((obs, oldVal, newVal) -> {
             
-            // 1. Empêcher la désélection
+            // Empêcher la désélection
             if (newVal == null) {
-                groupe.selectToggle(oldVal); // On force à rester sélectionné
+                groupe.selectToggle(oldVal);
                 return;
             }
 
-            // 2. Mettre à jour l'apparence des boutons (le cercle noir)
+            //  Mettre à jour l'apparence des boutons (le cercle noir)
             for (Toggle t : groupe.getToggles()) {
                 ToggleButton btn = (ToggleButton) t;
                 btn.setStyle(btn.isSelected() ? STYLE_SELECTIONNE : STYLE_NORMAL);
             }
 
-            // 3. Charger les nouvelles grilles
+            // Charger les nouvelles grilles
             rafraichirGrilles();
         });
     }

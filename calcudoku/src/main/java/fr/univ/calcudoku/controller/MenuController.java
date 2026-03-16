@@ -8,14 +8,14 @@ import fr.univ.calcudoku.utils.CacheRessources;
 import fr.univ.calcudoku.utils.GestionnaireJeu;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
-import javafx.scene.image.Image;
+//import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
-import javafx.stage.Stage;
+//import javafx.stage.Stage;
 
-import java.io.File;
+//import java.io.File;
 //import java.io.FileReader;
-import java.io.InputStream;
+//import java.io.InputStream;
 
 //import com.google.gson.Gson;
 
@@ -28,7 +28,7 @@ public class MenuController {
     private ImageView imgAvatar;
     
     @FXML
-    private Label labelNomProfil; // Pour changer le texte "Nom"
+    private Label labelNomProfil; 
 
     @FXML
     public void initialize() {
@@ -58,7 +58,6 @@ public class MenuController {
         MainApp.changerScene("/fxml/profil.fxml");
     }
 
-    //@FXML private void onLibreClick() { System.out.println("Mode Libre"); }
     @FXML 
     private void onLibreClick() { 
         MainApp.changerScene("/fxml/menu_libre.fxml");

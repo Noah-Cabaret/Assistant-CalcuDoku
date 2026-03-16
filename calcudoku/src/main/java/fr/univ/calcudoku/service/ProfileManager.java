@@ -155,13 +155,13 @@ public class ProfileManager {
             // On cible le MÊME fichier que la méthode lireStatistiques (profil.ini)
             java.io.File fichierIni = new java.io.File("profils/" + nomProfil + "/" + FICHIER_OPTIONS);
             
-            // 1. On lit les statistiques actuelles
+            // On lit les statistiques actuelles
             java.util.Map<String, String> stats = lireStatistiques(nomProfil);
             
-            // 2. On modifie la valeur demandée (par exemple la "progression")
+            // On modifie la valeur demandée ("progression")
             stats.put(cle, valeur);
             
-            // 3. On sauvegarde le tout dans le fichier INI avec le format "cle=valeur"
+            // On sauvegarde le tout dans le fichier INI
             try (java.io.FileWriter writer = new java.io.FileWriter(fichierIni)) {
                 for (java.util.Map.Entry<String, String> entry : stats.entrySet()) {
                     writer.write(entry.getKey() + "=" + entry.getValue() + "\n");

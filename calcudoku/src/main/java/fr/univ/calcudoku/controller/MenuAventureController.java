@@ -19,7 +19,7 @@ import java.util.Optional;
 public class MenuAventureController {
 
     @FXML private HBox boxNiveaux;
-    @FXML private StackPane ligneFond; // On récupère l'ancienne ligne du FXML
+    @FXML private StackPane ligneFond; // récupère l'ancienne ligne du FXML
     @FXML private ImageView imgParametres;
     @FXML private ImageView imgReset;
     
@@ -30,7 +30,7 @@ public class MenuAventureController {
         imgParametres.setImage(CacheRessources.getImage("/images/parametres.png"));
         imgReset.setImage(CacheRessources.getImage("/images/restart.png"));
 
-        // On désactive l'ancienne ligne buggée du FXML (pour laisser place à nos nouveaux ponts)
+        // On désactive l'ancienne ligne buggée du FXML
         if (ligneFond != null) {
             ligneFond.setVisible(false); 
         }
@@ -54,12 +54,12 @@ public class MenuAventureController {
     private void genererChemin(int progressionActuelle) {
         boxNiveaux.getChildren().clear();
         
-        // On retire l'espacement automatique car ce sont nos "ponts" qui vont espacer les boutons
+        // On retire l'espacement automatique 
         boxNiveaux.setSpacing(0); 
 
         for (int i = 1; i <= NB_NIVEAUX_TOTAL; i++) {
             
-            // --- 1. CRÉATION DU BOUTON CIRCULAIRE ---
+            // CRÉATION DU BOUTON CIRCULAIRE 
             Button btnNiveau = new Button(String.valueOf(i));
             btnNiveau.setPrefSize(70, 70);
             btnNiveau.setMinSize(70, 70); // Force la taille pour éviter l'écrasement
@@ -86,20 +86,17 @@ public class MenuAventureController {
 
             boxNiveaux.getChildren().add(btnNiveau);
 
-            // --- 2. CRÉATION DU PONT (LIGNE) VERS LE NIVEAU SUIVANT ---
-            // On ne met pas de pont après le dernier niveau (le niveau 5)
+            // CRÉATION DU PONT (LIGNE) VERS LE NIVEAU SUIVANT
+            // On ne met pas de pont après le dernier niveau
             if (i < NB_NIVEAUX_TOTAL) {
                 Region pont = new Region();
-                // Le pont fera 60 pixels de long et 6 pixels d'épaisseur
                 pont.setPrefSize(60, 6);
                 pont.setMinSize(60, 6);
                 pont.setMaxSize(60, 6);
 
                 if (i < progressionActuelle) {
-                    // Le pont est noir si le joueur a validé cette étape
                     pont.setStyle("-fx-background-color: black;");
                 } else {
-                    // Le pont est gris clair pour montrer le chemin restant
                     pont.setStyle("-fx-background-color: #e0e0e0;"); 
                 }
                 
@@ -114,7 +111,7 @@ public class MenuAventureController {
         GestionnaireJeu.chargerPartie(stage, fichier);
     }
 
-    // --- ACTIONS DES BOUTONS ---
+    //ACTIONS DES BOUTONS
 
     @FXML
     private void onResetClick() {
@@ -130,10 +127,10 @@ public class MenuAventureController {
             String nomActuel = manager.getProfilActif();
             if (nomActuel == null) nomActuel = "Invité";
 
-            // 1. On modifie le fichier de sauvegarde
+            // On modifie le fichier de sauvegarde
             manager.mettreAJourStatistique(nomActuel, "progression", "1");
             
-            // 2. CORRECTION DU BUG : On force l'interface à se redessiner immédiatement au niveau 1
+            // On force l'interface à se redessiner immédiatement au niveau 1
             // Ainsi, le jeu n'attend pas de relire le fichier et met tout à jour visuellement.
             genererChemin(1);
         }
