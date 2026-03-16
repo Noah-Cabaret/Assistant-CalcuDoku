@@ -90,7 +90,7 @@ public class MenuLibreController {
                 // Style pour les grilles qui n'existent pas encore
                 VBox carteVide = new VBox(10);
                 carteVide.setAlignment(Pos.CENTER);
-                carteVide.setPrefSize(180, 200);
+                carteVide.setPrefSize(240, 260);
                 carteVide.setStyle("-fx-border-color: #e0e0e0; -fx-background-color: #fafafa; -fx-border-radius: 10;");
                 
                 Label lbl = new Label("Grille " + i + "\nIndisponible");
@@ -129,8 +129,8 @@ public class MenuLibreController {
             vueMiniature.setStyle("-fx-background-color: lightgray;");
         }
         
-        vueMiniature.setFitWidth(160);
-        vueMiniature.setFitHeight(160);
+        vueMiniature.setFitWidth(300);
+        vueMiniature.setFitHeight(300);
         vueMiniature.setPreserveRatio(true);
 
         Label titre = new Label("Grille " + index);
