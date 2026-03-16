@@ -2,10 +2,12 @@ E:\Assistant-CalcuDoku\calcudoku\src\main\java\fr\univ\calcudoku\model\Indice.ja
 E:\Assistant-CalcuDoku\calcudoku\src\main\java\fr\univ\calcudoku\utils\GestionnaireJeu.java
 E:\Assistant-CalcuDoku\calcudoku\src\main\java\fr\univ\calcudoku\service\aide\MoteurAide.java
 E:\Assistant-CalcuDoku\calcudoku\src\main\java\fr\univ\calcudoku\controller\JeuController.java
+E:\Assistant-CalcuDoku\calcudoku\src\main\java\fr\univ\calcudoku\controller\MenuAventureController.java
 E:\Assistant-CalcuDoku\calcudoku\src\main\java\fr\univ\calcudoku\service\aide\visitor\VisiteurGrille.java
 E:\Assistant-CalcuDoku\calcudoku\src\main\java\fr\univ\calcudoku\commande\CommandeAide.java
 E:\Assistant-CalcuDoku\calcudoku\src\main\java\fr\univ\calcudoku\controller\ProfilController.java
 E:\Assistant-CalcuDoku\calcudoku\src\main\java\fr\univ\calcudoku\service\aide\technique\TechniqueCandidatUnique.java
+E:\Assistant-CalcuDoku\calcudoku\src\main\java\fr\univ\calcudoku\controller\MenuLibreController.java
 E:\Assistant-CalcuDoku\calcudoku\src\main\java\fr\univ\calcudoku\model\Operation.java
 E:\Assistant-CalcuDoku\calcudoku\src\main\java\fr\univ\calcudoku\view\VueCase.java
 E:\Assistant-CalcuDoku\calcudoku\src\main\java\fr\univ\calcudoku\model\GroupementCases.java

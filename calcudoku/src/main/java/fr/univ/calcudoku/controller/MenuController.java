@@ -53,26 +53,18 @@ public class MenuController {
     //Gestion du Clic sur le Profil (Retour Accueil)
     @FXML
     private void onProfilClick() {
-        // Ça va vers la page de statistiques/profil
+        // On prévient le Profil qu'il faudra revenir au menu
+        ProfilController.pagePrecedente = "/fxml/menu.fxml";
         MainApp.changerScene("/fxml/profil.fxml");
     }
 
     //@FXML private void onLibreClick() { System.out.println("Mode Libre"); }
     @FXML 
     private void onLibreClick() { 
-        // On récupère le nom du joueur
-        String nomJoueur = MainApp.getProfileManager().getProfilActif();
-        if (nomJoueur == null) nomJoueur = "Invité";
-        
-        // On cible le fichier de sauvegarde
-        File fichier = new File("profils/" + nomJoueur + "/jeu/json/1.json");
-
-        // le Gestionnaire tout faire !
-        Stage stage = (Stage) boxSousMenu.getScene().getWindow();
-        GestionnaireJeu.chargerPartieDepuisFichier(stage, fichier);
+        MainApp.changerScene("/fxml/menu_libre.fxml");
     }
 
-    @FXML private void onAventureClick() { System.out.println("Mode Aventure"); }
+    @FXML private void onAventureClick() { MainApp.changerScene("/fxml/menu_aventure.fxml"); }
     
     
     @FXML

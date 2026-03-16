@@ -89,6 +89,19 @@ public class GestionnaireJeu {
         }
     }
 
+    //MÉTHODE : Charge juste la grille depuis les ressources internes (pour les miniatures)
+    public static Grille chargerGrilleSeuleRessource(String fichierJsonRessource) {
+        try {
+            InputStream is = GestionnaireJeu.class.getResourceAsStream("/grilles/json/" + fichierJsonRessource);
+            if (is == null) return null;
+            
+            DonneesNiveau data = GSON.fromJson(new InputStreamReader(is), DonneesNiveau.class);
+            return JsonToModelAdapter.convertir(data);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     /**
      * Méthode commune pour initialiser la fenêtre de jeu (FXML + Controller)
      */

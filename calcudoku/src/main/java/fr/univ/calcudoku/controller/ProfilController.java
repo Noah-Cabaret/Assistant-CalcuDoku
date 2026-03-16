@@ -27,6 +27,9 @@ public class ProfilController {
 
     private static final Gson GSON = new Gson();
 
+    //mémorise la page de provenance (par défaut, le menu principal)
+    public static String pagePrecedente = "/fxml/menu.fxml";
+
     @FXML private ImageView imgAvatar;
     @FXML private Label lblNomProfil;
     @FXML private Label lblTempsMoyen, lblTauxReussite, lblNiveauAventure, lblDifficulteMax, lblMeilleurScore;
@@ -139,6 +142,9 @@ public class ProfilController {
         } catch (Exception e) { return "0min"; }
     }
 
-    @FXML private void onRetourClick() { MainApp.changerScene("/fxml/menu.fxml"); }
+    @FXML 
+    private void onRetourClick() { 
+        MainApp.changerScene(pagePrecedente); 
+    }
     @FXML private void onDeconnexionClick() { MainApp.changerScene("/fxml/accueil.fxml"); }
 }
