@@ -90,7 +90,12 @@ public class MenuLibreController {
                 // Style pour les grilles qui n'existent pas encore
                 VBox carteVide = new VBox(10);
                 carteVide.setAlignment(Pos.CENTER);
-                carteVide.setPrefSize(240, 260);
+                //carteVide.setPrefSize(240, 260);
+                // 1. On lève la restriction de taille minimum pour autoriser le rétrécissement
+                carteVide.setMinSize(0, 0); 
+                // 2. On lie la taille de la carte à celle de l'écran (environ 28% de l'espace)
+                carteVide.prefWidthProperty().bind(boxGrilles.widthProperty().divide(3.5));
+                carteVide.prefHeightProperty().bind(boxGrilles.heightProperty().multiply(0.8));
                 carteVide.setStyle("-fx-border-color: #e0e0e0; -fx-background-color: #fafafa; -fx-border-radius: 10;");
                 
                 Label lbl = new Label("Grille " + i + "\nIndisponible");
@@ -114,6 +119,7 @@ public class MenuLibreController {
 
     private VBox creerCarteNiveau(DonneesNiveau niveau, String baseName, int index) {
         VBox vBox = new VBox(10);
+        vBox.setMinSize(0, 0);
         vBox.setAlignment(Pos.CENTER);
         vBox.setStyle("-fx-cursor: hand; -fx-padding: 10; -fx-border-color: transparent; -fx-border-radius: 10;");
 
@@ -129,8 +135,15 @@ public class MenuLibreController {
             vueMiniature.setStyle("-fx-background-color: lightgray;");
         }
         
-        vueMiniature.setFitWidth(300);
-        vueMiniature.setFitHeight(300);
+        //vueMiniature.setFitWidth(300);
+        //vueMiniature.setFitHeight(300);
+        // L'image surveille la largeur ET la hauteur !
+        vueMiniature.fitWidthProperty().bind(boxGrilles.widthProperty().divide(3.5));
+        
+        // On la limite à 60% de la hauteur dispo pour laisser de la place aux textes en dessous (titre et chrono)
+        vueMiniature.fitHeightProperty().bind(boxGrilles.heightProperty().multiply(0.6)); 
+        
+        // Indispensable : empêche l'image de s'écraser
         vueMiniature.setPreserveRatio(true);
 
         Label titre = new Label("Grille " + index);

@@ -5,6 +5,7 @@ fr\univ\calcudoku\model\Indice.class
 fr\univ\calcudoku\model\Operation$2.class
 fr\univ\calcudoku\model\BlocData.class
 fr\univ\calcudoku\model\Operation.class
+fr\univ\calcudoku\service\aide\AideService$1.class
 fr\univ\calcudoku\service\aide\MoteurAide.class
 fr\univ\calcudoku\service\aide\AideService.class
 fr\univ\calcudoku\service\aide\technique\TechniqueCandidatUnique.class

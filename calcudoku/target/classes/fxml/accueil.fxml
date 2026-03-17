@@ -2,7 +2,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
 
-<BorderPane xmlns:fx="http://javafx.com/fxml"
+<BorderPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/21"
             fx:controller="fr.univ.calcudoku.controller.AccueilController"
             style="-fx-padding: 20;">
 
@@ -13,13 +13,12 @@
     </top>
 
     <center>
-        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: white;" 
+        <ScrollPane fitToWidth="true" fitToHeight="true" style="-fx-background-color: transparent; -fx-background: white;" 
             hbarPolicy="NEVER" vbarPolicy="AS_NEEDED">
 
             <FlowPane fx:id="boxProfils" alignment="CENTER" hgap="20" vgap="20" 
                     style="-fx-background-color: white; -fx-padding: 20;">
-                    
-                </FlowPane>
+            </FlowPane>
         </ScrollPane>
     </center>
 

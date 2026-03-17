@@ -2,12 +2,9 @@ package fr.univ.calcudoku.controller;
 
 import com.google.gson.Gson;
 import fr.univ.calcudoku.MainApp;
-import fr.univ.calcudoku.model.DonneesNiveau; // Import du modèle
-//import fr.univ.calcudoku.model.Grille;
-//import fr.univ.calcudoku.service.JsonToModelAdapter;
+import fr.univ.calcudoku.model.DonneesNiveau;
 import fr.univ.calcudoku.service.ProfileManager;
 import fr.univ.calcudoku.utils.CacheRessources;
-//import fr.univ.calcudoku.view.VueGrille;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.CheckBox;
@@ -15,23 +12,22 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
-//import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
 import java.io.File;
 import java.io.FileReader;
-//import java.io.InputStream;
 import java.util.Map;
 
 public class ProfilController {
 
     private static final Gson GSON = new Gson();
 
-    //mémorise la page de provenance (par défaut, le menu principal)
+    // mémorise la page de provenance (par défaut, le menu principal)
     public static String pagePrecedente = "/fxml/menu.fxml";
 
     @FXML private ImageView imgAvatar;
     @FXML private Label lblNomProfil;
+    @FXML private VBox boxCentrale;
     @FXML private Label lblTempsMoyen, lblTauxReussite, lblNiveauAventure, lblDifficulteMax, lblMeilleurScore;
     @FXML private CheckBox checkSombre, checkClair;
     @FXML private HBox boxParties;
@@ -72,29 +68,33 @@ public class ProfilController {
     }
 
     private VBox creerCartePartie(DonneesNiveau niveau, File fichierJson) {
-        VBox vBox = new VBox(5);
+        VBox vBox = new VBox(10);
         vBox.setAlignment(Pos.CENTER);
-
-        String nomPng = fichierJson.getName().replace(".json", ".png");
-
-        File dossierJeu = fichierJson.getParentFile().getParentFile();
         
-        File dossierImages = new File(dossierJeu, "images");
-        File fichierImage = new File(dossierImages, nomPng);
+        // --- 1. Autoriser la VBox à rétrécir à l'infini
+        vBox.setMinSize(0, 0); 
 
         ImageView vueMiniature = new ImageView();
-
-        if (fichierImage.exists()) {
-            vueMiniature.setImage(new Image(fichierImage.toURI().toString(), true));
+        Image image = CacheRessources.getImage("/grilles/images/" + fichierJson.getName().replace(".json", ".png"));
+        
+        if (image != null) {
+            vueMiniature.setImage(image);
         } else {
-            Image imageParDefaut = CacheRessources.getImage("/grilles/images/" + nomPng);
-            if (imageParDefaut != null) {
-                vueMiniature.setImage(imageParDefaut);
-            }
+            vueMiniature.setStyle("-fx-background-color: lightgray;");
         }
-
-        vueMiniature.setFitWidth(200);
-        vueMiniature.setFitHeight(200);
+        
+        // --- 2. RESPONSIVE : Les images suivent la hauteur ET la largeur ! ---
+        // On calcule la taille idéale en hauteur (55% de la boîte)
+        javafx.beans.binding.NumberBinding tailleHauteur = boxParties.heightProperty().multiply(0.75);
+        
+        // On calcule la taille idéale en largeur (environ 28% de la boîte pour en afficher ~3 sans déborder)
+        javafx.beans.binding.NumberBinding tailleLargeur = boxParties.widthProperty().divide(4.0);
+        
+        // L'image prendra TOUJOURS la plus petite des deux valeurs pour ne jamais déborder !
+        javafx.beans.binding.NumberBinding tailleMax = javafx.beans.binding.Bindings.min(tailleHauteur, tailleLargeur);
+        
+        vueMiniature.fitHeightProperty().bind(tailleMax);
+        vueMiniature.fitWidthProperty().bind(tailleMax); // Reste un carré parfait
         vueMiniature.setPreserveRatio(true);
 
         String nomPropre = fichierJson.getName().replace(".json", "");
@@ -107,23 +107,23 @@ public class ProfilController {
         lblTemps.setStyle("-fx-font-family: 'Arial'; -fx-font-size: 10px; -fx-text-fill: #333333;");
 
         vBox.getChildren().addAll(vueMiniature, titre, lblTemps);
+
         // --- NOUVEAU CODE À AJOUTER ICI ---
 
-        // 1. Ajouter l'effet visuel (curseur en forme de main et fond gris au survol)
-        vBox.setStyle("-fx-cursor: hand; -fx-padding: 10; -fx-border-color: transparent; -fx-border-radius: 10;");
-        vBox.setOnMouseEntered(e -> vBox.setStyle("-fx-cursor: hand; -fx-padding: 10; -fx-background-color: #f5f5f5; -fx-border-color: #cccccc; -fx-border-radius: 10;"));
-        vBox.setOnMouseExited(e -> vBox.setStyle("-fx-cursor: hand; -fx-padding: 10; -fx-border-color: transparent;"));
+        // 1. Ajouter l'effet visuel (curseur en forme de main, fond gris et Bords + Fonds Arrondis !)
+        String styleNormal = "-fx-cursor: hand; -fx-padding: 10; -fx-background-color: transparent; -fx-border-color: transparent; -fx-border-radius: 10; -fx-background-radius: 10;";
+        String styleHover = "-fx-cursor: hand; -fx-padding: 10; -fx-background-color: #f5f5f5; -fx-border-color: #cccccc; -fx-border-radius: 10; -fx-background-radius: 10;";
+
+        vBox.setStyle(styleNormal);
+        vBox.setOnMouseEntered(e -> vBox.setStyle(styleHover));
+        vBox.setOnMouseExited(e -> vBox.setStyle(styleNormal));
 
         // 2. Ajouter l'action au clic
         vBox.setOnMouseClicked(e -> {
             javafx.stage.Stage stage = (javafx.stage.Stage) boxParties.getScene().getWindow();
-            
-            // On envoie le chemin absolu du fichier de sauvegarde au Gestionnaire de Jeu
-            // (Si votre Gestionnaire a une méthode spécifique pour les sauvegardes, 
             fr.univ.calcudoku.utils.GestionnaireJeu.chargerPartieDepuisFichier(stage, fichierJson);
         });
 
-        // ----------------------------------
         return vBox;
     }
 
@@ -150,6 +150,14 @@ public class ProfilController {
     
     private void chargerAvatar() {
         imgAvatar.setImage(CacheRessources.getImage("/images/utilisateur.png"));
+        
+        // --- RESPONSIVE AVATAR ---
+        if (boxCentrale != null) {
+            // L'avatar fera toujours 20% de la hauteur dispo, mais ne dépassera jamais 90 pixels
+            imgAvatar.fitHeightProperty().bind(javafx.beans.binding.Bindings.min(90, boxCentrale.heightProperty().multiply(0.2)));
+            // On garde un carré parfait
+            imgAvatar.fitWidthProperty().bind(imgAvatar.fitHeightProperty());
+        }
     }
     
     private String formatTemps(String s) {
