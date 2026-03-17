@@ -9,6 +9,7 @@ import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.RadioButton;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
@@ -29,7 +30,7 @@ public class ProfilController {
     @FXML private Label lblNomProfil;
     @FXML private VBox boxCentrale;
     @FXML private Label lblTempsMoyen, lblTauxReussite, lblNiveauAventure, lblDifficulteMax, lblMeilleurScore;
-    @FXML private CheckBox checkSombre, checkClair;
+    @FXML private RadioButton radioSombre, radioClair;
     @FXML private HBox boxParties;
 
     @FXML
@@ -144,8 +145,8 @@ public class ProfilController {
         lblDifficulteMax.setText("Difficulté max : " + (d.equals("3") ? "Difficile" : (d.equals("2") ? "Moyenne" : "Facile")));
 
         boolean isSombre = Boolean.parseBoolean(stats.getOrDefault("mode_sombre", "false"));
-        if (checkSombre != null) checkSombre.setSelected(isSombre);
-        if (checkClair != null) checkClair.setSelected(!isSombre);
+        if (radioSombre != null) radioSombre.setSelected(isSombre);
+        if (radioClair != null) radioClair.setSelected(!isSombre);
     }
     
     private void chargerAvatar() {
