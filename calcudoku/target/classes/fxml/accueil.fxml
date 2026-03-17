@@ -4,12 +4,12 @@
 
 <BorderPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/21"
             fx:controller="fr.univ.calcudoku.controller.AccueilController"
-            style="-fx-padding: 20;">
+            style="-fx-padding: 20; -fx-background-color: white;">
 
     <top>
         <Label text="Calcudoku" 
                BorderPane.alignment="CENTER"
-               style="-fx-font-size: 50px; -fx-font-weight: bold; -fx-padding: 20;"/>
+               style="-fx-font-size: 50px; -fx-font-weight: bold; -fx-padding: 20; -fx-text-fill: black;"/>
     </top>
 
     <center>
@@ -23,7 +23,7 @@
     </center>
 
     <bottom>
-        <Label text="Sélectionnez un profil pour commencer" BorderPane.alignment="CENTER"/>
+        <Label text="Sélectionnez un profil pour commencer" BorderPane.alignment="CENTER" style="-fx-text-fill: black;"/>
     </bottom>
 
 </BorderPane>

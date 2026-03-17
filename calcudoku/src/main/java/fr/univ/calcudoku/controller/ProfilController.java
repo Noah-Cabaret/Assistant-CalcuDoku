@@ -7,7 +7,7 @@ import fr.univ.calcudoku.service.ProfileManager;
 import fr.univ.calcudoku.utils.CacheRessources;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
-import javafx.scene.control.CheckBox;
+//import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.image.Image;
@@ -32,6 +32,7 @@ public class ProfilController {
     @FXML private Label lblTempsMoyen, lblTauxReussite, lblNiveauAventure, lblDifficulteMax, lblMeilleurScore;
     @FXML private RadioButton radioSombre, radioClair;
     @FXML private HBox boxParties;
+    @FXML private javafx.scene.control.ToggleGroup groupeTheme;
 
     @FXML
     public void initialize() {
@@ -43,6 +44,14 @@ public class ProfilController {
         chargerAvatar();
         chargerStatistiquesProfil(nomActuel, manager);
         chargerPartiesSauvegardees(nomActuel);
+        // --- ÉCOUTEUR POUR LE MODE SOMBRE/CLAIR EN DIRECT ---
+        groupeTheme.selectedToggleProperty().addListener((observable, ancienneValeur, nouvelleValeur) -> {
+            if (nouvelleValeur == radioSombre) {
+                activerModeSombre(true);
+            } else if (nouvelleValeur == radioClair) {
+                activerModeSombre(false);
+            }
+        });
     }
 
     private void chargerPartiesSauvegardees(String nomProfil) {
@@ -168,9 +177,39 @@ public class ProfilController {
         } catch (Exception e) { return "0min"; }
     }
 
+    private void activerModeSombre(boolean activer) {
+        MainApp.modeSombreActif = activer;
+        
+        // 1. Appliquer le CSS pour le fond et les textes
+        javafx.scene.Scene sceneActuelle = boxParties.getScene();
+        if (sceneActuelle != null) {
+            String cssPath = getClass().getResource("/styles/sombre.css").toExternalForm();
+            if (activer) {
+                if (!sceneActuelle.getStylesheets().contains(cssPath)) {
+                    sceneActuelle.getStylesheets().add(cssPath);
+                }
+            } else {
+                sceneActuelle.getStylesheets().remove(cssPath);
+            }
+        }
+        
+        // 2. --- MAGIE JAVA POUR RENDRE L'ICÔNE BLANCHE ---
+        javafx.scene.effect.ColorAdjust filtreBlanc = new javafx.scene.effect.ColorAdjust();
+        filtreBlanc.setBrightness(1.0); // 100% de luminosité = Blanc pur
+
+        if (activer) {
+            imgAvatar.setEffect(filtreBlanc); // On met l'icône en blanc
+        } else {
+            imgAvatar.setEffect(null); // On enlève le filtre, l'icône redevient noire
+        }
+    }
+
     @FXML 
     private void onRetourClick() { 
         MainApp.changerScene(pagePrecedente); 
     }
-    @FXML private void onDeconnexionClick() { MainApp.changerScene("/fxml/accueil.fxml"); }
+    @FXML private void onDeconnexionClick() { 
+        MainApp.changerScene("/fxml/accueil.fxml"); 
+        MainApp.modeSombreActif = false;
+    }
 }

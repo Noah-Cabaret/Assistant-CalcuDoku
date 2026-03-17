@@ -42,6 +42,14 @@ public class MenuController {
         } else {
             labelNomProfil.setText("Invité");
         }
+
+        // --- VERIFICATION DU MODE SOMBRE POUR LES ICONES ---
+        if (MainApp.modeSombreActif) {
+            javafx.scene.effect.ColorAdjust filtreBlanc = new javafx.scene.effect.ColorAdjust();
+            filtreBlanc.setBrightness(1.0);
+
+            imgAvatar.setEffect(filtreBlanc); 
+        }
         GestionnaireJeu.prechargerPageJeu();
     }
 

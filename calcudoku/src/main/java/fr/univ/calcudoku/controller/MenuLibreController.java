@@ -38,6 +38,14 @@ public class MenuLibreController {
 
         configurerToggleGroup(groupeTaille);
         configurerToggleGroup(groupeDifficulte);
+        // --- VERIFICATION DU MODE SOMBRE POUR LES ICONES ---
+        if (MainApp.modeSombreActif) {
+            javafx.scene.effect.ColorAdjust filtreBlanc = new javafx.scene.effect.ColorAdjust();
+            filtreBlanc.setBrightness(1.0);
+            
+            // Remplacez les noms par les fx:id de vos icônes (ex: imgParametres)
+            imgParametres.setEffect(filtreBlanc); 
+        }
 
         rafraichirGrilles();
     }
