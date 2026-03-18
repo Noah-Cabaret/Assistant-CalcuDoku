@@ -52,10 +52,10 @@ public class JsonToModelAdapter {
         switch (opJson) {
             case "+": return Operation.ADDITION;
             case "-": return Operation.SOUSTRACTION;
-            case "*": 
-            case "x": return Operation.MULTIPLICATION; // Adapte "*" du JSON vers l'Enum
+            case "x": 
+            case "*": return Operation.MULTIPLICATION; // Adapte "*" du JSON vers l'Enum
             case "/": 
-            case ":": return Operation.DIVISION;       // Adapte "/" du JSON vers l'Enum
+            case "÷": return Operation.DIVISION;       // Adapte "/" du JSON vers l'Enum
             default: return Operation.RIEN;
         }
     }

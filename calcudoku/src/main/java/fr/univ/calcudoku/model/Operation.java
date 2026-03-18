@@ -29,7 +29,7 @@ public enum Operation {
     },
     
     /** Multiplication des valeurs */
-    MULTIPLICATION("×") {
+    MULTIPLICATION("x") {
         @Override
         public int calculer(List<Integer> valeurs) {
             if (valeurs.isEmpty()) return 0;
