@@ -20,7 +20,6 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
-import javafx.scene.control.Label;
 import javafx.util.Duration;
 import fr.univ.calcudoku.MainApp;
 import javafx.scene.SnapshotParameters;
@@ -32,7 +31,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import javafx.animation.PauseTransition;
-
 
 public class JeuController {
 
@@ -52,7 +50,8 @@ public class JeuController {
     @FXML private Button btnAideSuivante;
     @FXML private Button btnActualiserAide;
 
-    @FXML private Button btnValider;
+    @FXML private Button btnValider; // Bouton ✔ à droite de la grille
+    @FXML private Button btnAide;    // Bouton ? à droite de la grille
 
     @FXML private Button btnHypothese;
     @FXML private HBox conteneurBoutonsHypothese;
@@ -83,14 +82,15 @@ public class JeuController {
         
         conteneurGrille.getChildren().clear(); 
         conteneurGrille.getChildren().add(vueGrille);
-        NumberBinding tailleCarree = Bindings.min(conteneurGrille.widthProperty(), conteneurGrille.heightProperty());
         
+        // Gestion de la taille de la grille
+        NumberBinding tailleCarree = Bindings.min(conteneurGrille.widthProperty(), conteneurGrille.heightProperty());
         vueGrille.prefWidthProperty().bind(tailleCarree);
         vueGrille.prefHeightProperty().bind(tailleCarree);
-        
         vueGrille.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
         vueGrille.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
 
+        // Initialisation des cases
         for (int y = 0; y < grille.getTaille(); y++) {
             for (int x = 0; x < grille.getTaille(); x++) {
                 VueCase vc = vueGrille.getGrilleVueCases(x, y);
@@ -98,10 +98,11 @@ public class JeuController {
                 vc.setOnMouseClicked(event -> selectionnerCase(vc, modeleCase));
             }
         }
+        
         genererBoutonsNombres(grille.getTaille());
-
         bulleAide.setVisible(false);
 
+        // Service d'aide en arrière-plan
         aideService.setOnSucceeded(event -> {
             indicesEnAttente = aideService.getValue();
         });
@@ -109,37 +110,31 @@ public class JeuController {
         for (fr.univ.calcudoku.model.GroupementCases bloc : grilleModele.getListeGroupements()) {
             bloc.calculerPossibilites(grilleModele.getTaille());
         }
+        
         demarrerChrono();
         aideService.lancerAnalyse(grilleModele);
     }
 
     private void genererBoutonsNombres(int taille) {
         conteneurBoutonsNombres.getChildren().clear(); 
-        
         for (int i = 1; i <= taille; i++) {
             Button btnChiffre = new Button(String.valueOf(i));
-            
             btnChiffre.setMinSize(55, 55); 
             btnChiffre.setStyle("-fx-font-size: 22px; -fx-font-weight: bold;");
-
             final int valeur = i; 
             btnChiffre.setOnAction(e -> actionChiffreClique(valeur));
-            
             conteneurBoutonsNombres.getChildren().add(btnChiffre);
         }
     }
 
     private void demarrerChrono() {
         secondesEcoulees = 0; 
-        
         timeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
             secondesEcoulees++;
-            
             int minutes = secondesEcoulees / 60;
             int secondes = secondesEcoulees % 60;
-                        labelChrono.setText(String.format("%02d:%02d", minutes, secondes));
+            labelChrono.setText(String.format("%02d:%02d", minutes, secondes));
         }));
-        
         timeline.setCycleCount(Timeline.INDEFINITE); 
         timeline.play(); 
     }
@@ -150,51 +145,31 @@ public class JeuController {
             if (nomJoueur == null) nomJoueur = "Invité";
 
             File dossierImages = new File("profils/" + nomJoueur + "/jeu/images");
-            if (!dossierImages.exists()) {
-                dossierImages.mkdirs();
-            }
+            if (!dossierImages.exists()) { dossierImages.mkdirs(); }
 
-            String nomImage = nomFichier;
-            if (nomImage.endsWith(".json")) {
-                nomImage = nomImage.replace(".json", ".png");
-            } else if (!nomImage.endsWith(".png")) {
-                nomImage += ".png";
-            }
-            
+            String nomImage = nomFichier.endsWith(".png") ? nomFichier : nomFichier.replace(".json", "") + ".png";
             File fichierFinal = new File(dossierImages, nomImage);
 
+            // Nettoyage visuel pour la capture
             actionFermerBulleAide(); 
-
-            if (vueCaseSelectionnee != null) {
-                vueCaseSelectionnee.getStyleClass().remove("case-selectionnee");
-            }
+            if (vueCaseSelectionnee != null) vueCaseSelectionnee.getStyleClass().remove("case-selectionnee");
             
-            for (int y = 0; y < grilleModele.getTaille(); y++) {
-                for (int x = 0; x < grilleModele.getTaille(); x++) {
-                    vueGrille.getGrilleVueCases(x, y).getStyleClass().remove("case-erreur");
-                }
-            }
             vueGrille.setStyle("-fx-background-color: white;");
 
             SnapshotParameters params = new SnapshotParameters();
             params.setFill(Color.TRANSPARENT); 
             WritableImage image = vueGrille.snapshot(params, null);
-
             ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", fichierFinal);
             
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     private void selectionnerCase(VueCase vueCase, Case modeleCase) {
         if (vueCaseSelectionnee != null) {
             vueCaseSelectionnee.getStyleClass().remove("case-selectionnee");
         }
-
         this.vueCaseSelectionnee = vueCase;
         this.caseModeleSelectionnee = modeleCase;
-
         vueCaseSelectionnee.getStyleClass().add("case-selectionnee");
     }
 
@@ -204,21 +179,13 @@ public class JeuController {
                 caseModeleSelectionnee.basculerNote(valeur); 
             } else {
                 caseModeleSelectionnee.setValeur(valeur);   
-                
-                if (modeHypotheseActif) {
-                    vueCaseSelectionnee.setEstHypothese(true);
-                } else {
-                    vueCaseSelectionnee.setEstHypothese(false);
-                }
+                vueCaseSelectionnee.setEstHypothese(modeHypotheseActif);
 
-                if (grilleModele.estGagnee()) {
-                    System.out.println("VICTOIRE ! La grille est complétée correctement !");
-                }
+                // Si on modifie la grille, on propose d'actualiser l'aide
                 if (bulleAide.isVisible()) {
                     btnActualiserAide.setVisible(true);
                     btnActualiserAide.setManaged(true);
                 }
-
                 aideService.lancerAnalyse(grilleModele);
             }
         }
@@ -227,11 +194,7 @@ public class JeuController {
     @FXML
     void actionBasculeAnnotation(ActionEvent event) {
         modeAnnotationActif = !modeAnnotationActif;
-        if(modeAnnotationActif) {
-            btnAnnoter.setStyle("-fx-background-color: #bbdefb;"); 
-        } else {
-            btnAnnoter.setStyle(""); 
-        }
+        btnAnnoter.setStyle(modeAnnotationActif ? "-fx-background-color: #bbdefb;" : "");
     }
 
     @FXML
@@ -239,21 +202,12 @@ public class JeuController {
         if (caseModeleSelectionnee != null) {
             caseModeleSelectionnee.setValeur(0);
             caseModeleSelectionnee.effacerNotes();
+            if (bulleAide.isVisible()) {
+                btnActualiserAide.setVisible(true);
+                btnActualiserAide.setManaged(true);
+            }
             aideService.lancerAnalyse(grilleModele);
         }
-    }
-
-    @FXML
-    void actionUndo(ActionEvent event) {
-    }
-
-    @FXML
-    void actionRedo(ActionEvent event) {
-    }
-
-    @FXML
-    void actionCalculatrice(ActionEvent event) {
-        sauvegarderImageGrille("1.png");
     }
 
     @FXML
@@ -271,12 +225,10 @@ public class JeuController {
             }
         }
 
-        if (listeAides.isEmpty()) {
-            return;
-        }
+        if (listeAides.isEmpty()) return;
+
         btnActualiserAide.setVisible(false);
         btnActualiserAide.setManaged(false);
-        
         bulleAide.setVisible(true);
         listeAides.get(indexAideActuelle).afficher();
         mettreAJourBoutonsNavigation();
@@ -326,32 +278,23 @@ public class JeuController {
         for (int y = 0; y < taille; y++) {
             for (int x = 0; x < taille; x++) {
                 Case c = grilleModele.getCase(x, y);
-                int valeurJoueur = c.getValeur();
-                
-                if (valeurJoueur != 0 && valeurJoueur != c.getSolution()) {
+                if (c.getValeur() != 0 && c.getValeur() != c.getSolution()) {
                     casesEnErreur.add(vueGrille.getGrilleVueCases(x, y));
                 }
             }
         }
 
-        for (VueCase vc : casesEnErreur) {
-            if (!vc.getStyleClass().contains("case-erreur")) {
-                vc.getStyleClass().add("case-erreur");
-            }
-        }
+        for (VueCase vc : casesEnErreur) vc.getStyleClass().add("case-erreur");
 
         PauseTransition pause = new PauseTransition(Duration.seconds(3));
         pause.setOnFinished(e -> {
-            for (VueCase vc : casesEnErreur) {
-                vc.getStyleClass().remove("case-erreur");
-            }
+            for (VueCase vc : casesEnErreur) vc.getStyleClass().remove("case-erreur");
         });
         pause.play();
     }
 
     private void mettreAJourBoutonsNavigation() {
         if (listeAides.isEmpty()) return;
-
         btnAidePrecedente.setDisable(indexAideActuelle == 0);
         btnAideSuivante.setDisable(indexAideActuelle == listeAides.size() - 1);
         btnAmeliorerAide.setDisable(!listeAides.get(indexAideActuelle).peutEtreAmeliore());
@@ -361,31 +304,28 @@ public class JeuController {
     void actionHypothese(ActionEvent event) {
         modeHypotheseActif = true;
         btnHypothese.setDisable(true); 
-        
         conteneurBoutonsHypothese.setVisible(true);
-        
     }
 
     @FXML
-    void actionValiderHypothese(ActionEvent event) {
-        quitterModeHypotheseVisuel();
-    }
+    void actionValiderHypothese(ActionEvent event) { quitterModeHypotheseVisuel(); }
 
     @FXML
-    void actionAnnulerHypothese(ActionEvent event) {
-        quitterModeHypotheseVisuel();
-    }
+    void actionAnnulerHypothese(ActionEvent event) { quitterModeHypotheseVisuel(); }
 
     private void quitterModeHypotheseVisuel() {
         modeHypotheseActif = false;
         btnHypothese.setDisable(false);
-        
         conteneurBoutonsHypothese.setVisible(false);
-
         for (int y = 0; y < grilleModele.getTaille(); y++) {
             for (int x = 0; x < grilleModele.getTaille(); x++) {
                 vueGrille.getGrilleVueCases(x, y).setEstHypothese(false);
             }
         }
     }
+    
+    // Stubs pour Undo/Redo/Calculatrice
+    @FXML void actionUndo(ActionEvent event) {}
+    @FXML void actionRedo(ActionEvent event) {}
+    @FXML void actionCalculatrice(ActionEvent event) { sauvegarderImageGrille("1.png"); }
 }
