@@ -18,6 +18,8 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.util.Duration;
 import javafx.scene.control.Label;
+import java.util.ArrayList;
+import java.util.List;
 
 public class JeuController {
 
@@ -127,7 +129,9 @@ public class JeuController {
             if (modeAnnotationActif) {
                 caseModeleSelectionnee.basculerNote(valeur);
                 if(caseModeleSelectionnee.getValeur() < 10)
+                {
                     save.hist.addEtape(caseModeleSelectionnee.getX(), caseModeleSelectionnee.getY(), valeur + 10);
+                }
             } else {
                 save.hist.addEtape(caseModeleSelectionnee.getX(), caseModeleSelectionnee.getY(), valeur);
                 caseModeleSelectionnee.setValeur(valeur);
@@ -182,7 +186,31 @@ public class JeuController {
             if(etapeCourante.normale())
             {
                 if(etapeExiste)
-                    grilleModele.getCase(etapePrecedente.getX(), etapePrecedente.getY()).setValeur(etapePrecedente.getN());
+                {
+                    if(etapePrecedente.annotation())
+                    {
+                        List<Integer> valeursNote = new ArrayList<Integer>();
+                        i = save.hist.getIndex();
+                        Case caseCourante = grilleModele.getCase(etapeCourante.getX(), etapeCourante.getY());
+                        etapeCourante = save.hist.getEtapeCourante();
+                        while(save.hist.getIndex() > 0 && etapeCourante.getN() != 0)
+                        {
+                            if(etapeCourante.annotation())
+                                valeursNote.add(etapeCourante.getN());
+                            etapeCourante = save.hist.precedent();
+                        }
+                        save.hist.setIndex(i);
+                        if(valeursNote.size() > 0)
+                        {
+                            caseCourante.setValeur(0);
+                            caseCourante.effacerNotes();
+                            for(Integer note : valeursNote)
+                                caseCourante.basculerNote(note - 10);
+                        }
+                    }
+                    else
+                        grilleModele.getCase(etapePrecedente.getX(), etapePrecedente.getY()).setValeur(etapePrecedente.getN());
+                }
                 else
                     grilleModele.getCase(etapeCourante.getX(), etapeCourante.getY()).setValeur(0);
             }
@@ -192,6 +220,7 @@ public class JeuController {
             {
                 if(save.hist.getEtapeCourante().hypothese())
                 {
+                    /* remplacer par un setValeur() spécial pour le mode hypothèse si besoin */
                     if(etapeExiste)
                         grilleModele.getCase(etapePrecedente.getX(), etapePrecedente.getY()).setValeur(etapePrecedente.getN() - 20);
                     else
@@ -214,12 +243,8 @@ public class JeuController {
 
     void rollback()
     {
-        Etape etapeCourante = save.hist.getEtapeCourante();
-        while(save.hist.getIndex() > 0 && etapeCourante.hypothese())
-        {
+        while(save.hist.getIndex() > 0 && save.hist.getEtapeCourante().hypothese())
             undo();
-            etapeCourante = save.hist.getEtapeCourante();
-        }
         save.hist.viderQueue();
     }
 
@@ -234,7 +259,11 @@ public class JeuController {
         {
             Etape etapeSuivante = save.hist.suivant();
             if(etapeSuivante.normale())
-                grilleModele.getCase(etapeSuivante.getX(), etapeSuivante.getY()).setValeur(etapeSuivante.getN());
+            {
+                Case caseCourante = grilleModele.getCase(etapeSuivante.getX(), etapeSuivante.getY());
+                caseCourante.effacerNotes();
+                caseCourante.setValeur(etapeSuivante.getN());
+            }
             else if(etapeSuivante.annotation())
                 grilleModele.getCase(etapeSuivante.getX(), etapeSuivante.getY()).basculerNote(etapeSuivante.getN() - 10);
             else if(etapeSuivante.hypothese())
