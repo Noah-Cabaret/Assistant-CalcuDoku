@@ -26,13 +26,12 @@ public class MoteurAide {
         this.techniques.add(new TechniqueDerniereCaseLigneCol());
         this.techniques.add(new TechniqueDernierChiffreGrille());
         this.techniques.add(new TechniqueDerniereCaseBloc());
-
+        this.techniques.add(new TechniqueIntraBloc_1_3());
         this.techniques.add(new TechniquePlaceUniqueLigneColonne());
         this.techniques.add(new TechniqueCandidatUnique());
         this.techniques.add(new TechniqueUniqueCache());
         this.techniques.add(new TechniqueResteDeGrilleType1());
         this.techniques.add(new TechniqueResteDeGrilleType2());
-        this.techniques.add(new TechniqueIntraBloc_1_3());
         // ajout autres techniques
     }
 

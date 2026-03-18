@@ -50,6 +50,7 @@ public class JeuController {
     @FXML private Button btnAmeliorerAide;
     @FXML private Button btnAidePrecedente;
     @FXML private Button btnAideSuivante;
+    @FXML private Button btnActualiserAide;
 
     @FXML private Button btnValider;
 
@@ -213,6 +214,11 @@ public class JeuController {
                 if (grilleModele.estGagnee()) {
                     System.out.println("VICTOIRE ! La grille est complétée correctement !");
                 }
+                if (bulleAide.isVisible()) {
+                    btnActualiserAide.setVisible(true);
+                    btnActualiserAide.setManaged(true);
+                }
+
                 aideService.lancerAnalyse(grilleModele);
             }
         }
@@ -268,6 +274,8 @@ public class JeuController {
         if (listeAides.isEmpty()) {
             return;
         }
+        btnActualiserAide.setVisible(false);
+        btnActualiserAide.setManaged(false);
         
         bulleAide.setVisible(true);
         listeAides.get(indexAideActuelle).afficher();

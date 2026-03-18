@@ -28,14 +28,5 @@
 }
 
 .case-indice-surbrillance {
-    -fx-background-color: #7dec91; 
-}
-
-.case-erreur {
-    -fx-background-color: #f7bcc2 ; 
-}
-
-.label-hypothese {
-    -fx-text-fill: #9e9e9e !important; /* Gris */
-    -fx-font-style: italic;
+    -fx-background-color: #7dec91; /* Un petit bleu très clair */
 }
