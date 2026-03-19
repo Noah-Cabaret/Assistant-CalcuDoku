@@ -52,7 +52,8 @@ public class JeuController {
         {
             save = new Sauvegarde();
             save.setIdGrille(1);
-            //save.charger(null, grille);
+            save.setMode(Sauvegarde.ModeDeJeu.LIBR);
+            save.charger("Martin", grilleModele);
         }
 
         this.vueGrille = new VueGrille(grille);
@@ -137,6 +138,8 @@ public class JeuController {
                 caseModeleSelectionnee.setValeur(valeur);
                 if (grilleModele.estGagnee()) {
                     System.out.println("VICTOIRE ! La grille est complétée correctement !");
+                    save.setTerminee(true);
+                    save.enreg("Martin", grilleModele); // remplacer "Martin" par le nom du profil du joueur
                 }
             }
         }
