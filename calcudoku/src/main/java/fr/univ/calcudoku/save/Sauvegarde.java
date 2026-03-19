@@ -52,10 +52,11 @@ public class Sauvegarde
 	private Difficulte diff;
 	private int bonus, malus;
 
-	private static String cheminResources = new String("");
+	private static String cheminResources = Sauvegarde.class.getResource("/json").getPath().replace("/json", "/");
 
 	public Sauvegarde()
 	{
+		this.idGrille = 0;
 		this.tmp = new Temps();
 		this.hist = new Historique();
 	}
@@ -106,10 +107,38 @@ public class Sauvegarde
 	 * le fichier dans le chargement
 	 */
 
-	public void enreg(String compte, Grille matrice)
+	public void enreg(String compte, Grille grille)
 	{
-		String cheminGrille = cheminResources + "json/" + this.idGrille + ".json";
-		String cheminIni = cheminGrille.replace(this.idGrille + ".json", this.idGrille + "_save.ini");
+		if(this.idGrille == 0 || this.tmp.debut == 0.0 || this.hist.taille() == 0 || this.mode == null || this.diff == null)
+		{
+			System.out.println("ERREUR: attribut(s) non initialisé(s) :");
+			if(this.idGrille == 0)
+				System.out.println("idGrille");
+			if(this.tmp.debut == 0.0)
+				System.out.println("temps");
+			if(this.hist.taille())
+				System.out.println("historique");
+			if(this.mode == null)
+				System.out.println("mode");
+			if(this.diff == null)
+				System.out.println("difficulté");
+			return;
+		}
+		String cheminSave = cheminResources + "profils/" + compte;
+		switch(this.mode)
+		{
+			case ModeDeJeu.LIBR:
+				cheminSave += "/libre/";
+				break;
+			case ModeDeJeu.AVEN:
+				cheminSave += "/aventure/";
+				break;
+			default:
+				cheminSave += "/";
+				break;
+		}
+		cheminSave += this.idGrille;
+		String cheminIni = cheminSave + ".ini";
 
 		boolean iniFonctionnel = true;
 		try
@@ -139,8 +168,16 @@ public class Sauvegarde
 		{
 			try
 			{
-				String cheminJson = cheminGrille.replace(this.idGrille + ".json", this.idGrille + "_save.json");
+				String cheminJson = cheminSave + ".json";
 				FileWriter json = new FileWriter(cheminJson);
+				int[][] matrice = new int[grille.getTaille()][grille.getTaille()];
+				for(int i = 0; i < grille.getTaille(); i++)
+				{
+					for(int j = 0; j < grille.getTaille(); j++)
+						matrice[i][j] = grille.getCase(i, j).getValeur();
+				}
+				Gson gson = new Gson();
+				gson.toJson(matrice, json);
 
 				json.close();
 			}
@@ -156,12 +193,25 @@ public class Sauvegarde
 	 * une lecture du code plus facile)
 	 */
 
-	public void charger(String compte, Grille matrice)
+	public void charger(String compte, Grille grille)
 	{
-		String cheminGrille = cheminResources + "json/" + this.idGrille + ".json";
-		String cheminIni = cheminGrille.replace(this.idGrille + ".json", this.idGrille + "_save.ini");
-		boolean iniFonctionnel = true;
+		String cheminSave = cheminResources + "profils/" + compte;
+		switch(this.mode)
+		{
+			case ModeDeJeu.LIBR:
+				cheminSave += "/libre/";
+				break;
+			case ModeDeJeu.AVEN:
+				cheminSave += "/aventure/";
+				break;
+			default:
+				cheminSave += "/";
+				break;
+		}
+		cheminSave += this.idGrille;
+		String cheminIni = cheminSave + ".ini";
 
+		boolean iniFonctionnel = true;
 		try
 		{
 			File fichierIni = new File(cheminIni);
@@ -211,22 +261,16 @@ public class Sauvegarde
 			try
 			{
 				Gson gson = new Gson();
-				String cheminJson = cheminGrille.replace(this.idGrille + ".json", this.idGrille + "_save.json");
+				String cheminJson = cheminSave + ".json";
 				File fichierJson = new File(cheminJson);
 				if(fichierJson.isFile())
 				{
-					FileReader grille = new FileReader(cheminJson);
-					JsonObject json = gson.fromJson(grille, JsonObject.class);
-					JsonArray cases = json.getAsJsonArray("cases");
-					grille.close();
-
-					for(int j = 0; j < cases.size(); j++)
+					FileReader lecteurJson = new FileReader(cheminJson);
+					int[][] matrice = gson.fromJson(lecteurJson, int[][].class);
+					for(int j = 0; j < matrice.length; j++)
 					{
-						JsonArray ligne = cases.get(j).getAsJsonArray();
-						for(int i = 0; i < ligne.size(); i++)
-						{
-							matrice.getCase(i, j).setValeur(ligne.get(i).getAsInt());
-						}
+						for(int i = 0; i < matrice.length; i++)
+							grille.getCase(i, j).setValeur(matrice[i][j]);
 					}
 				}
 			}
@@ -241,9 +285,22 @@ public class Sauvegarde
 
 	public void effacer(String compte)
 	{
-		String cheminGrille = cheminResources + "json/" + this.idGrille + ".json";
-		String cheminIni = cheminGrille.replace(this.idGrille + ".json", this.idGrille + "_save.ini");
-		String cheminJson = cheminIni.replace("ini", "json");
+		String cheminSave = cheminResources + "profils/" + compte;
+		switch(this.mode)
+		{
+			case ModeDeJeu.LIBR:
+				cheminSave += "/libre/";
+				break;
+			case ModeDeJeu.AVEN:
+				cheminSave += "/aventure/";
+				break;
+			default:
+				cheminSave += "/";
+				break;
+		}
+		cheminSave += this.idGrille;
+		String cheminIni = cheminSave + ".ini";
+		String cheminJson = cheminSave + ".json";
 
 		File ini = new File(cheminIni);
 		if(ini.isFile())
