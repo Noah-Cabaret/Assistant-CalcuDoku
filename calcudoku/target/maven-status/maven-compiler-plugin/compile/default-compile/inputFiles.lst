@@ -12,6 +12,7 @@
 /home/souleymane/Assistant-CalcuDoku/calcudoku/src/main/java/fr/univ/calcudoku/view/VueCase.java
 /home/souleymane/Assistant-CalcuDoku/calcudoku/src/main/java/fr/univ/calcudoku/service/aide/technique/TechniqueCandidatUnique.java
 /home/souleymane/Assistant-CalcuDoku/calcudoku/src/main/java/fr/univ/calcudoku/utils/CacheRessources.java
+/home/souleymane/Assistant-CalcuDoku/calcudoku/src/main/java/fr/univ/calcudoku/service/aide/technique/TechniqueIntraBloc.java
 /home/souleymane/Assistant-CalcuDoku/calcudoku/src/main/java/fr/univ/calcudoku/model/Operation.java
 /home/souleymane/Assistant-CalcuDoku/calcudoku/src/main/java/fr/univ/calcudoku/controller/ProfilController.java
 /home/souleymane/Assistant-CalcuDoku/calcudoku/src/main/java/fr/univ/calcudoku/model/ElementVisitable.java
@@ -25,6 +26,7 @@
 /home/souleymane/Assistant-CalcuDoku/calcudoku/src/main/java/fr/univ/calcudoku/model/GroupementCases.java
 /home/souleymane/Assistant-CalcuDoku/calcudoku/src/main/java/fr/univ/calcudoku/service/aide/technique/TechniquePlaceUniqueLigneColonne.java
 /home/souleymane/Assistant-CalcuDoku/calcudoku/src/main/java/fr/univ/calcudoku/view/VueGrille.java
+/home/souleymane/Assistant-CalcuDoku/calcudoku/src/main/java/fr/univ/calcudoku/service/aide/technique/TechniqueIntraBloc_3_5.java
 /home/souleymane/Assistant-CalcuDoku/calcudoku/src/main/java/fr/univ/calcudoku/service/aide/AideService.java
 /home/souleymane/Assistant-CalcuDoku/calcudoku/src/main/java/fr/univ/calcudoku/model/Case.java
 /home/souleymane/Assistant-CalcuDoku/calcudoku/src/main/java/fr/univ/calcudoku/controller/JeuController.java

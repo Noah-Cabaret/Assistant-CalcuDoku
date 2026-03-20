@@ -11,11 +11,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Technique : Intra Bloc (Petit L).
- * Analyse un bloc de 3 cases en forme de L qui nécessite obligatoirement un chiffre en double.
- * Le doublon doit être aux extrémités pour ne pas violer les règles du carré latin.
+ * Technique : Intra Bloc (Grand L).
+ * Analyse un grand bloc (>=4) en "L" qui nécessite un chiffre en double.
+ * L'alignement de la ligne principale du bloc restreint les places du doublon.
  */
-public class TechniqueIntraBloc_1_3 extends TechniqueIntraBloc {
+public class TechniqueIntraBloc_3_5 extends TechniqueIntraBloc {
 
     @Override
     public Indice analyser(Grille grille) {
@@ -23,8 +23,8 @@ public class TechniqueIntraBloc_1_3 extends TechniqueIntraBloc {
 
         for (GroupementCases bloc : grille.getListeGroupements()) {
             
-            // On vérifie la topologie : 3 cases, formant un "L" (pas une ligne)
-            if (bloc.getListeCases().size() == 3 && verifierTopologiePetitL(bloc)) {
+            // On vérifie la topologie : >= 4 cases, formant une ligne avec un débordement
+            if (bloc.getListeCases().size() >= 4 && verifierTopologieGrandL(bloc)) {
                 
                 List<Integer> combinaisonUnique = getUniqueCombinaison(bloc);
                 
@@ -50,9 +50,9 @@ public class TechniqueIntraBloc_1_3 extends TechniqueIntraBloc {
 
                     if (!estParfait) {
                         if (contientErreur) {
-                            return new Indice("Technique Intra-bloc", "Erreur détectée ! Ce bloc force le placement d'un doublon mathématique.\nLes chiffres en surbrillance sont mal placés.", casesFausses, solutions, true);
+                            return new Indice("Technique Intra-bloc", "Erreur détectée ! Ce bloc allongé force l'utilisation d'un doublon.\nCertains de ces chiffres sont mal placés pour éviter les conflits.", casesFausses, solutions, true);
                         } else if (indiceNormal == null) {
-                            String msg = "Techniques intra-bloc : Ce bloc en forme de 'L' n'a qu'une seule combinaison possible qui contient un chiffre en double.\nPour ne pas violer les règles, ces doublons doivent obligatoirement être placés aux deux extrémités du 'L' !";
+                            String msg = "Techniques intra-bloc : Observez ce grand bloc en 'L' allongé. Sa seule combinaison nécessite des doublons !\nVous devez ruser pour placer ces doublons sans violer les règles sur la ligne principale du bloc.";
                             indiceNormal = new Indice("Technique Intra-bloc", msg, bloc.getListeCases(), solutions, false);
                         }
                     }
@@ -62,11 +62,28 @@ public class TechniqueIntraBloc_1_3 extends TechniqueIntraBloc {
         return indiceNormal; 
     }
 
-    private boolean verifierTopologiePetitL(GroupementCases bloc) {
+    private boolean verifierTopologieGrandL(GroupementCases bloc) {
         List<Case> cases = bloc.getListeCases();
-        Case c1 = cases.get(0), c2 = cases.get(1), c3 = cases.get(2);
-        boolean estLigneVerticale = (c1.getX() == c2.getX() && c2.getX() == c3.getX());
-        boolean estLigneHorizontale = (c1.getY() == c2.getY() && c2.getY() == c3.getY());
-        return !estLigneVerticale && !estLigneHorizontale;
+        int taille = cases.size();
+        
+        for (int i = 0; i < taille; i++) {
+            Case candidateSortante = cases.get(i);
+            Integer commonX = null;
+            Integer commonY = null;
+            
+            for (int j = 0; j < taille; j++) {
+                if (i == j) continue; 
+                
+                if (commonX == null) commonX = cases.get(j).getX();
+                else if (commonX != cases.get(j).getX()) commonX = -1; 
+                
+                if (commonY == null) commonY = cases.get(j).getY();
+                else if (commonY != cases.get(j).getY()) commonY = -1; 
+            }
+            
+            if (commonX != null && commonX != -1 && candidateSortante.getX() != commonX) return true; 
+            if (commonY != null && commonY != -1 && candidateSortante.getY() != commonY) return true; 
+        }
+        return false; 
     }
 }

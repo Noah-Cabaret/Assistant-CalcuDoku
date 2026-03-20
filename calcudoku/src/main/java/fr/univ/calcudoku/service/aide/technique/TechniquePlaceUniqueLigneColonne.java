@@ -10,6 +10,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Technique : Place Unique en Ligne/Colonne.
+ * Trouve une ligne ou une colonne où un chiffre n'a plus qu'une seule case disponible.
+ */
 public class TechniquePlaceUniqueLigneColonne implements TechniqueAide {
 
     @Override
@@ -36,7 +40,6 @@ public class TechniquePlaceUniqueLigneColonne implements TechniqueAide {
             if (c.getValeur() == 0) nbCasesVides++;
         }
 
-        // LOGIQUE MATHÉMATIQUE : On teste la capacité d'accueil des cases
         for (int chiffre = 1; chiffre <= taille; chiffre++) {
             if (chiffreDejaPlace(grille, indexLigneOuCol, estLigne, chiffre)) continue;
             if (compterOccurrencesGrille(grille, chiffre) >= taille - 1) continue;
@@ -61,10 +64,7 @@ public class TechniquePlaceUniqueLigneColonne implements TechniqueAide {
                 int valeurJoueur = caseCible.getValeur();
                 if (valeurJoueur == chiffre) continue; 
 
-                // VÉRIFICATION ERREUR 
                 boolean contientErreur = (valeurJoueur != 0 && valeurJoueur != caseCible.getSolution()); 
-
-                // Filtre Anti-doublon bypassé si erreur
                 if (!contientErreur && nbCasesVides <= 1) continue;
 
                 Map<Case, Integer> solutions = new HashMap<>();
@@ -78,8 +78,7 @@ public class TechniquePlaceUniqueLigneColonne implements TechniqueAide {
                               "Le chiffre " + chiffre + " ne peut mathématiquement aller que dans cette case.", casesASurbriller, solutions, true);
                 } else {
                     for (int i = 0; i < taille; i++) casesASurbriller.add(grille.getCase(estLigne ? i : indexLigneOuCol, estLigne ? indexLigneOuCol : i));
-                    return new Indice("Place Unique", "Regardez " + axe + ".\n" +
-                              "Le chiffre " + chiffre + " doit obligatoirement y figurer.\nToutes les autres cases de cette zone sont bloquées.", casesASurbriller, solutions, false);
+                    return new Indice("Place Unique", "Techniques uniques cachées : Regardez " + axe + ".\nPar processus d'élimination, un certain chiffre ne peut être placé que dans une seule case. Trouvez-le !", casesASurbriller, solutions, false);
                 }
             }
         }

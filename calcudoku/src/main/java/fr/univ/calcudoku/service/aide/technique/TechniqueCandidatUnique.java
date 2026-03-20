@@ -11,6 +11,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Technique : Candidat Unique.
+ * Cherche une case vide à l'intersection d'une ligne et d'une colonne très remplies,
+ * ne laissant qu'un seul chiffre possible.
+ */
 public class TechniqueCandidatUnique implements TechniqueAide {
 
     @Override
@@ -25,7 +30,7 @@ public class TechniqueCandidatUnique implements TechniqueAide {
                 Set<Integer> chiffresVus = new HashSet<>();
                 int nbSurLigne = 0, nbSurColonne = 0;
 
-                // LOGIQUE MATHÉMATIQUE : Croisement des occurences
+                // Scan en croix (Ligne + Colonne)
                 for (int i = 0; i < taille; i++) {
                     if (i != x) {
                         int val = grille.getCase(i, y).getValeur();
@@ -37,16 +42,16 @@ public class TechniqueCandidatUnique implements TechniqueAide {
                     }
                 }
 
+                // Si (Taille - 1) chiffres différents ont été vus, il n'en reste qu'un
                 if (chiffresVus.size() == taille - 1) {
                     int chiffreManquant = trouverChiffreManquant(chiffresVus, taille);
                     int valeurJoueur = c.getValeur();
                     
                     if (valeurJoueur == chiffreManquant) continue;
 
-                    // VÉRIFICATION ERREUR 
                     boolean contientErreur = (valeurJoueur != 0 && valeurJoueur != c.getSolution());
-
-                    // Bypass du filtre si c'est une erreur
+                    
+                    // Laisse la priorité à "Dernière case Ligne/Col" si c'est plus simple
                     if (!contientErreur && (nbSurLigne == taille - 1 || nbSurColonne == taille - 1)) continue;
 
                     List<Case> casesASurbriller = new ArrayList<>();
@@ -55,12 +60,10 @@ public class TechniqueCandidatUnique implements TechniqueAide {
                     solutions.put(c, chiffreManquant);
 
                     if (contientErreur) {
-                        String msg = "Erreur détectée ! La case située à la ligne " + (y + 1) + " et colonne " + (x + 1) + " "
-                                   + "ne peut contenir que le chiffre " + chiffreManquant + " à cause des autres chiffres croisés.";
+                        String msg = "Erreur détectée ! La case ciblée ne peut contenir que le chiffre " + chiffreManquant + " à cause des autres chiffres présents sur sa ligne et sa colonne.";
                         return new Indice("Candidat Unique", msg, casesASurbriller, solutions, true);
                     } else if (indiceNormal == null) {
-                        String msg = "Regardez la case située à la ligne " + (y + 1) + " et à la colonne " + (x + 1) + ".\n"
-                                   + "En croisant les chiffres de sa ligne et sa colonne, il ne reste qu'une possibilité : le chiffre " + chiffreManquant + ".";
+                        String msg = "Techniques à candidat unique : Selon les règles, un nombre n'apparaît qu'une fois par ligne et colonne. En croisant la ligne et la colonne de cette case, il ne reste plus qu'un seul candidat possible !";
                         indiceNormal = new Indice("Candidat Unique", msg, casesASurbriller, solutions, false);
                     }
                 }

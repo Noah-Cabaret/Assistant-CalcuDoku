@@ -25,6 +25,8 @@ public class TechniqueDerniereCaseLigneCol implements TechniqueAide {
         return indiceNormal;
     }
 
+   // ... (Voir l'import complet plus haut dans les précédentes réponses, j'isole la méthode logique)
+
     private Indice chercherDerniereCase(Grille grille, int index, boolean estLigne) {
         int taille = grille.getTaille();
 
@@ -36,7 +38,7 @@ public class TechniqueDerniereCaseLigneCol implements TechniqueAide {
             int nbAutresRemplies = 0;
             boolean[] presents = new boolean[taille + 1];
 
-            // LOGIQUE MATHÉMATIQUE : On vérifie les N-1 autres cases
+            // On regarde si (Taille - 1) cases sont remplies
             for (int i = 0; i < taille; i++) {
                 if (i == indexCible) continue; 
                 Case c = grille.getCase(estLigne ? i : index, estLigne ? index : i);
@@ -48,6 +50,7 @@ public class TechniqueDerniereCaseLigneCol implements TechniqueAide {
                 }
             }
 
+            // Déduction basique : On cherche le trou
             if (nbAutresRemplies == taille - 1) {
                 int chiffreManquant = 0;
                 for (int v = 1; v <= taille; v++) {
@@ -57,7 +60,6 @@ public class TechniqueDerniereCaseLigneCol implements TechniqueAide {
                 if (caseCible.getValeur() == chiffreManquant) continue; 
 
                 if (chiffreManquant != 0) {
-                    // VÉRIFICATION ERREUR 
                     boolean contientErreur = (caseCible.getValeur() != 0 && caseCible.getValeur() != caseCible.getSolution());
 
                     Map<Case, Integer> solutions = new HashMap<>();
@@ -67,12 +69,11 @@ public class TechniqueDerniereCaseLigneCol implements TechniqueAide {
 
                     if (contientErreur) {
                         casesASurbriller.add(caseCible);
-                        message = "Erreur détectée ! Les autres cases de cette " + (estLigne ? "ligne" : "colonne") + " sont déjà remplies.\n" +
-                                  "Le seul chiffre manquant est le " + chiffreManquant + ".";
+                        message = "Erreur détectée ! Les autres cases de cette zone sont justes.\nLe seul chiffre manquant pour finir est le " + chiffreManquant + ".";
                         return new Indice("Dernière Case", message, casesASurbriller, solutions, true);
                     } else {
                         for (int i = 0; i < taille; i++) casesASurbriller.add(grille.getCase(estLigne ? i : index, estLigne ? index : i));
-                        message = "Il ne manque qu'une seule case pour compléter cette " + (estLigne ? "ligne.\n" : "colonne.\n");
+                        message = "Déduction logique : Regardez cette zone. Il ne manque plus qu'une seule case pour la compléter, vous pouvez facilement déduire sa valeur !";
                         return new Indice("Dernière Case", message, casesASurbriller, solutions, false);
                     }
                 }

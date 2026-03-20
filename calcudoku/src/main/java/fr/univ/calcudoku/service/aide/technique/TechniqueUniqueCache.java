@@ -10,6 +10,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Technique : Unique Caché (Bloc).
+ * Identifie un chiffre qui doit obligatoirement être dans le bloc,
+ * et démontre qu'il n'a qu'une seule case physiquement disponible.
+ */
 public class TechniqueUniqueCache implements TechniqueAide {
 
     @Override
@@ -20,19 +25,17 @@ public class TechniqueUniqueCache implements TechniqueAide {
             if (bloc.getListeCases().size() <= 1) continue;
 
             int nbCasesVides = 0;
-            for(Case c : bloc.getListeCases()) {
-                if (c.getValeur() == 0) nbCasesVides++;
-            }
+            for(Case c : bloc.getListeCases()) if (c.getValeur() == 0) nbCasesVides++;
 
             int taille = grille.getTaille();
 
-            // LOGIQUE MATHÉMATIQUE : On teste la capacité d'accueil de la cage
             for (int chiffre = 1; chiffre <= taille; chiffre++) {
                 if (blocContientChiffreValide(bloc, chiffre)) continue; 
                 
-                // LE FAMEUX CORRECTIF : Le chiffre doit être obligatoire pour ce bloc
+                // Le chiffre doit être OBLIGATOIRE dans les mathématiques du bloc
                 if (!blocRequiertChiffre(bloc, chiffre)) continue; 
 
+                // Cherche toutes les places non menacées par un même chiffre sur la ligne/colonne
                 List<Case> placesPossibles = new ArrayList<>();
                 for (Case c : bloc.getListeCases()) {
                     if (c.getValeur() != chiffre && grille.estCoupValide(c.getX(), c.getY(), chiffre)) {
@@ -40,15 +43,13 @@ public class TechniqueUniqueCache implements TechniqueAide {
                     }
                 }
 
+                // S'il n'y a qu'une place, c'est un Unique Caché
                 if (placesPossibles.size() == 1) {
                     Case caseCible = placesPossibles.get(0);
                     int valeurJoueur = caseCible.getValeur();
                     if (valeurJoueur == chiffre) continue;
 
-                    // VÉRIFICATION ERREUR 
                     boolean contientErreur = (valeurJoueur != 0 && valeurJoueur != caseCible.getSolution());
-
-                    // Filtre Anti-doublon (s'efface devant une erreur)
                     if (!contientErreur && nbCasesVides <= 1) continue;
 
                     List<Case> casesASurbriller = new ArrayList<>();
@@ -57,10 +58,11 @@ public class TechniqueUniqueCache implements TechniqueAide {
 
                     if (contientErreur) {
                         casesASurbriller.add(caseCible);
-                        return new Indice("Unique Caché (Bloc)", "Erreur détectée dans cette cage mathématique.\nCette case est la seule place valide pour le chiffre " + chiffre + ".", casesASurbriller, solutions, true);
+                        return new Indice("Unique Caché", "Erreur détectée dans ce bloc.\nLe chiffre " + chiffre + " doit obligatoirement y figurer et cette case est sa seule place valide.", casesASurbriller, solutions, true);
                     } else if (indiceNormal == null) {
                         casesASurbriller.addAll(bloc.getListeCases());
-                        indiceNormal = new Indice("Unique Caché (Bloc)", "Regardez cette cage mathématique.\nLe chiffre " + chiffre + " doit obligatoirement y figurer.\nToutes les autres cases sont bloquées !", casesASurbriller, solutions, false);
+                        String msg = "Techniques uniques cachées : Un certain chiffre indispensable à ce bloc ne peut être placé que dans une seule case. Par processus d'élimination avec les lignes/colonnes, trouvez où il va !";
+                        indiceNormal = new Indice("Unique Caché", msg, casesASurbriller, solutions, false);
                     }
                 }
             }

@@ -21,7 +21,6 @@ public class TechniqueDerniereCaseBloc implements TechniqueAide {
             if (bloc.getListeCases().size() <= 1) continue;
 
             for (Case caseCible : bloc.getListeCases()) {
-                // LOGIQUE MATHÉMATIQUE : On vérifie si TOUTES les AUTRES cases sont remplies
                 boolean autresRemplies = true;
                 for (Case c : bloc.getListeCases()) {
                     if (c != caseCible && c.getValeur() == 0) { autresRemplies = false; break; }
@@ -31,7 +30,6 @@ public class TechniqueDerniereCaseBloc implements TechniqueAide {
                     int chiffreSolution = 0;
                     int valeurOriginale = caseCible.getValeur();
 
-                    // LOGIQUE MATHÉMATIQUE : On simule pour trouver la solution
                     for (int v = 1; v <= taille; v++) {
                         if (grille.estCoupValide(caseCible.getX(), caseCible.getY(), v)) {
                             caseCible.setValeur(v);
@@ -44,7 +42,6 @@ public class TechniqueDerniereCaseBloc implements TechniqueAide {
                     if (chiffreSolution != 0) {
                         if (valeurOriginale == chiffreSolution) continue;
 
-                        // VÉRIFICATION ERREUR : La case est remplie mais ne correspond pas à la solution finale
                         boolean contientErreur = (valeurOriginale != 0 && valeurOriginale != caseCible.getSolution());
                         
                         Map<Case, Integer> solutions = new HashMap<>();
@@ -60,7 +57,7 @@ public class TechniqueDerniereCaseBloc implements TechniqueAide {
                         } else if (indiceNormal == null) {
                             casesASurbriller.addAll(bloc.getListeCases());
                             message = "Toutes les cases d'un bloc sont remplies sauf une.\n" +
-                                      "Faites le calcul mathématique pour déduire ce qui manque !";
+                                      "Faites le calcul mathématique avec l'opération du bloc pour déduire ce qui manque !";
                             indiceNormal = new Indice("Calcul Final du Bloc", message, casesASurbriller, solutions, false);
                         }
                     }
