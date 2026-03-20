@@ -5,8 +5,6 @@ import fr.univ.calcudoku.model.DonneesNiveau;
 import fr.univ.calcudoku.utils.CacheRessources;
 import fr.univ.calcudoku.utils.GestionnaireJeu;
 import javafx.fxml.FXML;
-import javafx.geometry.Pos;
-import javafx.scene.control.Label;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
@@ -84,71 +82,28 @@ public class MenuLibreController {
                 VBox carte = creerCarteNiveau(niveau, baseName, i);
                 boxGrilles.getChildren().add(carte);
             } else {
-                // Style pour les grilles qui n'existent pas encore
-                VBox carteVide = new VBox(10);
-                carteVide.setAlignment(Pos.CENTER);
-                //carteVide.setPrefSize(240, 260);
-                // 1. On lève la restriction de taille minimum pour autoriser le rétrécissement
-                carteVide.setMinSize(0, 0); 
-                // 2. On lie la taille de la carte à celle de l'écran (environ 28% de l'espace)
-                carteVide.prefWidthProperty().bind(boxGrilles.widthProperty().divide(3.5));
-                carteVide.prefHeightProperty().bind(boxGrilles.heightProperty().multiply(0.8));
-                carteVide.setStyle("-fx-border-color: #e0e0e0; -fx-background-color: #fafafa; -fx-border-radius: 10;");
-                
-                Label lbl = new Label("Grille " + i + "\nIndisponible");
-                lbl.setStyle("-fx-text-alignment: center; -fx-text-fill: #aaaaaa; -fx-font-size: 13px;");
-                
-                carteVide.getChildren().add(lbl);
+                VBox carteVide = fr.univ.calcudoku.utils.CarteUIFactory.creerCarteVide("Grille " + i, boxGrilles);
                 boxGrilles.getChildren().add(carteVide);
             }
         }
     }
 
     private VBox creerCarteNiveau(DonneesNiveau niveau, String baseName, int index) {
-        VBox vBox = new VBox(10);
-        vBox.setMinSize(0, 0);
-        vBox.setAlignment(Pos.CENTER);
-        vBox.setStyle("-fx-cursor: hand; -fx-padding: 10; -fx-border-color: transparent; -fx-border-radius: 10;");
-
-        vBox.setOnMouseEntered(e -> vBox.setStyle("-fx-cursor: hand; -fx-padding: 10; -fx-background-color: #f5f5f5; -fx-border-color: #cccccc; -fx-border-radius: 10;"));
-        vBox.setOnMouseExited(e -> vBox.setStyle("-fx-cursor: hand; -fx-padding: 10; -fx-border-color: transparent;"));
-
-        ImageView vueMiniature = new ImageView();
         Image image = CacheRessources.getImage("/grilles/images/" + baseName + ".png");
-        
-        if (image != null) {
-            vueMiniature.setImage(image);
-        } else {
-            vueMiniature.setStyle("-fx-background-color: lightgray;");
-        }
-        
-        //vueMiniature.setFitWidth(300);
-        //vueMiniature.setFitHeight(300);
-        // L'image surveille la largeur ET la hauteur !
-        vueMiniature.fitWidthProperty().bind(boxGrilles.widthProperty().divide(3.5));
-        
-        // On la limite à 60% de la hauteur dispo pour laisser de la place aux textes en dessous (titre et chrono)
-        vueMiniature.fitHeightProperty().bind(boxGrilles.heightProperty().multiply(0.6)); 
-        
-        // Indispensable : empêche l'image de s'écraser
-        vueMiniature.setPreserveRatio(true);
-
-        Label titre = new Label("Grille " + index);
-        titre.setStyle("-fx-font-family: 'Arial'; -fx-font-weight: bold; -fx-font-size: 14px;");
 
         int min = niveau.temps / 60;
         int sec = niveau.temps % 60;
-        Label lblTemps = new Label(String.format("Temps cible : %d:%02d", min, sec));
-        lblTemps.setStyle("-fx-font-family: 'Arial'; -fx-font-size: 12px; -fx-text-fill: #555555;");
 
-        vBox.getChildren().addAll(vueMiniature, titre, lblTemps);
-
-        vBox.setOnMouseClicked(e -> {
-            javafx.stage.Stage stage = (javafx.stage.Stage) boxGrilles.getScene().getWindow();
-            GestionnaireJeu.chargerPartie(stage, baseName + ".json");
-        });
-
-        return vBox;
+        // On commande la carte à notre Usine !
+        return fr.univ.calcudoku.utils.CarteUIFactory.creerCarteGrille(
+            "Grille " + index, 
+            String.format("Temps cible : %d:%02d", min, sec), 
+            image, boxGrilles,
+            () -> {
+                javafx.stage.Stage stage = (javafx.stage.Stage) boxGrilles.getScene().getWindow();
+                GestionnaireJeu.chargerPartie(stage, baseName + ".json");
+            }
+        );
     }
 
     @FXML 

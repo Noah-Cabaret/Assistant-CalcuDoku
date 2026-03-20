@@ -5,7 +5,6 @@ import fr.univ.calcudoku.model.DonneesNiveau;
 import fr.univ.calcudoku.service.ProfileManager;
 import fr.univ.calcudoku.utils.CacheRessources;
 import javafx.fxml.FXML;
-import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.image.Image;
@@ -72,70 +71,28 @@ public class ProfilController {
     }
 
     private VBox creerCartePartie(DonneesNiveau niveau, File fichierJson) {
-        VBox vBox = new VBox(10);
-        vBox.setAlignment(Pos.CENTER);
-        
-        // --- 1. Autoriser la VBox à rétrécir à l'infini
-        vBox.setMinSize(0, 0); 
-
-        ImageView vueMiniature = new ImageView();
-        
-        // On déduit le dossier "images" à partir de l'emplacement du fichier JSON
-        // fichierJson est dans "jeu/json/", donc getParentFile().getParentFile() remonte à "jeu/"
         File dossierJeu = fichierJson.getParentFile().getParentFile(); 
         File fichierImage = new File(dossierJeu, "images/" + fichierJson.getName().replace(".json", ".png"));
         
-        // On charge l'image depuis le disque dur (en rajoutant "file:" devant le chemin)
+        Image image = null;
         if (fichierImage.exists()) {
-            Image image = new Image(fichierImage.toURI().toString());
-            vueMiniature.setImage(image);
-        } else {
-            // S'il n'y a pas d'image de sauvegarde, on met un fond gris par défaut
-            vueMiniature.setStyle("-fx-background-color: lightgray;");
+            image = new Image(fichierImage.toURI().toString());
         }
-        
-        // --- 2. RESPONSIVE : Les images suivent la hauteur ET la largeur ! ---
-        // On calcule la taille idéale en hauteur (55% de la boîte)
-        javafx.beans.binding.NumberBinding tailleHauteur = boxParties.heightProperty().multiply(0.75);
-        
-        // On calcule la taille idéale en largeur (environ 28% de la boîte pour en afficher ~3 sans déborder)
-        javafx.beans.binding.NumberBinding tailleLargeur = boxParties.widthProperty().divide(4.0);
-        
-        // L'image prendra TOUJOURS la plus petite des deux valeurs pour ne jamais déborder !
-        javafx.beans.binding.NumberBinding tailleMax = javafx.beans.binding.Bindings.min(tailleHauteur, tailleLargeur);
-        
-        vueMiniature.fitHeightProperty().bind(tailleMax);
-        vueMiniature.fitWidthProperty().bind(tailleMax); // Reste un carré parfait
-        vueMiniature.setPreserveRatio(true);
 
         String nomPropre = fichierJson.getName().replace(".json", "");
-        Label titre = new Label("Grille " + nomPropre);
-        titre.setStyle("-fx-font-family: 'Arial'; -fx-font-weight: bold; -fx-font-size: 11px;");
-
         int min = niveau.temps / 60;
         int sec = niveau.temps % 60;
-        Label lblTemps = new Label(String.format("Temps : %d:%02d", min, sec));
-        lblTemps.setStyle("-fx-font-family: 'Arial'; -fx-font-size: 10px; -fx-text-fill: #333333;");
 
-        vBox.getChildren().addAll(vueMiniature, titre, lblTemps);
-
-        // --- NOUVEAU CODE À AJOUTER ICI ---
-
-        // 1. Ajouter l'effet visuel (curseur en forme de main, fond gris et Bords + Fonds Arrondis !)
-        String styleNormal = "-fx-cursor: hand; -fx-padding: 10; -fx-background-color: transparent; -fx-border-color: transparent; -fx-border-radius: 10; -fx-background-radius: 10;";
-        String styleHover = "-fx-cursor: hand; -fx-padding: 10; -fx-background-color: #f5f5f5; -fx-border-color: #cccccc; -fx-border-radius: 10; -fx-background-radius: 10;";
-
-        vBox.setStyle(styleNormal);
-        vBox.setOnMouseEntered(e -> vBox.setStyle(styleHover));
-        vBox.setOnMouseExited(e -> vBox.setStyle(styleNormal));
-
-        // 2. Ajouter l'action au clic
-        vBox.setOnMouseClicked(e -> {
-            javafx.stage.Stage stage = (javafx.stage.Stage) boxParties.getScene().getWindow();
-            fr.univ.calcudoku.utils.GestionnaireJeu.chargerPartieDepuisFichier(stage, fichierJson);
-        });
-
-        return vBox;
+        // On commande la carte à notre Usine !
+        return fr.univ.calcudoku.utils.CarteUIFactory.creerCarteGrille(
+            "Grille " + nomPropre, 
+            String.format("Temps : %d:%02d", min, sec), 
+            image, boxParties,
+            () -> {
+                javafx.stage.Stage stage = (javafx.stage.Stage) boxParties.getScene().getWindow();
+                fr.univ.calcudoku.utils.GestionnaireJeu.chargerPartieDepuisFichier(stage, fichierJson);
+            }
+        );
     }
 
     private void chargerStatistiquesProfil(String nom, ProfileManager manager) {
