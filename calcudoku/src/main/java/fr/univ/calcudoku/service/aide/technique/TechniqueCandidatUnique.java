@@ -2,9 +2,7 @@ package fr.univ.calcudoku.service.aide.technique;
 
 import fr.univ.calcudoku.model.Case;
 import fr.univ.calcudoku.model.Grille;
-import fr.univ.calcudoku.model.GroupementCases;
 import fr.univ.calcudoku.model.Indice;
-import fr.univ.calcudoku.service.aide.visitor.VisiteurGrille;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,122 +12,68 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Technique du Candidat Unique (Naked Single).
- * Analyse si une case vide n'a plus qu'une seule possibilité mathématique 
- * en fonction des chiffres déjà validés sur sa ligne et sa colonne.
+ * Technique : Candidat Unique.
+ * Cherche une case vide à l'intersection d'une ligne et d'une colonne très remplies,
+ * ne laissant qu'un seul chiffre possible.
  */
-public class TechniqueCandidatUnique implements TechniqueAide, VisiteurGrille {
-
-    // On stocke la grille et l'indice trouvé en attributs de classe 
-    // pour que le Visiteur puisse y accéder pendant son parcours.
-    private Grille grilleActuelle;
-    private Indice indiceTrouve;
-
-    // ==========================================
-    // IMPLÉMENTATION DU DESIGN PATTERN STRATÉGIE
-    // ==========================================
+public class TechniqueCandidatUnique implements TechniqueAide {
 
     @Override
     public Indice analyser(Grille grille) {
-        this.grilleActuelle = grille;
-        this.indiceTrouve = null; // On réinitialise à chaque nouvelle analyse
+        int taille = grille.getTaille();
+        Indice indiceNormal = null;
 
-        // On lance le parcours de la grille grâce au Visiteur
-        // La grille va appeler la méthode "visiter(Case c)" sur toutes ses cases
-        grille.accepter(this);
+        for (int y = 0; y < taille; y++) {
+            for (int x = 0; x < taille; x++) {
+                Case c = grille.getCase(x, y);
 
-        // Une fois le parcours terminé, on renvoie l'indice (ou null s'il n'y a rien)
-        return indiceTrouve;
-    }
+                Set<Integer> chiffresVus = new HashSet<>();
+                int nbSurLigne = 0, nbSurColonne = 0;
 
-    // ==========================================
-    // IMPLÉMENTATION DU DESIGN PATTERN VISITEUR
-    // ==========================================
+                // Scan en croix (Ligne + Colonne)
+                for (int i = 0; i < taille; i++) {
+                    if (i != x) {
+                        int val = grille.getCase(i, y).getValeur();
+                        if (val != 0) { chiffresVus.add(val); nbSurLigne++; }
+                    }
+                    if (i != y) {
+                        int val = grille.getCase(x, i).getValeur();
+                        if (val != 0) { chiffresVus.add(val); nbSurColonne++; }
+                    }
+                }
 
-    @Override
-    public void visiter(Grille g) {
-        // Pas besoin de logique globale sur la grille pour cette technique
-    }
+                // Si (Taille - 1) chiffres différents ont été vus, il n'en reste qu'un
+                if (chiffresVus.size() == taille - 1) {
+                    int chiffreManquant = trouverChiffreManquant(chiffresVus, taille);
+                    int valeurJoueur = c.getValeur();
+                    
+                    if (valeurJoueur == chiffreManquant) continue;
 
-    @Override
-    public void visiter(GroupementCases groupement) {
-        // Pas besoin d'analyser les blocs mathématiques pour cette technique
-    }
+                    boolean contientErreur = (valeurJoueur != 0 && valeurJoueur != c.getSolution());
+                    
+                    // Laisse la priorité à "Dernière case Ligne/Col" si c'est plus simple
+                    if (!contientErreur && (nbSurLigne == taille - 1 || nbSurColonne == taille - 1)) continue;
 
-    @Override
-    public void visiter(Case c) {
-        // CONDITIONS D'ARRÊT :
-        // 1. Si on a DÉJÀ trouvé un indice, on ne fait plus rien (on veut renvoyer une seule aide à la fois)
-        // 2. Si la case est déjà remplie (valeur != 0), on passe à la suivante
-        if (indiceTrouve != null || c.getValeur() != 0) {
-            return;
-        }
+                    List<Case> casesASurbriller = new ArrayList<>();
+                    casesASurbriller.add(c);
+                    Map<Case, Integer> solutions = new HashMap<>();
+                    solutions.put(c, chiffreManquant);
 
-        int taille = grilleActuelle.getTaille();
-        Set<Integer> chiffresVus = new HashSet<>();
-
-        // ÉTAPE 1 : Scanner la LIGNE de cette case
-        for (int i = 0; i < taille; i++) {
-            int valeurLigne = grilleActuelle.getCase(i, c.getY()).getValeur();
-            if (valeurLigne != 0) {
-                chiffresVus.add(valeurLigne);
+                    if (contientErreur) {
+                        String msg = "Erreur détectée ! La case ciblée ne peut contenir que le chiffre " + chiffreManquant + " à cause des autres chiffres présents sur sa ligne et sa colonne.";
+                        return new Indice("Candidat Unique", msg, casesASurbriller, solutions, true);
+                    } else if (indiceNormal == null) {
+                        String msg = "Techniques à candidat unique : Selon les règles, un nombre n'apparaît qu'une fois par ligne et colonne. En croisant la ligne et la colonne de cette case, il ne reste plus qu'un seul candidat possible !";
+                        indiceNormal = new Indice("Candidat Unique", msg, casesASurbriller, solutions, false);
+                    }
+                }
             }
         }
-
-        // ÉTAPE 2 : Scanner la COLONNE de cette case
-        for (int j = 0; j < taille; j++) {
-            int valeurColonne = grilleActuelle.getCase(c.getX(), j).getValeur();
-            if (valeurColonne != 0) {
-                chiffresVus.add(valeurColonne);
-            }
-        }
-
-        // ÉTAPE 3 : Vérification Mathématique
-        // S'il y a exactement (Taille - 1) chiffres différents sur la croix (ligne + colonne)
-        // Alors il ne manque qu'un seul chiffre possible pour cette case.
-        if (chiffresVus.size() == taille - 1) {
-            
-            int chiffreManquant = trouverChiffreManquant(chiffresVus, taille);
-
-            // ÉTAPE 4 : Construction de la réponse (l'Indice)
-            String message = "Regardez la case située à la ligne " + (c.getY() + 1) 
-                           + " et à la colonne " + (c.getX() + 1) + ".\n"
-                           + "En regardant les chiffres déjà présents sur sa ligne et sa colonne, "
-                           + "il ne reste plus qu'une seule possibilité : le chiffre " + chiffreManquant + ".";
-
-            // Les cases à mettre en surbrillance (Niveau 1 de l'aide)
-            List<Case> casesASurbriller = new ArrayList<>();
-            casesASurbriller.add(c);
-
-            // La solution à remplir automatiquement ou à annoter (Niveau 2 de l'aide)
-            Map<Case, Integer> solutions = new HashMap<>();
-            solutions.put(c, chiffreManquant);
-
-            // On génère l'indice !
-            this.indiceTrouve = new Indice(
-                "Candidat Unique",
-                message,
-                casesASurbriller,
-                solutions,
-                false // ne contient pas d'erreur
-            );
-        }
+        return indiceNormal;
     }
 
-    // ==========================================
-    // MÉTHODE UTILITAIRE PRIVÉE
-    // ==========================================
-
-    /**
-     * Permet de déduire quel chiffre (entre 1 et la taille de la grille) 
-     * est absent de la liste des chiffres déjà vus.
-     */
     private int trouverChiffreManquant(Set<Integer> chiffresVus, int taille) {
-        for (int n = 1; n <= taille; n++) {
-            if (!chiffresVus.contains(n)) {
-                return n;
-            }
-        }
-        return -1; // Sécurité (ne devrait jamais arriver si la logique au-dessus est respectée)
+        for (int n = 1; n <= taille; n++) if (!chiffresVus.contains(n)) return n;
+        return -1;
     }
 }

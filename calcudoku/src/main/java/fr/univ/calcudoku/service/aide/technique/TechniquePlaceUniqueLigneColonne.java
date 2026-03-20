@@ -10,28 +10,25 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Technique : Place Unique en Ligne/Colonne.
+ * Trouve une ligne ou une colonne où un chiffre n'a plus qu'une seule case disponible.
+ */
 public class TechniquePlaceUniqueLigneColonne implements TechniqueAide {
 
     @Override
     public Indice analyser(Grille grille) {
-        Indice indiceErreur = null;
         int taille = grille.getTaille();
+        Indice indiceNormal = null;
 
         for (int i = 0; i < taille; i++) {
             Indice indLigne = chercherPlaceUnique(grille, i, true);
-            if (indLigne != null) {
-                if (!indLigne.aUneErreur()) return indLigne;
-                if (indiceErreur == null) indiceErreur = indLigne;
-            }
+            if (indLigne != null) { if (indLigne.aUneErreur()) return indLigne; if (indiceNormal == null) indiceNormal = indLigne; }
 
             Indice indCol = chercherPlaceUnique(grille, i, false);
-            if (indCol != null) {
-                if (!indCol.aUneErreur()) return indCol;
-                if (indiceErreur == null) indiceErreur = indCol;
-            }
+            if (indCol != null) { if (indCol.aUneErreur()) return indCol; if (indiceNormal == null) indiceNormal = indCol; }
         }
-
-        return indiceErreur;
+        return indiceNormal;
     }
 
     private Indice chercherPlaceUnique(Grille grille, int indexLigneOuCol, boolean estLigne) {
@@ -39,119 +36,69 @@ public class TechniquePlaceUniqueLigneColonne implements TechniqueAide {
         int nbCasesVides = 0;
 
         for (int i = 0; i < taille; i++) {
-            int x = estLigne ? i : indexLigneOuCol;
-            int y = estLigne ? indexLigneOuCol : i;
-            if (grille.getCase(x, y).getValeur() == 0) {
-                nbCasesVides++;
-            }
-        }
-
-        if (nbCasesVides <= 1) {
-            return null;
+            Case c = grille.getCase(estLigne ? i : indexLigneOuCol, estLigne ? indexLigneOuCol : i);
+            if (c.getValeur() == 0) nbCasesVides++;
         }
 
         for (int chiffre = 1; chiffre <= taille; chiffre++) {
-            if (chiffreDejaPlace(grille, indexLigneOuCol, estLigne, chiffre)) {
-                continue;
-            }
-
-            if (compterOccurrencesGrille(grille, chiffre) >= taille - 1) {
-                continue;
-            }
+            if (chiffreDejaPlace(grille, indexLigneOuCol, estLigne, chiffre)) continue;
+            if (compterOccurrencesGrille(grille, chiffre) >= taille - 1) continue;
 
             List<Case> casesPossibles = new ArrayList<>();
-
-            // ÉTAPE 1 : On liste honnêtement TOUTES les places valides
             for (int i = 0; i < taille; i++) {
                 int x = estLigne ? i : indexLigneOuCol;
                 int y = estLigne ? indexLigneOuCol : i;
                 Case c = grille.getCase(x, y);
 
-                if (c.getValeur() == 0) {
+                if (c.getValeur() != chiffre) {
                     if (grille.estCoupValide(x, y, chiffre) && blocAccepteChiffre(c.getGroupement(), chiffre)) {
                         casesPossibles.add(c);
                     }
                 }
             }
 
-            // ÉTAPE 2 : S'il n'y a VRAIMENT qu'une seule place, on applique nos filtres de difficulté
             if (casesPossibles.size() == 1) {
                 Case caseCible = casesPossibles.get(0);
-                GroupementCases bloc = caseCible.getGroupement();
-                
-                // Filtre A : Est-ce un bloc de 1 case ?
-                if (bloc.getListeCases().size() == 1) {
-                    continue; 
-                }
+                if (caseCible.getGroupement().getListeCases().size() == 1) continue; 
 
-                // Filtre B : Est-ce la dernière case vide de son bloc ?
-                int casesVidesDuBloc = 0;
-                for (Case caseDuBloc : bloc.getListeCases()) {
-                    if (caseDuBloc.getValeur() == 0) {
-                        casesVidesDuBloc++;
-                    }
-                }
-                if (casesVidesDuBloc == 1) {
-                    continue; // On annule, c'est trop facile, une autre aide s'en chargera
-                }
+                int valeurJoueur = caseCible.getValeur();
+                if (valeurJoueur == chiffre) continue; 
 
-                // Si ça passe les filtres, on génère l'aide !
-                boolean contientErreur = false; 
+                boolean contientErreur = (valeurJoueur != 0 && valeurJoueur != caseCible.getSolution()); 
+                if (!contientErreur && nbCasesVides <= 1) continue;
 
                 Map<Case, Integer> solutions = new HashMap<>();
                 solutions.put(caseCible, chiffre);
-
                 List<Case> casesASurbriller = new ArrayList<>();
-                for (int i = 0; i < taille; i++) {
-                    int x = estLigne ? i : indexLigneOuCol;
-                    int y = estLigne ? indexLigneOuCol : i;
-                    casesASurbriller.add(grille.getCase(x, y));
-                }
-
                 String axe = estLigne ? "la ligne " + (indexLigneOuCol + 1) : "la colonne " + (indexLigneOuCol + 1);
-                String nom = "Place Unique en " + (estLigne ? "Ligne" : "Colonne");
-                String message = "Regardez " + axe + ".\n" +
-                                 "Le chiffre " + chiffre + " doit obligatoirement y figurer.\n" +
-                                 "Toutes les autres cases de cette " + (estLigne ? "ligne" : "colonne") + 
-                                 " sont bloquées (soit par les colonnes/lignes croisées, soit parce que leur bloc mathématique ne permet pas d'avoir un " + chiffre + ").\n" +
-                                 "Il n'y a donc qu'un seul endroit possible pour le placer !";
-
-                return new Indice(nom, message, casesASurbriller, solutions, contientErreur);
+                
+                if (contientErreur) {
+                    casesASurbriller.add(caseCible);
+                    return new Indice("Place Unique", "Erreur détectée ! Regardez " + axe + ".\n" +
+                              "Le chiffre " + chiffre + " ne peut mathématiquement aller que dans cette case.", casesASurbriller, solutions, true);
+                } else {
+                    for (int i = 0; i < taille; i++) casesASurbriller.add(grille.getCase(estLigne ? i : indexLigneOuCol, estLigne ? indexLigneOuCol : i));
+                    return new Indice("Place Unique", "Techniques uniques cachées : Regardez " + axe + ".\nPar processus d'élimination, un certain chiffre ne peut être placé que dans une seule case. Trouvez-le !", casesASurbriller, solutions, false);
+                }
             }
         }
         return null;
     }
 
     private boolean chiffreDejaPlace(Grille grille, int index, boolean estLigne, int chiffre) {
-        for (int i = 0; i < grille.getTaille(); i++) {
-            int x = estLigne ? i : index;
-            int y = estLigne ? index : i;
-            if (grille.getCase(x, y).getValeur() == chiffre) {
-                return true;
-            }
-        }
+        for (int i = 0; i < grille.getTaille(); i++) if (grille.getCase(estLigne ? i : index, estLigne ? index : i).getValeur() == chiffre) return true;
         return false;
     }
 
     private int compterOccurrencesGrille(Grille grille, int chiffre) {
         int count = 0;
-        int taille = grille.getTaille();
-        for (int y = 0; y < taille; y++) {
-            for (int x = 0; x < taille; x++) {
-                if (grille.getCase(x, y).getValeur() == chiffre) {
-                    count++;
-                }
-            }
-        }
+        for (int y = 0; y < grille.getTaille(); y++) for (int x = 0; x < grille.getTaille(); x++) if (grille.getCase(x, y).getValeur() == chiffre) count++;
         return count;
     }
 
     private boolean blocAccepteChiffre(GroupementCases bloc, int chiffre) {
-        for (List<Integer> combinaison : bloc.getCombinaisonsMaths()) {
-            if (combinaison.contains(chiffre)) {
-                return true;
-            }
-        }
+        if (bloc.getCombinaisonsMaths() == null || bloc.getCombinaisonsMaths().isEmpty()) return true;
+        for (List<Integer> combinaison : bloc.getCombinaisonsMaths()) if (combinaison.contains(chiffre)) return true;
         return false;
     }
 }

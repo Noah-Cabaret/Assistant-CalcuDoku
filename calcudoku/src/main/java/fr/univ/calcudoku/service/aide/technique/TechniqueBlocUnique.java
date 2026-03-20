@@ -4,104 +4,64 @@ import fr.univ.calcudoku.model.Case;
 import fr.univ.calcudoku.model.Grille;
 import fr.univ.calcudoku.model.GroupementCases;
 import fr.univ.calcudoku.model.Indice;
-import fr.univ.calcudoku.service.aide.visitor.VisiteurGrille;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
- * Technique du Bloc Unique (Cage Logic).
- * Analyse les cages (groupements) de 2 cases ou plus pour trouver 
- * celles qui n'ont qu'une seule combinaison mathématique possible.
+ * Technique : Bloc Unique.
+ * Cherche les blocs dont l'opération mathématique n'autorise qu'une seule combinaison de chiffres.
  */
-public class TechniqueBlocUnique implements TechniqueAide, VisiteurGrille {
-
-    private Indice indiceTrouve;
-
-    // ==========================================
-    // IMPLÉMENTATION STRATÉGIE
-    // ==========================================
+public class TechniqueBlocUnique implements TechniqueAide {
 
     @Override
     public Indice analyser(Grille grille) {
-        this.indiceTrouve = null;
-        
-        // Le Visiteur va parcourir la grille et déléguer l'analyse des blocs 
-        // à la méthode visiter(GroupementCases) ci-dessous.
-        grille.accepter(this);
+        Indice indiceNormal = null;
 
-        return indiceTrouve;
-    }
+        for (GroupementCases bloc : grille.getListeGroupements()) {
+            List<Case> casesDuBloc = bloc.getListeCases();
+            if (casesDuBloc.size() <= 1) continue;
 
-    // ==========================================
-    // IMPLÉMENTATION VISITEUR
-    // ==========================================
+            List<List<Integer>> combinaisonsPossibles = bloc.getCombinaisonsMaths();
+            
+            // Si la combinaison est strictement unique
+            if (combinaisonsPossibles != null && combinaisonsPossibles.size() == 1) {
+                List<Integer> lUniqueCombinaison = combinaisonsPossibles.get(0);
+                
+                boolean contientErreur = false;
+                List<Case> casesFausses = new ArrayList<>();
+                int nbCasesVides = 0;
 
-    @Override
-    public void visiter(Grille g) {
-        // Inutile ici, on se concentre sur les Groupements
-    }
+                // Validation via la grille finale
+                for (Case c : casesDuBloc) {
+                    if (c.getValeur() == 0) nbCasesVides++;
+                    if (c.getValeur() != 0 && c.getValeur() != c.getSolution()) {
+                        contientErreur = true;
+                        casesFausses.add(c);
+                    }
+                }
 
-    @Override
-    public void visiter(Case c) {
-        // Inutile ici, on analyse les blocs entiers
-    }
+                // Laisse la priorité à "Dernière Case Bloc" si le bloc est presque fini
+                if (!contientErreur && nbCasesVides <= 1) continue; 
+                if (!contientErreur && nbCasesVides == 0) continue; 
 
-    @Override
-    public void visiter(GroupementCases groupement) {
-        // Si on a déjà trouvé une aide, on arrête l'exploration
-        if (indiceTrouve != null) {
-            return;
-        }
+                if (contientErreur) {
+                    StringBuilder chiffresTexte = new StringBuilder("{");
+                    for (int i = 0; i < lUniqueCombinaison.size(); i++) {
+                        chiffresTexte.append(lUniqueCombinaison.get(i));
+                        if (i < lUniqueCombinaison.size() - 1) chiffresTexte.append(", ");
+                    }
+                    chiffresTexte.append("}");
 
-        List<Case> casesDuBloc = groupement.getListeCases();
-
-        // NOUVEAU FILTRE : On ignore volontairement les cages de 1 seule case !
-        if (casesDuBloc.size() <= 1) {
-            return;
-        }
-
-        // On vérifie d'abord s'il reste des cases vides dans ce bloc.
-        // Si le bloc est déjà entièrement rempli, on passe au suivant.
-        boolean contientCasesVides = false;
-        for (Case c : casesDuBloc) {
-            if (c.getValeur() == 0) {
-                contientCasesVides = true;
-                break;
+                    String msg = "Erreur détectée ! Ce bloc ne peut être résolu qu'avec la combinaison : " + chiffresTexte.toString() + ".\nLes chiffres en surbrillance sont incorrects.";
+                    return new Indice("Combinaison Unique", msg, casesFausses, new HashMap<>(), true);
+                } else if (indiceNormal == null) {
+                    String msg = "Techniques de blocs uniques : Observez ce bloc. Les règles du CalcuDoku font qu'il n'existe qu'une seule combinaison de nombres possible pour atteindre ce résultat avec cette opération ! Déduisez-la.";
+                    indiceNormal = new Indice("Combinaison Unique", msg, casesDuBloc, new HashMap<>(), false);
+                }
             }
         }
-        if (!contientCasesVides) return;
-
-        // --------------------------------------------------------
-        // ANALYSE : Bloc avec UNE SEULE combinaison mathématique
-        // --------------------------------------------------------
-        List<List<Integer>> combinaisonsPossibles = groupement.getCombinaisonsMaths();
-        
-        // S'il n'y a qu'une seule façon d'atteindre le résultat avec l'opération donnée
-        if (combinaisonsPossibles != null && combinaisonsPossibles.size() == 1) {
-            
-            List<Integer> lUniqueCombinaison = combinaisonsPossibles.get(0);
-            
-            // On prépare le texte avec les chiffres de la combinaison
-            StringBuilder chiffresTexte = new StringBuilder("{");
-            for (int i = 0; i < lUniqueCombinaison.size(); i++) {
-                chiffresTexte.append(lUniqueCombinaison.get(i));
-                if (i < lUniqueCombinaison.size() - 1) chiffresTexte.append(", ");
-            }
-            chiffresTexte.append("}");
-
-            String message = "Regardez ce bloc (Cible : " + groupement.getResultatCible() 
-                           + groupement.getOperation().getSymbole() + ").\n"
-                           + "Pour atteindre ce résultat avec " + casesDuBloc.size() + " cases, "
-                           + "il n'existe mathématiquement qu'une seule combinaison de chiffres : " + chiffresTexte.toString() + ".\n"
-                           + "Vous devez placer ces chiffres dans ce bloc !";
-
-            // On ne donne pas la position exacte des chiffres (c'est à l'utilisateur de réfléchir),
-            // donc on passe une Map de solutions vide. L'aide se contentera de mettre le bloc en surbrillance.
-            Map<Case, Integer> solutionsVides = new HashMap<>();
-
-            this.indiceTrouve = new Indice("Combinaison Unique", message, casesDuBloc, solutionsVides, false);
-        }
+        return indiceNormal;
     }
 }

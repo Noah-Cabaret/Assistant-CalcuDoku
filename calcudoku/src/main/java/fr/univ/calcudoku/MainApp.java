@@ -17,7 +17,7 @@ public class MainApp extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         primaryStage = stage;
-        profileManager = new ProfileManager();
+        profileManager = new ProfileManager(); 
 
         changerScene("/fxml/accueil.fxml"); 
         
