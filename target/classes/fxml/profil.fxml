@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox alignment="TOP_CENTER" prefHeight="800.0" prefWidth="1000.0" spacing="10.0" style="-fx-background-color: white; -fx-padding: 20;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fr.univ.calcudoku.controller.ProfilController">
+
+    <BorderPane maxWidth="800">
+        <left>
+            <Button onAction="#onRetourClick" style="-fx-background-color: transparent; -fx-font-size: 30px; -fx-cursor: hand; -fx-text-fill: black;" text="⬅" />
+        </left>
+        <center>
+            <VBox alignment="CENTER" spacing="5">
+                <ImageView fx:id="imgAvatar" fitHeight="50.0" fitWidth="50.0" preserveRatio="true" />
+                <Label fx:id="lblNomProfil" style="-fx-font-size: 18px; -fx-font-weight: bold;" text="Profil">
+               <font>
+                  <Font size="8.0" />
+               </font></Label>
+            </VBox>
+        </center>
+        <right>
+            <Button onAction="#onDeconnexionClick" style="-fx-background-color: transparent; -fx-font-size: 30px; -fx-cursor: hand; -fx-text-fill: black; -fx-rotate: 90;" text="⎋" /> 
+        </right>
+    </BorderPane>
+
+    <HBox alignment="CENTER" maxHeight="-Infinity" maxWidth="800" prefHeight="140.0" prefWidth="800.0" spacing="20.0" style="-fx-padding: 20;" VBox.vgrow="ALWAYS">
+      <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="134.0" style="-fx-border-radius: 20; -fx-border-width: 1; -fx-border-color: black; -fx-padding: 10;">
+         <children>
+            <Label style="-fx-font-size: 18; -fx-font-weight: bold;" text="Touches" />
+            <RadioButton mnemonicParsing="false" prefHeight="32.0" prefWidth="122.0" text="Déplacement" />
+            <RadioButton mnemonicParsing="false" prefHeight="36.0" prefWidth="113.0" text="Placer chiffre" />
+            <RadioButton mnemonicParsing="false" prefHeight="34.0" prefWidth="112.0" text="Annotation" />
+         </children></VBox>
+        
+        <VBox alignment="TOP_CENTER" spacing="5.0" style="-fx-border-color: black; -fx-border-radius: 20; -fx-border-width: 1; -fx-padding: 30;" HBox.hgrow="ALWAYS">
+            <Label style="-fx-font-size: 18px; -fx-font-weight: bold;" text="Statistiques :" />
+            <VBox alignment="CENTER" spacing="5.0">
+                <Label fx:id="lblTempsMoyen" style="-fx-font-size: 14px;" text="Temps moyen : --:--" />
+                <Label fx:id="lblTauxReussite" style="-fx-font-size: 14px;" text="Taux de réussite : 0%" />
+                <Label fx:id="lblNiveauAventure" style="-fx-font-size: 14px;" text="Niveau mode aventure : 1" />
+                <Label fx:id="lblDifficulteMax" style="-fx-font-size: 14px;" text="Difficulté max : Facile" />
+                <Label fx:id="lblMeilleurScore" style="-fx-font-size: 14px;" text="Meilleur score : 0" />
+            </VBox>
+        </VBox>
+
+        <VBox alignment="TOP_CENTER" prefHeight="112.0" prefWidth="254.0" style="-fx-border-color: black; -fx-border-radius: 20; -fx-border-width: 1; -fx-padding: 10;" HBox.hgrow="ALWAYS">
+            <Label style="-fx-font-size: 18px; -fx-font-weight: bold;" text="Paramètres :" />
+            
+            <VBox alignment="CENTER" spacing="5.0">
+            <RadioButton mnemonicParsing="false" prefHeight="30.0" prefWidth="109.0" text="Mode sombre" />
+            <RadioButton mnemonicParsing="false" prefHeight="30.0" prefWidth="109.0" text="Mode claire" />
+                
+                <Label style="-fx-font-weight: bold; -fx-padding: 10 0 0 0;" text="Bouton d'aide au calcul" />
+            </VBox>
+         <RadioButton mnemonicParsing="false" prefHeight="30.0" prefWidth="109.0" text="Combinaisons" />
+         <RadioButton mnemonicParsing="false" prefHeight="30.0" prefWidth="109.0" text="Calculatrice" />
+        </VBox>
+    </HBox>
+
+    <VBox alignment="TOP_CENTER" maxHeight="-Infinity" maxWidth="800" minHeight="280" prefHeight="200.0" style="-fx-border-color: black; -fx-border-radius: 20; -fx-border-width: 1; -fx-padding: 20;">
+        
+        <Label style="-fx-font-size: 18px; -fx-font-weight: bold;" text="Partie en cours" />
+
+        <ScrollPane fitToHeight="true" hbarPolicy="AS_NEEDED" pannable="true" style="-fx-background-color: transparent; -fx-background: white;" vbarPolicy="NEVER">
+            
+            <HBox fx:id="boxParties" alignment="CENTER_LEFT" spacing="30" style="-fx-background-color: white; -fx-padding: 10;">
+            </HBox>
+            
+        </ScrollPane>
+    </VBox>
+
+</VBox>
