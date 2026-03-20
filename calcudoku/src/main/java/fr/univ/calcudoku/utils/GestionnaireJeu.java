@@ -15,6 +15,8 @@ import java.io.FileReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import fr.univ.calcudoku.save.Sauvegarde;
+
 /**
  * Gestionnaire du jeu pour charger et lancer les parties.
  * Supporte le chargement depuis les ressources (livrées avec l'app) et depuis des fichiers externes (profils).
@@ -24,6 +26,7 @@ public class GestionnaireJeu {
     private static final Gson GSON = new Gson();
     private static Parent vueJeuCachee = null;
     private static JeuController controleurJeuCache = null;
+    private static Sauvegarde save;
 
     public static void prechargerPageJeu() {
         javafx.application.Platform.runLater(() -> {
@@ -109,7 +112,8 @@ public class GestionnaireJeu {
                 controller = loader.getController();
             }
 
-            controller.initialiserPartie(grille);
+            save = new Sauvegarde();
+            controller.initialiserPartie(grille, save);
 
             Scene scene = stage.getScene();
             

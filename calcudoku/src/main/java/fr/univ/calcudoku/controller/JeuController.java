@@ -32,6 +32,8 @@ import java.util.ArrayList;
 import java.util.List;
 import javafx.animation.PauseTransition;
 
+import fr.univ.calcudoku.save.*;
+
 public class JeuController {
 
     @FXML private StackPane conteneurGrille;
@@ -76,10 +78,17 @@ public class JeuController {
     private List<Indice> indicesEnAttente = new ArrayList<>();
     private int indexAideActuelle = 0;
 
-    public void initialiserPartie(Grille grille) {
+    private Sauvegarde save;
+
+    public void initialiserPartie(Grille grille, Sauvegarde save) {
         this.grilleModele = grille;
+
+        this.save = save;
+        // Il manque des trucs pour initialiser la sauvegarde (mode de jeu, id grille) donc le chargement est en commentaire pour l'instant
+        //save.charger(MainApp.getProfileManager().getProfilActif(), grille);
+
         this.vueGrille = new VueGrille(grille);
-        
+
         conteneurGrille.getChildren().clear(); 
         conteneurGrille.getChildren().add(vueGrille);
         
@@ -136,7 +145,9 @@ public class JeuController {
             labelChrono.setText(String.format("%02d:%02d", minutes, secondes));
         }));
         timeline.setCycleCount(Timeline.INDEFINITE); 
-        timeline.play(); 
+        timeline.play();
+
+        save.tmp.lancer();
     }
 
     public void sauvegarderImageGrille(String nomFichier) {
@@ -177,7 +188,10 @@ public class JeuController {
         if (caseModeleSelectionnee != null) {
             if (modeAnnotationActif) {
                 caseModeleSelectionnee.basculerNote(valeur); 
+                if(caseModeleSelectionnee.getValeur() < 10)
+                    save.hist.addEtape(caseModeleSelectionnee.getX(), caseModeleSelectionnee.getY(), valeur + 10 + (modeHypotheseActif ? 20 : 0));
             } else {
+                save.hist.addEtape(caseModeleSelectionnee.getX(), caseModeleSelectionnee.getY(), valeur + (modeHypotheseActif ? 20 : 0));
                 caseModeleSelectionnee.setValeur(valeur);   
                 vueCaseSelectionnee.setEstHypothese(modeHypotheseActif);
 
@@ -207,6 +221,7 @@ public class JeuController {
                 btnActualiserAide.setManaged(true);
             }
             aideService.lancerAnalyse(grilleModele);
+            save.hist.addEtape(caseModeleSelectionnee.getX(), caseModeleSelectionnee.getY(), (modeHypotheseActif ? 20 : 0));
         }
     }
 
@@ -308,10 +323,18 @@ public class JeuController {
     }
 
     @FXML
-    void actionValiderHypothese(ActionEvent event) { quitterModeHypotheseVisuel(); }
+    void actionValiderHypothese(ActionEvent event)
+    {
+        quitterModeHypotheseVisuel();
+        validerHypothese();
+    }
 
     @FXML
-    void actionAnnulerHypothese(ActionEvent event) { quitterModeHypotheseVisuel(); }
+    void actionAnnulerHypothese(ActionEvent event)
+    {
+        quitterModeHypotheseVisuel();
+        rollbackHypothese();
+    }
 
     private void quitterModeHypotheseVisuel() {
         modeHypotheseActif = false;
@@ -324,8 +347,145 @@ public class JeuController {
         }
     }
     
+    /* Isolement du undo pour l'utiliser à la fois pour le bouton undo et pour le rollback */
+    void undo()
+    {
+        if(save.hist.getIndex() > 0)
+        {
+            Etape etapeCourante = save.hist.getEtapeCourante();
+            Etape etapePrecedente;
+            int i = save.hist.getIndex();
+            boolean etapeExiste = false;
+            do
+                etapePrecedente = save.hist.precedent();
+            while((save.hist.getIndex() > 1) && !(etapeCourante.getX() == etapePrecedente.getX() && etapeCourante.getY() == etapePrecedente.getY()));
+
+            if(etapeCourante.getX() == etapePrecedente.getX() && etapeCourante.getY() == etapePrecedente.getY())
+                etapeExiste = true;
+
+            save.hist.setIndex(i - 1);
+
+            if(etapeCourante.normale())
+            {
+                if(modeHypotheseActif)
+                    save.hist.suivant();
+                else
+                {
+                    if(etapeExiste)
+                    {
+                        if(etapePrecedente.annotation())
+                        {
+                            List<Integer> valeursNote = new ArrayList<Integer>();
+                            i = save.hist.getIndex();
+                            Case caseCourante = grilleModele.getCase(etapeCourante.getX(), etapeCourante.getY());
+                            etapeCourante = save.hist.getEtapeCourante();
+                            while(save.hist.getIndex() > 0 && etapeCourante.getN() != 0)
+                            {
+                                if(etapeCourante.annotation())
+                                    valeursNote.add(etapeCourante.getN());
+                                etapeCourante = save.hist.precedent();
+                            }
+                            save.hist.setIndex(i);
+                            if(valeursNote.size() > 0)
+                            {
+                                caseCourante.setValeur(0);
+                                caseCourante.effacerNotes();
+                                for(Integer note : valeursNote)
+                                    caseCourante.basculerNote(note - 10);
+                            }
+                        }
+                        else
+                            grilleModele.getCase(etapePrecedente.getX(), etapePrecedente.getY()).setValeur(etapePrecedente.getN());
+                    }
+                    else
+                        grilleModele.getCase(etapeCourante.getX(), etapeCourante.getY()).setValeur(0);
+                }
+            }
+            else if(etapeCourante.annotation())
+            {
+                if(!modeHypotheseActif)
+                    grilleModele.getCase(etapeCourante.getX(), etapeCourante.getY()).basculerNote(etapeCourante.getN() - 10);
+                else
+                    save.hist.suivant();
+            }
+            else if(etapeCourante.hypotheseNormale())
+            {
+                if(etapeExiste)
+                {
+                    if(etapePrecedente.annotation() || etapePrecedente.hypotheseAnnotation())
+                    {
+                        List<Integer> valeursNote = new ArrayList<Integer>();
+                        i = save.hist.getIndex();
+                        Case caseCourante = grilleModele.getCase(etapeCourante.getX(), etapeCourante.getY());
+                        etapeCourante = save.hist.getEtapeCourante();
+                        while(save.hist.getIndex() > 0 && etapeCourante.getN() != 0)
+                        {
+                            if(etapeCourante.annotation() || etapeCourante.hypotheseAnnotation())
+                                valeursNote.add(etapeCourante.getN());
+                            etapeCourante = save.hist.precedent();
+                        }
+                        save.hist.setIndex(i);
+                        if(valeursNote.size() > 0)
+                        {
+                            caseCourante.setValeur(0);
+                            caseCourante.effacerNotes();
+                            for(Integer note : valeursNote)
+                                caseCourante.basculerNote(note % 10);
+                        }
+                    }
+                    else
+                        grilleModele.getCase(etapePrecedente.getX(), etapePrecedente.getY()).setValeur(etapePrecedente.getN() - (etapePrecedente.hypotheseNormale() ? 20 : 0));
+                }
+                else
+                    grilleModele.getCase(etapeCourante.getX(), etapeCourante.getY()).setValeur(0);
+            }
+            else if(etapeCourante.hypotheseAnnotation())
+                grilleModele.getCase(etapeCourante.getX(), etapeCourante.getY()).basculerNote(etapeCourante.getN() - 30);
+        }
+    }
+
+    void validerHypothese()
+    {
+        Etape etapeCourante = save.hist.getEtapeCourante();
+        while(save.hist.getIndex() > 0 && etapeCourante.hypotheseNormale())
+        {
+            etapeCourante.setN(etapeCourante.getN() - 20);
+            etapeCourante = save.hist.precedent();
+        }
+        save.hist.setIndex(save.hist.taille() - 1);
+    }
+
+    void rollbackHypothese()
+    {
+        while(save.hist.getIndex() > 0 && (save.hist.getEtapeCourante().hypotheseNormale() || save.hist.getEtapeCourante().hypotheseAnnotation()))
+            undo();
+        save.hist.viderQueue();
+    }
+
     // Stubs pour Undo/Redo/Calculatrice
-    @FXML void actionUndo(ActionEvent event) {}
-    @FXML void actionRedo(ActionEvent event) {}
+    @FXML void actionUndo(ActionEvent event)
+    {
+        undo();
+    }
+
+    @FXML void actionRedo(ActionEvent event)
+    {
+        if(save.hist.getIndex() < save.hist.taille() - 1)
+        {
+            Etape etapeSuivante = save.hist.suivant();
+            if(etapeSuivante.normale())
+            {
+                Case caseCourante = grilleModele.getCase(etapeSuivante.getX(), etapeSuivante.getY());
+                caseCourante.effacerNotes();
+                caseCourante.setValeur(etapeSuivante.getN());
+            }
+            else if(etapeSuivante.annotation())
+                grilleModele.getCase(etapeSuivante.getX(), etapeSuivante.getY()).basculerNote(etapeSuivante.getN() - 10);
+            else if(etapeSuivante.hypotheseNormale())
+                grilleModele.getCase(etapeSuivante.getX(), etapeSuivante.getY()).setValeur(etapeSuivante.getN() - 20);
+            else if(etapeSuivante.hypotheseAnnotation())
+                grilleModele.getCase(etapeSuivante.getX(), etapeSuivante.getY()).basculerNote(etapeSuivante.getN() - 30);
+        }
+    }
     @FXML void actionCalculatrice(ActionEvent event) { sauvegarderImageGrille("1.png"); }
 }

@@ -4,6 +4,7 @@ import fr.univ.calcudoku.model.Case;
 import fr.univ.calcudoku.model.Grille;
 import fr.univ.calcudoku.model.GroupementCases;
 import fr.univ.calcudoku.model.Indice;
+import fr.univ.calcudoku.service.aide.visitor.VisiteurGrille;
 
 import java.util.ArrayList;
 import java.util.HashMap;
