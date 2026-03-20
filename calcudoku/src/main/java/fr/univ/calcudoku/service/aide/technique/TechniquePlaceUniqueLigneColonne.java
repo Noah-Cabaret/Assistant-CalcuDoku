@@ -36,9 +36,22 @@ public class TechniquePlaceUniqueLigneColonne implements TechniqueAide {
 
     private Indice chercherPlaceUnique(Grille grille, int indexLigneOuCol, boolean estLigne) {
         int taille = grille.getTaille();
-        
-        // MODIFICATION : Suppression de la vérification (nbCasesVides <= 1)
-        // On veut continuer l'analyse pour trouver les erreurs même si la grille est pleine.
+        int nbCasesVides = 0;
+
+        // On compte les cases non remplies
+        for (int i = 0; i < taille; i++) {
+            int x = estLigne ? i : indexLigneOuCol;
+            int y = estLigne ? indexLigneOuCol : i;
+            if (grille.getCase(x, y).getValeur() == 0) {
+                nbCasesVides++;
+            }
+        }
+
+        // MODIFICATION (Filtre anti-doublon) : 
+        // S'il n'en reste qu'une (ou zéro), c'est "TechniqueDerniereCaseLigneCol" qui doit analyser la zone.
+        if (nbCasesVides <= 1) {
+            return null;
+        }
 
         for (int chiffre = 1; chiffre <= taille; chiffre++) {
             if (chiffreDejaPlace(grille, indexLigneOuCol, estLigne, chiffre)) {
@@ -56,7 +69,7 @@ public class TechniquePlaceUniqueLigneColonne implements TechniqueAide {
                 int y = estLigne ? indexLigneOuCol : i;
                 Case c = grille.getCase(x, y);
 
-                // MODIFICATION : On vérifie aussi les cases remplies par le joueur (pour détecter l'erreur)
+                // On vérifie aussi les cases remplies par le joueur (pour détecter l'erreur)
                 if (c.getValeur() != chiffre) {
                     if (grille.estCoupValide(x, y, chiffre) && blocAccepteChiffre(c.getGroupement(), chiffre)) {
                         casesPossibles.add(c);
@@ -68,12 +81,10 @@ public class TechniquePlaceUniqueLigneColonne implements TechniqueAide {
                 Case caseCible = casesPossibles.get(0);
                 GroupementCases bloc = caseCible.getGroupement();
                 
+                // On ignore les blocs de 1 case (TechniqueBlocDe1)
                 if (bloc.getListeCases().size() == 1) {
                     continue; 
                 }
-
-                // MODIFICATION : Suppression du filtre B (Dernière case vide du bloc).
-                // Il bloquait la détection des erreurs si le joueur avait rempli tout le bloc.
 
                 int valeurJoueur = caseCible.getValeur();
                 if (valeurJoueur == chiffre) continue; // Si correct, on passe
@@ -95,7 +106,6 @@ public class TechniquePlaceUniqueLigneColonne implements TechniqueAide {
                 String nom = "Place Unique en " + (estLigne ? "Ligne" : "Colonne");
                 String message;
                 
-                // MODIFICATION : Message d'erreur dynamique
                 if (contientErreur) {
                     message = "Erreur détectée ! Regardez " + axe + ".\n" +
                               "Le chiffre " + chiffre + " ne peut mathématiquement aller que dans cette case. " +

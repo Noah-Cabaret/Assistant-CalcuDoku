@@ -48,6 +48,20 @@ public class TechniqueResteDeGrilleType1 implements TechniqueAide, VisiteurGrill
         Set<GroupementCases> blocsTouches = new HashSet<>();
         List<Case> casesDeLaZone = new ArrayList<>();
 
+        // --- NOUVEAU FILTRE ANTI-DOUBLON ---
+        int nbCasesVides = 0;
+        for (int i = 0; i < taille; i++) {
+            int x = estLigne ? i : index;
+            int y = estLigne ? index : i;
+            if (grilleActuelle.getCase(x, y).getValeur() == 0) {
+                nbCasesVides++;
+            }
+        }
+        // Si la ligne est presque pleine, on laisse "TechniqueDerniereCase" s'en occuper
+        if (nbCasesVides <= 1) {
+            return;
+        } 
+        
         for (int i = 0; i < taille; i++) {
             int x = estLigne ? i : index;
             int y = estLigne ? index : i;
