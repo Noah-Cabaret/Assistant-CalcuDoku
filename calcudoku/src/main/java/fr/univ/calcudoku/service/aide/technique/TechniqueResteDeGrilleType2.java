@@ -4,7 +4,6 @@ import fr.univ.calcudoku.model.Case;
 import fr.univ.calcudoku.model.Grille;
 import fr.univ.calcudoku.model.GroupementCases;
 import fr.univ.calcudoku.model.Indice;
-import fr.univ.calcudoku.service.aide.visitor.VisiteurGrille;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,97 +12,59 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class TechniqueResteDeGrilleType2 implements TechniqueAide, VisiteurGrille {
-
-    private Grille grilleActuelle;
-    private Indice indiceTrouve;
+public class TechniqueResteDeGrilleType2 implements TechniqueAide {
 
     @Override
     public Indice analyser(Grille grille) {
-        this.grilleActuelle = grille;
-        this.indiceTrouve = null;
-        grille.accepter(this);
-        return indiceTrouve;
-    }
+        int taille = grille.getTaille();
+        Indice indiceNormal = null;
 
-    @Override
-    public void visiter(Grille g) {
-        if (indiceTrouve != null) return;
-        int taille = g.getTaille();
         for (int i = 0; i < taille; i++) {
-            analyserLigneOuColonne(i, true);
-            if (indiceTrouve != null) return;
-            analyserLigneOuColonne(i, false);
-            if (indiceTrouve != null) return;
+            Indice indLigne = analyserLigneOuColonne(grille, i, true);
+            if (indLigne != null) { if (indLigne.aUneErreur()) return indLigne; if (indiceNormal == null) indiceNormal = indLigne; }
+            Indice indCol = analyserLigneOuColonne(grille, i, false);
+            if (indCol != null) { if (indCol.aUneErreur()) return indCol; if (indiceNormal == null) indiceNormal = indCol; }
         }
+        return indiceNormal;
     }
 
-    @Override
-    public void visiter(GroupementCases groupement) {}
-    @Override
-    public void visiter(Case c) {}
-
-    private void analyserLigneOuColonne(int index, boolean estLigne) {
-        int taille = grilleActuelle.getTaille();
+    private Indice analyserLigneOuColonne(Grille grille, int index, boolean estLigne) {
+        int taille = grille.getTaille();
         Set<GroupementCases> blocsTouches = new HashSet<>();
         List<Case> casesDeLaZone = new ArrayList<>();
 
-        // --- NOUVEAU FILTRE ANTI-DOUBLON ---
         int nbCasesVides = 0;
         for (int i = 0; i < taille; i++) {
-            int x = estLigne ? i : index;
-            int y = estLigne ? index : i;
-            if (grilleActuelle.getCase(x, y).getValeur() == 0) {
-                nbCasesVides++;
-            }
-        }
-        // Si la ligne est presque pleine, on laisse "TechniqueDerniereCase" s'en occuper
-        if (nbCasesVides <= 1) {
-            return;
-        }
-
-        for (int i = 0; i < taille; i++) {
-            int x = estLigne ? i : index;
-            int y = estLigne ? index : i;
-            Case c = grilleActuelle.getCase(x, y);
+            Case c = grille.getCase(estLigne ? i : index, estLigne ? index : i);
             casesDeLaZone.add(c);
-            if (c.getGroupement() != null) {
-                blocsTouches.add(c.getGroupement());
-            }
+            if (c.getValeur() == 0) nbCasesVides++;
+            if (c.getGroupement() != null) blocsTouches.add(c.getGroupement());
         }
 
         List<GroupementCases> blocsPartiels = new ArrayList<>();
         for (GroupementCases bloc : blocsTouches) {
-            boolean estEntierementDedans = casesDeLaZone.containsAll(bloc.getListeCases());
-            if (!estEntierementDedans) {
-                blocsPartiels.add(bloc);
-            }
+            if (!casesDeLaZone.containsAll(bloc.getListeCases())) blocsPartiels.add(bloc);
         }
 
+        // LOGIQUE MATHÉMATIQUE : On identifie la forme de la zone (1 case externe)
         if (blocsPartiels.size() == 1) {
             GroupementCases blocCible = blocsPartiels.get(0);
-
             int compteurExterne = 0;
             Case caseExterne = null;
+            
             for (Case c : blocCible.getListeCases()) {
-                if (!casesDeLaZone.contains(c)) {
-                    compteurExterne++;
-                    caseExterne = c;
-                }
+                if (!casesDeLaZone.contains(c)) { compteurExterne++; caseExterne = c; }
             }
 
             if (compteurExterne == 1 && blocCible.getListeCases().size() > 1) {
-                
-                // MODIFICATION : Calcul explicite de la solution via la somme théorique
+                // LOGIQUE MATHÉMATIQUE : Calcul d'algèbre
                 int sommeTheoriqueZone = taille * (taille + 1) / 2;
                 int sommeTousBlocs = 0;
                 
                 for (GroupementCases b : blocsTouches) {
                     int sommeBloc = 0;
                     if (b.getCombinaisonsMaths() != null && !b.getCombinaisonsMaths().isEmpty()) {
-                        for (int val : b.getCombinaisonsMaths().get(0)) {
-                            sommeBloc += val;
-                        }
+                        for (int val : b.getCombinaisonsMaths().get(0)) sommeBloc += val;
                     }
                     sommeTousBlocs += sommeBloc;
                 }
@@ -111,34 +72,26 @@ public class TechniqueResteDeGrilleType2 implements TechniqueAide, VisiteurGrill
                 int reponseExacte = sommeTousBlocs - sommeTheoriqueZone;
                 int valeurJoueur = caseExterne.getValeur();
                 
-                if (valeurJoueur == reponseExacte) return;
+                if (valeurJoueur == reponseExacte) return null;
                 
-                // MODIFICATION : Détection d'erreur et message dynamique
-                boolean contientErreur = (valeurJoueur != 0);
-                String nomZone = estLigne ? "la ligne " + (index + 1) : "la colonne " + (index + 1);
-                String message;
+                // VÉRIFICATION ERREUR 
+                boolean contientErreur = (valeurJoueur != 0 && valeurJoueur != caseExterne.getSolution());
+                if (!contientErreur && nbCasesVides <= 1) return null;
 
-                if (contientErreur) {
-                    message = "Erreur détectée ! Technique Reste de Grille (Exclusion) sur " + nomZone + ".\n"
-                            + "En soustrayant la somme des blocs à la somme théorique de la zone, "
-                            + "la case externe doit obligatoirement valoir " + reponseExacte + ".";
-                } else {
-                    message = "Technique Reste de Grille (Exclusion) sur " + nomZone + ".\n"
-                            + "Ce bloc est entièrement dans cette zone, à l'exception d'une seule case \"orpheline\".\n"
-                            + "Par déduction, cette case externe vaut " + reponseExacte + " !";
-                }
-
-                List<Case> surbrillance = new ArrayList<>(casesDeLaZone);
-                for(Case c : blocCible.getListeCases()) {
-                    if(!surbrillance.contains(c)) surbrillance.add(c);
-                }
-
-                // MODIFICATION : Injection de la vraie solution au lieu d'une Map vide
+                List<Case> surbrillance = new ArrayList<>();
                 Map<Case, Integer> solutions = new HashMap<>();
                 solutions.put(caseExterne, reponseExacte);
 
-                this.indiceTrouve = new Indice("Exclusion Unique", message, surbrillance, solutions, contientErreur);
+                if (contientErreur) {
+                    surbrillance.add(caseExterne); 
+                    return new Indice("Exclusion Unique", "Erreur détectée !\nEn soustrayant la somme des blocs à la somme théorique de la zone, la case externe doit valoir " + reponseExacte + ".", surbrillance, solutions, true);
+                } else {
+                    surbrillance.addAll(casesDeLaZone);
+                    for(Case c : blocCible.getListeCases()) if(!surbrillance.contains(c)) surbrillance.add(c);
+                    return new Indice("Exclusion Unique", "Ce bloc est entièrement dans cette zone, à l'exception d'une seule case \"orpheline\".\nPar déduction, cette case externe vaut " + reponseExacte + " !", surbrillance, solutions, false);
+                }
             }
         }
+        return null;
     }
 }

@@ -14,6 +14,7 @@ public class TechniqueDernierChiffreGrille implements TechniqueAide {
     @Override
     public Indice analyser(Grille grille) {
         int taille = grille.getTaille();
+        Indice indiceNormal = null;
 
         for (int v = 1; v <= taille; v++) {
             int count = 0;
@@ -21,6 +22,7 @@ public class TechniqueDernierChiffreGrille implements TechniqueAide {
             boolean[] colContient = new boolean[taille];
             List<Case> casesAvecValeur = new ArrayList<>();
 
+            // LOGIQUE MATHÉMATIQUE : On cherche s'il y a N-1 exemplaires du chiffre
             for (int y = 0; y < taille; y++) {
                 for (int x = 0; x < taille; x++) {
                     Case c = grille.getCase(x, y);
@@ -44,23 +46,25 @@ public class TechniqueDernierChiffreGrille implements TechniqueAide {
 
                 if (ligneManquante != -1 && colManquante != -1) {
                     Case caseCible = grille.getCase(colManquante, ligneManquante);
-                    boolean contientErreur = caseCible.getValeur() != 0 && caseCible.getValeur() != v;
+                    if (caseCible.getValeur() == v) continue;
 
+                    // VÉRIFICATION ERREUR 
+                    boolean contientErreur = (caseCible.getValeur() != 0 && caseCible.getValeur() != caseCible.getSolution());
+                    
                     Map<Case, Integer> solutions = new HashMap<>();
                     solutions.put(caseCible, v);
+                    List<Case> surbrillance = new ArrayList<>();
 
-                    List<Case> casesASurbriller = new ArrayList<>(casesAvecValeur);
-
-                    String nom = "Dernier Chiffre Restant";
-                    // Le texte ne mentionne plus "v" !
-                    String message = "Il y a un chiffre dont il ne manque plus qu'un seul exemplaire dans toute la grille.\n" +
-                                     "Observez bien pour trouver de quel chiffre il s'agit, et déduisez sa position par élimination !";
-
-                    return new Indice(nom, message, casesASurbriller, solutions, contientErreur);
+                    if (contientErreur) {
+                        surbrillance.add(caseCible);
+                        return new Indice("Dernier Chiffre Restant", "Erreur ! Vous avez placé un " + caseCible.getValeur() + ", mais il s'agit du tout dernier emplacement de la grille pour le " + v + ".", surbrillance, solutions, true);
+                    } else if (indiceNormal == null) {
+                        surbrillance.addAll(casesAvecValeur);
+                        indiceNormal = new Indice("Dernier Chiffre Restant", "Il y a un chiffre dont il ne manque plus qu'un exemplaire dans toute la grille.\nTrouvez sa position par élimination !", surbrillance, solutions, false);
+                    }
                 }
             }
         }
-
-        return null;
+        return indiceNormal;
     }
 }

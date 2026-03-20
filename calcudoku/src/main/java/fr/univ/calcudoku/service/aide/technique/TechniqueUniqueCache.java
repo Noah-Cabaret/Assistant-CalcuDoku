@@ -4,112 +4,80 @@ import fr.univ.calcudoku.model.Case;
 import fr.univ.calcudoku.model.Grille;
 import fr.univ.calcudoku.model.GroupementCases;
 import fr.univ.calcudoku.model.Indice;
-import fr.univ.calcudoku.service.aide.visitor.VisiteurGrille;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class TechniqueUniqueCache implements TechniqueAide, VisiteurGrille {
-
-    private Grille grilleActuelle;
-    private Indice indiceTrouve;
+public class TechniqueUniqueCache implements TechniqueAide {
 
     @Override
     public Indice analyser(Grille grille) {
-        this.grilleActuelle = grille;
-        this.indiceTrouve = null;
-        grille.accepter(this);
-        return indiceTrouve;
-    }
+        Indice indiceNormal = null;
 
-    @Override
-    public void visiter(Grille g) {
-        // MODIFICATION (Filtre anti-doublon) : On ne scanne plus les Lignes et Colonnes ici !
-        // C'est le travail exclusif de "TechniquePlaceUniqueLigneColonne".
-    }
+        for (GroupementCases bloc : grille.getListeGroupements()) {
+            if (bloc.getListeCases().size() <= 1) continue;
 
-    @Override
-    public void visiter(GroupementCases groupement) {
-        if (indiceTrouve != null) return;
-        
-        // Ignorer les cages de 1 case (TechniqueBlocDe1 s'en charge)
-        if (groupement.getListeCases().size() <= 1) return;
+            int nbCasesVides = 0;
+            for(Case c : bloc.getListeCases()) {
+                if (c.getValeur() == 0) nbCasesVides++;
+            }
 
-        // MODIFICATION (Filtre anti-doublon) : Si la cage est presque terminée, 
-        // on laisse "TechniqueDerniereCaseBloc" s'en charger.
-        int nbCasesVides = 0;
-        for(Case c : groupement.getListeCases()) {
-            if (c.getValeur() == 0) nbCasesVides++;
-        }
-        if (nbCasesVides <= 1) return;
+            int taille = grille.getTaille();
 
-        int taille = grilleActuelle.getTaille();
+            // LOGIQUE MATHÉMATIQUE : On teste la capacité d'accueil de la cage
+            for (int chiffre = 1; chiffre <= taille; chiffre++) {
+                if (blocContientChiffreValide(bloc, chiffre)) continue; 
+                
+                // LE FAMEUX CORRECTIF : Le chiffre doit être obligatoire pour ce bloc
+                if (!blocRequiertChiffre(bloc, chiffre)) continue; 
 
-        for (int chiffre = 1; chiffre <= taille; chiffre++) {
-            if (blocContientChiffreValide(groupement, chiffre)) continue; 
-            if (!blocAccepteChiffre(groupement, chiffre)) continue; 
+                List<Case> placesPossibles = new ArrayList<>();
+                for (Case c : bloc.getListeCases()) {
+                    if (c.getValeur() != chiffre && grille.estCoupValide(c.getX(), c.getY(), chiffre)) {
+                        placesPossibles.add(c);
+                    }
+                }
 
-            List<Case> placesPossibles = new ArrayList<>();
-            for (Case c : groupement.getListeCases()) {
-                // On autorise l'analyse des cases même si le joueur a mis une mauvaise valeur
-                if (c.getValeur() != chiffre && grilleActuelle.estCoupValide(c.getX(), c.getY(), chiffre)) {
-                    placesPossibles.add(c);
+                if (placesPossibles.size() == 1) {
+                    Case caseCible = placesPossibles.get(0);
+                    int valeurJoueur = caseCible.getValeur();
+                    if (valeurJoueur == chiffre) continue;
+
+                    // VÉRIFICATION ERREUR 
+                    boolean contientErreur = (valeurJoueur != 0 && valeurJoueur != caseCible.getSolution());
+
+                    // Filtre Anti-doublon (s'efface devant une erreur)
+                    if (!contientErreur && nbCasesVides <= 1) continue;
+
+                    List<Case> casesASurbriller = new ArrayList<>();
+                    Map<Case, Integer> solutions = new HashMap<>();
+                    solutions.put(caseCible, chiffre);
+
+                    if (contientErreur) {
+                        casesASurbriller.add(caseCible);
+                        return new Indice("Unique Caché (Bloc)", "Erreur détectée dans cette cage mathématique.\nCette case est la seule place valide pour le chiffre " + chiffre + ".", casesASurbriller, solutions, true);
+                    } else if (indiceNormal == null) {
+                        casesASurbriller.addAll(bloc.getListeCases());
+                        indiceNormal = new Indice("Unique Caché (Bloc)", "Regardez cette cage mathématique.\nLe chiffre " + chiffre + " doit obligatoirement y figurer.\nToutes les autres cases sont bloquées !", casesASurbriller, solutions, false);
+                    }
                 }
             }
-
-            if (placesPossibles.size() == 1) {
-                Case caseCible = placesPossibles.get(0);
-                genererIndice("Bloc", groupement.getListeCases(), caseCible, chiffre, "cette cage mathématique");
-                return;
-            }
         }
-    }
-
-    @Override
-    public void visiter(Case c) {}
-
-    private void genererIndice(String typeZone, List<Case> casesASurbriller, Case caseCible, int chiffre, String nomZone) {
-        int valeurJoueur = caseCible.getValeur();
-        
-        if (valeurJoueur == chiffre) return;
-
-        // MODIFICATION : Détection d'erreur
-        boolean contientErreur = (valeurJoueur != 0);
-
-        String message;
-        if (contientErreur) {
-            message = "Erreur détectée dans " + nomZone + ".\n" +
-                      "La case ciblée a été remplie avec un " + valeurJoueur + ", mais elle est mathématiquement la seule place valide pour le chiffre " + chiffre + ".";
-        } else {
-            message = "Regardez " + nomZone + ".\n" +
-                      "Le chiffre " + chiffre + " doit obligatoirement y figurer pour terminer le puzzle.\n" +
-                      "Toutes les autres cases de cette zone sont bloquées. Il n'y a donc qu'une seule place possible pour le placer !";
-        }
-
-        Map<Case, Integer> solutions = new HashMap<>();
-        solutions.put(caseCible, chiffre);
-
-        this.indiceTrouve = new Indice("Unique Caché (" + typeZone + ")", message, casesASurbriller, solutions, contientErreur);
+        return indiceNormal;
     }
 
     private boolean blocContientChiffreValide(GroupementCases bloc, int chiffre) {
-        for (Case c : bloc.getListeCases()) {
-            if (c.getValeur() == chiffre) return true;
-        }
+        for (Case c : bloc.getListeCases()) if (c.getValeur() == chiffre) return true;
         return false;
     }
 
-    private boolean blocAccepteChiffre(GroupementCases bloc, int chiffre) {
-        if (bloc.getCombinaisonsMaths() == null || bloc.getCombinaisonsMaths().isEmpty()) {
-            return true; 
-        }
+    private boolean blocRequiertChiffre(GroupementCases bloc, int chiffre) {
+        if (bloc.getCombinaisonsMaths() == null || bloc.getCombinaisonsMaths().isEmpty()) return false;
         for (List<Integer> combinaison : bloc.getCombinaisonsMaths()) {
-            if (combinaison.contains(chiffre)) {
-                return true;
-            }
+            if (!combinaison.contains(chiffre)) return false; 
         }
-        return false;
+        return true; 
     }
 }

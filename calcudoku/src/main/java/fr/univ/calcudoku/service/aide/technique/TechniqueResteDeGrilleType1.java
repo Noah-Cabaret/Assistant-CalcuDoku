@@ -4,7 +4,6 @@ import fr.univ.calcudoku.model.Case;
 import fr.univ.calcudoku.model.Grille;
 import fr.univ.calcudoku.model.GroupementCases;
 import fr.univ.calcudoku.model.Indice;
-import fr.univ.calcudoku.service.aide.visitor.VisiteurGrille;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,88 +12,52 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class TechniqueResteDeGrilleType1 implements TechniqueAide, VisiteurGrille {
-
-    private Grille grilleActuelle;
-    private Indice indiceTrouve;
+public class TechniqueResteDeGrilleType1 implements TechniqueAide {
 
     @Override
     public Indice analyser(Grille grille) {
-        this.grilleActuelle = grille;
-        this.indiceTrouve = null;
-        grille.accepter(this);
-        return indiceTrouve;
-    }
+        int taille = grille.getTaille();
+        Indice indiceNormal = null;
 
-    @Override
-    public void visiter(Grille g) {
-        if (indiceTrouve != null) return;
-        int taille = g.getTaille();
         for (int i = 0; i < taille; i++) {
-            analyserLigneOuColonne(i, true);  
-            if (indiceTrouve != null) return;
-            analyserLigneOuColonne(i, false); 
-            if (indiceTrouve != null) return;
+            Indice indLigne = analyserLigneOuColonne(grille, i, true);
+            if (indLigne != null) { if (indLigne.aUneErreur()) return indLigne; if (indiceNormal == null) indiceNormal = indLigne; }
+            Indice indCol = analyserLigneOuColonne(grille, i, false);
+            if (indCol != null) { if (indCol.aUneErreur()) return indCol; if (indiceNormal == null) indiceNormal = indCol; }
         }
+        return indiceNormal;
     }
 
-    @Override
-    public void visiter(GroupementCases groupement) {} 
-    @Override
-    public void visiter(Case c) {} 
-
-    private void analyserLigneOuColonne(int index, boolean estLigne) {
-        int taille = grilleActuelle.getTaille();
+    private Indice analyserLigneOuColonne(Grille grille, int index, boolean estLigne) {
+        int taille = grille.getTaille();
         Set<GroupementCases> blocsTouches = new HashSet<>();
         List<Case> casesDeLaZone = new ArrayList<>();
 
-        // --- NOUVEAU FILTRE ANTI-DOUBLON ---
         int nbCasesVides = 0;
         for (int i = 0; i < taille; i++) {
-            int x = estLigne ? i : index;
-            int y = estLigne ? index : i;
-            if (grilleActuelle.getCase(x, y).getValeur() == 0) {
-                nbCasesVides++;
-            }
-        }
-        // Si la ligne est presque pleine, on laisse "TechniqueDerniereCase" s'en occuper
-        if (nbCasesVides <= 1) {
-            return;
-        } 
-        
-        for (int i = 0; i < taille; i++) {
-            int x = estLigne ? i : index;
-            int y = estLigne ? index : i;
-            Case c = grilleActuelle.getCase(x, y);
+            Case c = grille.getCase(estLigne ? i : index, estLigne ? index : i);
             casesDeLaZone.add(c);
-            if (c.getGroupement() != null) {
-                blocsTouches.add(c.getGroupement());
-            }
+            if (c.getValeur() == 0) nbCasesVides++;
+            if (c.getGroupement() != null) blocsTouches.add(c.getGroupement());
         }
 
         List<GroupementCases> blocsPartiels = new ArrayList<>();
         for (GroupementCases bloc : blocsTouches) {
-            boolean estEntierementDedans = casesDeLaZone.containsAll(bloc.getListeCases());
-            if (!estEntierementDedans) {
-                blocsPartiels.add(bloc);
-            }
+            if (!casesDeLaZone.containsAll(bloc.getListeCases())) blocsPartiels.add(bloc);
         }
 
+        // LOGIQUE MATHÉMATIQUE : On identifie la forme de la zone (1 case interne)
         if (blocsPartiels.size() == 1) {
             GroupementCases blocCible = blocsPartiels.get(0);
-
             int compteurInterne = 0;
             Case caseInterne = null;
+            
             for (Case c : blocCible.getListeCases()) {
-                if (casesDeLaZone.contains(c)) {
-                    compteurInterne++;
-                    caseInterne = c;
-                }
+                if (casesDeLaZone.contains(c)) { compteurInterne++; caseInterne = c; }
             }
 
             if (compteurInterne == 1 && blocCible.getListeCases().size() > 1) {
-                
-                // MODIFICATION : Calcul explicite de la solution via la somme théorique
+                // LOGIQUE MATHÉMATIQUE : Calcul d'algèbre
                 int sommeTheoriqueZone = taille * (taille + 1) / 2;
                 int sommeBlocsInternes = 0;
                 
@@ -102,10 +65,7 @@ public class TechniqueResteDeGrilleType1 implements TechniqueAide, VisiteurGrill
                     if (b != blocCible) {
                         int sommeBloc = 0;
                         if (b.getCombinaisonsMaths() != null && !b.getCombinaisonsMaths().isEmpty()) {
-                            // On déduit la somme du bloc avec sa combinaison
-                            for (int val : b.getCombinaisonsMaths().get(0)) {
-                                sommeBloc += val;
-                            }
+                            for (int val : b.getCombinaisonsMaths().get(0)) sommeBloc += val;
                         }
                         sommeBlocsInternes += sommeBloc;
                     }
@@ -114,34 +74,26 @@ public class TechniqueResteDeGrilleType1 implements TechniqueAide, VisiteurGrill
                 int reponseExacte = sommeTheoriqueZone - sommeBlocsInternes;
                 int valeurJoueur = caseInterne.getValeur();
                 
-                if (valeurJoueur == reponseExacte) return;
+                if (valeurJoueur == reponseExacte) return null;
                 
-                // MODIFICATION : Détection d'erreur et message dynamique
-                boolean contientErreur = (valeurJoueur != 0);
-                String nomZone = estLigne ? "la ligne " + (index + 1) : "la colonne " + (index + 1);
-                String message;
-                
-                if (contientErreur) {
-                    message = "Erreur détectée sur " + nomZone + " !\n"
-                            + "Par déduction mathématique (la somme théorique de la zone par rapport aux blocs complets), "
-                            + "cette case devrait valoir " + reponseExacte + ".";
-                } else {
-                    message = "Technique Reste de Grille (Intersection) sur " + nomZone + ".\n"
-                            + "Tous les blocs sont parfaitement contenus dans cette zone, sauf un seul qui n'y possède qu'une case.\n"
-                            + "Par déduction mathématique, cette case vaut exactement " + reponseExacte + " !";
-                }
+                // VÉRIFICATION ERREUR 
+                boolean contientErreur = (valeurJoueur != 0 && valeurJoueur != caseInterne.getSolution());
+                if (!contientErreur && nbCasesVides <= 1) return null;
 
-                List<Case> surbrillance = new ArrayList<>(casesDeLaZone);
-                for(Case c : blocCible.getListeCases()) {
-                    if(!surbrillance.contains(c)) surbrillance.add(c);
-                }
-
-                // MODIFICATION : Injection de la vraie solution au lieu d'une Map vide
+                List<Case> surbrillance = new ArrayList<>();
                 Map<Case, Integer> solutions = new HashMap<>();
                 solutions.put(caseInterne, reponseExacte);
 
-                this.indiceTrouve = new Indice("Intersection Simple", message, surbrillance, solutions, contientErreur);
+                if (contientErreur) {
+                    surbrillance.add(caseInterne); 
+                    return new Indice("Intersection Simple", "Erreur détectée !\nPar déduction mathématique (la somme théorique), cette case devrait valoir " + reponseExacte + ".", surbrillance, solutions, true);
+                } else {
+                    surbrillance.addAll(casesDeLaZone);
+                    for(Case c : blocCible.getListeCases()) if(!surbrillance.contains(c)) surbrillance.add(c);
+                    return new Indice("Intersection Simple", "Tous les blocs sont contenus dans cette zone, sauf un seul qui n'y possède qu'une case.\nPar déduction mathématique, cette case vaut " + reponseExacte + " !", surbrillance, solutions, false);
+                }
             }
         }
+        return null;
     }
 }
