@@ -1,13 +1,11 @@
 package fr.univ.calcudoku.controller;
 
-import com.google.gson.Gson;
 import fr.univ.calcudoku.MainApp;
 import fr.univ.calcudoku.model.DonneesNiveau;
 import fr.univ.calcudoku.service.ProfileManager;
 import fr.univ.calcudoku.utils.CacheRessources;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
-//import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.image.Image;
@@ -16,12 +14,9 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 import java.io.File;
-import java.io.FileReader;
 import java.util.Map;
 
 public class ProfilController {
-
-    private static final Gson GSON = new Gson();
 
     // mémorise la page de provenance (par défaut, le menu principal)
     public static String pagePrecedente = "/fxml/menu.fxml";
@@ -65,13 +60,12 @@ public class ProfilController {
             boxParties.getChildren().clear();
 
             for (File fichier : fichiersJson) {
-                try (FileReader reader = new FileReader(fichier)) {
-                    DonneesNiveau niveau = GSON.fromJson(reader, DonneesNiveau.class);
+                // On délègue la lecture du fichier au GestionnaireJeu !
+                DonneesNiveau niveau = fr.univ.calcudoku.utils.GestionnaireJeu.lireDonneesNiveauFichier(fichier);
+                
+                if (niveau != null) {
                     VBox carte = creerCartePartie(niveau, fichier);
                     boxParties.getChildren().add(carte);
-
-                } catch (Exception e) {
-                    e.printStackTrace();
                 }
             }
         }
@@ -85,11 +79,18 @@ public class ProfilController {
         vBox.setMinSize(0, 0); 
 
         ImageView vueMiniature = new ImageView();
-        Image image = CacheRessources.getImage("/grilles/images/" + fichierJson.getName().replace(".json", ".png"));
         
-        if (image != null) {
+        // On déduit le dossier "images" à partir de l'emplacement du fichier JSON
+        // fichierJson est dans "jeu/json/", donc getParentFile().getParentFile() remonte à "jeu/"
+        File dossierJeu = fichierJson.getParentFile().getParentFile(); 
+        File fichierImage = new File(dossierJeu, "images/" + fichierJson.getName().replace(".json", ".png"));
+        
+        // On charge l'image depuis le disque dur (en rajoutant "file:" devant le chemin)
+        if (fichierImage.exists()) {
+            Image image = new Image(fichierImage.toURI().toString());
             vueMiniature.setImage(image);
         } else {
+            // S'il n'y a pas d'image de sauvegarde, on met un fond gris par défaut
             vueMiniature.setStyle("-fx-background-color: lightgray;");
         }
         
@@ -193,15 +194,8 @@ public class ProfilController {
             }
         }
         
-        // 2. --- MAGIE JAVA POUR RENDRE L'ICÔNE BLANCHE ---
-        javafx.scene.effect.ColorAdjust filtreBlanc = new javafx.scene.effect.ColorAdjust();
-        filtreBlanc.setBrightness(1.0); // 100% de luminosité = Blanc pur
-
-        if (activer) {
-            imgAvatar.setEffect(filtreBlanc); // On met l'icône en blanc
-        } else {
-            imgAvatar.setEffect(null); // On enlève le filtre, l'icône redevient noire
-        }
+        // 2. --- MAGIE JAVA CENTRALISÉE POUR RENDRE L'ICÔNE BLANCHE ---
+        fr.univ.calcudoku.utils.ThemeUtil.appliquerFiltreBlancSiSombre(imgAvatar);
     }
 
     @FXML 

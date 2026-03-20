@@ -1,6 +1,5 @@
 package fr.univ.calcudoku.controller;
 
-import com.google.gson.Gson;
 import fr.univ.calcudoku.MainApp;
 import fr.univ.calcudoku.model.DonneesNiveau;
 import fr.univ.calcudoku.utils.CacheRessources;
@@ -16,8 +15,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
-import java.io.InputStream;
-import java.io.InputStreamReader;
 
 public class MenuLibreController {
 
@@ -25,8 +22,6 @@ public class MenuLibreController {
     @FXML private ToggleGroup groupeDifficulte;
     @FXML private HBox boxGrilles;
     @FXML private ImageView imgParametres; 
-
-    private static final Gson GSON = new Gson();
 
     // LES STYLES VISUELS DES BOUTONS
     private final String STYLE_NORMAL = "-fx-background-color: transparent; -fx-text-fill: #555555; -fx-cursor: hand; -fx-background-radius: 50em; -fx-pref-width: 40px; -fx-pref-height: 40px; -fx-font-size: 14px;";
@@ -38,14 +33,8 @@ public class MenuLibreController {
 
         configurerToggleGroup(groupeTaille);
         configurerToggleGroup(groupeDifficulte);
-        // --- VERIFICATION DU MODE SOMBRE POUR LES ICONES ---
-        if (MainApp.modeSombreActif) {
-            javafx.scene.effect.ColorAdjust filtreBlanc = new javafx.scene.effect.ColorAdjust();
-            filtreBlanc.setBrightness(1.0);
-            
-            // Remplacez les noms par les fx:id de vos icônes (ex: imgParametres)
-            imgParametres.setEffect(filtreBlanc); 
-        }
+       
+        fr.univ.calcudoku.utils.ThemeUtil.appliquerFiltreBlancSiSombre(imgParametres);
 
         rafraichirGrilles();
     }
@@ -89,7 +78,7 @@ public class MenuLibreController {
             String baseName = "libre_" + taille + "_" + diff + "_" + i;
             String nomFichierJson = baseName + ".json";
             
-            DonneesNiveau niveau = chargerDonneesNiveauRessource(nomFichierJson);
+            DonneesNiveau niveau = GestionnaireJeu.lireDonneesNiveauRessource(nomFichierJson);
 
             if (niveau != null) {
                 VBox carte = creerCarteNiveau(niveau, baseName, i);
@@ -112,16 +101,6 @@ public class MenuLibreController {
                 carteVide.getChildren().add(lbl);
                 boxGrilles.getChildren().add(carteVide);
             }
-        }
-    }
-
-    private DonneesNiveau chargerDonneesNiveauRessource(String fichierJson) {
-        try {
-            InputStream is = getClass().getResourceAsStream("/grilles/json/" + fichierJson);
-            if (is == null) return null;
-            return GSON.fromJson(new InputStreamReader(is), DonneesNiveau.class);
-        } catch (Exception e) {
-            return null;
         }
     }
 
