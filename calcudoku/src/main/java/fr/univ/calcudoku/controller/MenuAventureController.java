@@ -62,16 +62,16 @@ public class MenuAventureController {
             Button btnNiveau = new Button(String.valueOf(i));
             final int niveauId = i;
 
-            // --- RESPONSIVE : Rendre le bouton élastique ---
+            // RESPONSIVE : Rendre le bouton élastique
             btnNiveau.setMinSize(0, 0); // Autorise le rétrécissement total
             
-            // 1. La largeur s'adapte (environ 12% de l'écran dispo) mais ne dépasse jamais 70 pixels
+            // La largeur s'adapte (environ 12% de l'écran dispo) mais ne dépasse jamais 70 pixels
             btnNiveau.prefWidthProperty().bind(javafx.beans.binding.Bindings.min(70, boxNiveaux.widthProperty().divide(8)));
             
-            // 2. La hauteur est exactement égale à la largeur pour forcer un rond parfait !
+            // La hauteur est exactement égale à la largeur pour forcer un rond parfait
             btnNiveau.prefHeightProperty().bind(btnNiveau.prefWidthProperty());
 
-            // 3. Le texte doit aussi rétrécir ! On crée un "Style Dynamique" lié à la largeur
+            // Le texte doit aussi rétrécir, Dynamiquement lié à la largeur
             javafx.beans.binding.StringExpression styleDynamique;
 
             if (i < progressionActuelle) {
@@ -106,7 +106,7 @@ public class MenuAventureController {
 
             boxNiveaux.getChildren().add(btnNiveau);
 
-            // --- RESPONSIVE : Le pont (la ligne entre les niveaux) ---
+            // RESPONSIVE : Le pont (la ligne entre les niveaux)
             if (i < NB_NIVEAUX_TOTAL) {
                 Region pont = new Region();
                 pont.setMinSize(0, 0); 
@@ -114,10 +114,9 @@ public class MenuAventureController {
                 pont.prefWidthProperty().bind(javafx.beans.binding.Bindings.min(60, boxNiveaux.widthProperty().divide(10)));
                 pont.prefHeightProperty().bind(btnNiveau.heightProperty().divide(12));
 
-                // --- AJOUTEZ CES DEUX LIGNES POUR BLOQUER L'ÉTIREMENT GÉANT ---
+                // POUR BLOQUER L'ÉTIREMENT GÉANT 
                 pont.maxHeightProperty().bind(btnNiveau.heightProperty().divide(12));
                 pont.maxWidthProperty().bind(javafx.beans.binding.Bindings.min(60, boxNiveaux.widthProperty().divide(10)));
-                // --------------------------------------------------------------
 
                 if (i < progressionActuelle) {
                     pont.setStyle("-fx-background-color: black;");
@@ -156,7 +155,6 @@ public class MenuAventureController {
             manager.mettreAJourStatistique(nomActuel, "progression", "1");
             
             // On force l'interface à se redessiner immédiatement au niveau 1
-            // Ainsi, le jeu n'attend pas de relire le fichier et met tout à jour visuellement.
             genererChemin(1);
         }
     }

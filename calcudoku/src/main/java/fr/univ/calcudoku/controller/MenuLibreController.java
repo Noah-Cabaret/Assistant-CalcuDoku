@@ -94,7 +94,7 @@ public class MenuLibreController {
         int min = niveau.temps / 60;
         int sec = niveau.temps % 60;
 
-        // On commande la carte à notre Usine !
+        // la commande de la carte à Usine {factory pattern} 
         return fr.univ.calcudoku.utils.CarteUIFactory.creerCarteGrille(
             "Grille " + index, 
             String.format("Temps cible : %d:%02d", min, sec), 

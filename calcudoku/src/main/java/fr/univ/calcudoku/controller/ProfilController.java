@@ -38,7 +38,7 @@ public class ProfilController {
         chargerAvatar();
         chargerStatistiquesProfil(nomActuel, manager);
         chargerPartiesSauvegardees(nomActuel);
-        // --- ÉCOUTEUR POUR LE MODE SOMBRE/CLAIR EN DIRECT ---
+        //ÉCOUTEUR POUR LE MODE SOMBRE/CLAIR EN DIRECT 
         groupeTheme.selectedToggleProperty().addListener((observable, ancienneValeur, nouvelleValeur) -> {
             if (nouvelleValeur == radioSombre) {
                 activerModeSombre(true);
@@ -59,7 +59,6 @@ public class ProfilController {
             boxParties.getChildren().clear();
 
             for (File fichier : fichiersJson) {
-                // On délègue la lecture du fichier au GestionnaireJeu !
                 DonneesNiveau niveau = fr.univ.calcudoku.utils.GestionnaireJeu.lireDonneesNiveauFichier(fichier);
                 
                 if (niveau != null) {
@@ -83,7 +82,7 @@ public class ProfilController {
         int min = niveau.temps / 60;
         int sec = niveau.temps % 60;
 
-        // On commande la carte à notre Usine !
+        // la commande de la carte à Usine {factory pattern} 
         return fr.univ.calcudoku.utils.CarteUIFactory.creerCarteGrille(
             "Grille " + nomPropre, 
             String.format("Temps : %d:%02d", min, sec), 

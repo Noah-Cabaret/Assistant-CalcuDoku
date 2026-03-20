@@ -11,7 +11,7 @@ public class ThemeUtil {
 
     /**
      * Applique un filtre 100% blanc sur les images si le mode sombre est actif.
-     * Les "..." (varargs) permettent de passer autant d'images que l'on veut séparées par des virgules !
+     * Les "..." permettent de passer autant d'images que l'on veut séparées par des virgules !
      */
     public static void appliquerFiltreBlancSiSombre(ImageView... images) {
         if (MainApp.modeSombreActif) {

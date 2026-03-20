@@ -2,22 +2,11 @@ package fr.univ.calcudoku.controller;
 
 import fr.univ.calcudoku.MainApp;
 import fr.univ.calcudoku.utils.CacheRessources;
-//import fr.univ.calcudoku.model.DonneesNiveau;
-//import fr.univ.calcudoku.model.Grille;
-//import fr.univ.calcudoku.service.JsonToModelAdapter;
 import fr.univ.calcudoku.utils.GestionnaireJeu;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
-//import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
-//import javafx.stage.Stage;
-
-//import java.io.File;
-//import java.io.FileReader;
-//import java.io.InputStream;
-
-//import com.google.gson.Gson;
 
 public class MenuController {
 

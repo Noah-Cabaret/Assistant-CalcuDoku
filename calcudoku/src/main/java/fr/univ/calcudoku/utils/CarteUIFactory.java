@@ -20,7 +20,7 @@ public class CarteUIFactory {
         vBox.setMinSize(0, 0);
         vBox.setAlignment(Pos.CENTER);
 
-        // 1. Les effets de survol de la souris
+        // Les effets de survol de la souris
         String styleNormal = "-fx-cursor: hand; -fx-padding: 10; -fx-background-color: transparent; -fx-border-color: transparent; -fx-border-radius: 10; -fx-background-radius: 10;";
         String styleHover = "-fx-cursor: hand; -fx-padding: 10; -fx-background-color: #f5f5f5; -fx-border-color: #cccccc; -fx-border-radius: 10; -fx-background-radius: 10;";
 
@@ -28,7 +28,7 @@ public class CarteUIFactory {
         vBox.setOnMouseEntered(e -> vBox.setStyle(styleHover));
         vBox.setOnMouseExited(e -> vBox.setStyle(styleNormal));
 
-        // 2. L'image de la grille
+        // L'image de la grille
         ImageView vueMiniature = new ImageView();
         if (imageGrille != null) {
             vueMiniature.setImage(imageGrille);
@@ -36,7 +36,7 @@ public class CarteUIFactory {
             vueMiniature.setStyle("-fx-background-color: lightgray;");
         }
 
-        // 3. Le rendu Elastique/Responsive !
+        // Le rendu Elastique/Responsive
         javafx.beans.binding.NumberBinding tailleHauteur = conteneurParent.heightProperty().multiply(0.60);
         javafx.beans.binding.NumberBinding tailleLargeur = conteneurParent.widthProperty().divide(3.5);
         javafx.beans.binding.NumberBinding tailleMax = javafx.beans.binding.Bindings.min(tailleHauteur, tailleLargeur);
@@ -45,7 +45,7 @@ public class CarteUIFactory {
         vueMiniature.fitWidthProperty().bind(tailleMax);
         vueMiniature.setPreserveRatio(true);
 
-        // 4. Les textes
+        // Les textes
         Label titre = new Label(titreText);
         titre.setStyle("-fx-font-family: 'Arial'; -fx-font-weight: bold; -fx-font-size: 13px;");
 
@@ -54,7 +54,7 @@ public class CarteUIFactory {
 
         vBox.getChildren().addAll(vueMiniature, titre, lblTemps);
 
-        // 5. L'action quand on clique sur la carte !
+        // L'action quand on clique sur la carte
         vBox.setOnMouseClicked(e -> {
             if (actionClic != null) actionClic.run();
         });
