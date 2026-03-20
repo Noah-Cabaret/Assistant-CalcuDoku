@@ -36,19 +36,9 @@ public class TechniquePlaceUniqueLigneColonne implements TechniqueAide {
 
     private Indice chercherPlaceUnique(Grille grille, int indexLigneOuCol, boolean estLigne) {
         int taille = grille.getTaille();
-        int nbCasesVides = 0;
-
-        for (int i = 0; i < taille; i++) {
-            int x = estLigne ? i : indexLigneOuCol;
-            int y = estLigne ? indexLigneOuCol : i;
-            if (grille.getCase(x, y).getValeur() == 0) {
-                nbCasesVides++;
-            }
-        }
-
-        if (nbCasesVides <= 1) {
-            return null;
-        }
+        
+        // MODIFICATION : Suppression de la vérification (nbCasesVides <= 1)
+        // On veut continuer l'analyse pour trouver les erreurs même si la grille est pleine.
 
         for (int chiffre = 1; chiffre <= taille; chiffre++) {
             if (chiffreDejaPlace(grille, indexLigneOuCol, estLigne, chiffre)) {
@@ -61,42 +51,35 @@ public class TechniquePlaceUniqueLigneColonne implements TechniqueAide {
 
             List<Case> casesPossibles = new ArrayList<>();
 
-            // ÉTAPE 1 : On liste honnêtement TOUTES les places valides
             for (int i = 0; i < taille; i++) {
                 int x = estLigne ? i : indexLigneOuCol;
                 int y = estLigne ? indexLigneOuCol : i;
                 Case c = grille.getCase(x, y);
 
-                if (c.getValeur() == 0) {
+                // MODIFICATION : On vérifie aussi les cases remplies par le joueur (pour détecter l'erreur)
+                if (c.getValeur() != chiffre) {
                     if (grille.estCoupValide(x, y, chiffre) && blocAccepteChiffre(c.getGroupement(), chiffre)) {
                         casesPossibles.add(c);
                     }
                 }
             }
 
-            // ÉTAPE 2 : S'il n'y a VRAIMENT qu'une seule place, on applique nos filtres de difficulté
             if (casesPossibles.size() == 1) {
                 Case caseCible = casesPossibles.get(0);
                 GroupementCases bloc = caseCible.getGroupement();
                 
-                // Filtre A : Est-ce un bloc de 1 case ?
                 if (bloc.getListeCases().size() == 1) {
                     continue; 
                 }
 
-                // Filtre B : Est-ce la dernière case vide de son bloc ?
-                int casesVidesDuBloc = 0;
-                for (Case caseDuBloc : bloc.getListeCases()) {
-                    if (caseDuBloc.getValeur() == 0) {
-                        casesVidesDuBloc++;
-                    }
-                }
-                if (casesVidesDuBloc == 1) {
-                    continue; // On annule, c'est trop facile, une autre aide s'en chargera
-                }
+                // MODIFICATION : Suppression du filtre B (Dernière case vide du bloc).
+                // Il bloquait la détection des erreurs si le joueur avait rempli tout le bloc.
 
-                // Si ça passe les filtres, on génère l'aide !
-                boolean contientErreur = false; 
+                int valeurJoueur = caseCible.getValeur();
+                if (valeurJoueur == chiffre) continue; // Si correct, on passe
+
+                // MODIFICATION : Paramétrage de l'erreur
+                boolean contientErreur = (valeurJoueur != 0); 
 
                 Map<Case, Integer> solutions = new HashMap<>();
                 solutions.put(caseCible, chiffre);
@@ -110,11 +93,18 @@ public class TechniquePlaceUniqueLigneColonne implements TechniqueAide {
 
                 String axe = estLigne ? "la ligne " + (indexLigneOuCol + 1) : "la colonne " + (indexLigneOuCol + 1);
                 String nom = "Place Unique en " + (estLigne ? "Ligne" : "Colonne");
-                String message = "Regardez " + axe + ".\n" +
-                                 "Le chiffre " + chiffre + " doit obligatoirement y figurer.\n" +
-                                 "Toutes les autres cases de cette " + (estLigne ? "ligne" : "colonne") + 
-                                 " sont bloquées (soit par les colonnes/lignes croisées, soit parce que leur bloc mathématique ne permet pas d'avoir un " + chiffre + ").\n" +
-                                 "Il n'y a donc qu'un seul endroit possible pour le placer !";
+                String message;
+                
+                // MODIFICATION : Message d'erreur dynamique
+                if (contientErreur) {
+                    message = "Erreur détectée ! Regardez " + axe + ".\n" +
+                              "Le chiffre " + chiffre + " ne peut mathématiquement aller que dans cette case. " +
+                              "Votre valeur " + valeurJoueur + " est donc incorrecte.";
+                } else {
+                    message = "Regardez " + axe + ".\n" +
+                              "Le chiffre " + chiffre + " doit obligatoirement y figurer.\n" +
+                              "Toutes les autres cases de cette zone sont bloquées. Il n'y a qu'un seul endroit possible !";
+                }
 
                 return new Indice(nom, message, casesASurbriller, solutions, contientErreur);
             }

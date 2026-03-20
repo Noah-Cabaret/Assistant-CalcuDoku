@@ -13,11 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * Technique 4 : Reste de Grille - Intersection Simple (Type 1 / Innie)
- * Cherche une ligne ou colonne où un seul bloc "déborde", 
- * et ne touche la ligne que par UNE SEULE case.
- */
 public class TechniqueResteDeGrilleType1 implements TechniqueAide, VisiteurGrille {
 
     private Grille grilleActuelle;
@@ -27,7 +22,7 @@ public class TechniqueResteDeGrilleType1 implements TechniqueAide, VisiteurGrill
     public Indice analyser(Grille grille) {
         this.grilleActuelle = grille;
         this.indiceTrouve = null;
-        grille.accepter(this); // Lance le visiteur
+        grille.accepter(this);
         return indiceTrouve;
     }
 
@@ -35,27 +30,24 @@ public class TechniqueResteDeGrilleType1 implements TechniqueAide, VisiteurGrill
     public void visiter(Grille g) {
         if (indiceTrouve != null) return;
         int taille = g.getTaille();
-
-        // Analyse de chaque ligne et de chaque colonne
         for (int i = 0; i < taille; i++) {
-            analyserLigneOuColonne(i, true);  // Analyse Ligne
+            analyserLigneOuColonne(i, true);  
             if (indiceTrouve != null) return;
-            analyserLigneOuColonne(i, false); // Analyse Colonne
+            analyserLigneOuColonne(i, false); 
             if (indiceTrouve != null) return;
         }
     }
 
     @Override
-    public void visiter(GroupementCases groupement) {} // Non utilisé ici
+    public void visiter(GroupementCases groupement) {} 
     @Override
-    public void visiter(Case c) {} // Non utilisé ici
+    public void visiter(Case c) {} 
 
     private void analyserLigneOuColonne(int index, boolean estLigne) {
         int taille = grilleActuelle.getTaille();
         Set<GroupementCases> blocsTouches = new HashSet<>();
         List<Case> casesDeLaZone = new ArrayList<>();
 
-        // 1. Lister toutes les cases de la ligne/colonne et les blocs impliqués
         for (int i = 0; i < taille; i++) {
             int x = estLigne ? i : index;
             int y = estLigne ? index : i;
@@ -66,7 +58,6 @@ public class TechniqueResteDeGrilleType1 implements TechniqueAide, VisiteurGrill
             }
         }
 
-        // 2. Trouver les blocs qui ne sont PAS entièrement contenus dans la ligne
         List<GroupementCases> blocsPartiels = new ArrayList<>();
         for (GroupementCases bloc : blocsTouches) {
             boolean estEntierementDedans = casesDeLaZone.containsAll(bloc.getListeCases());
@@ -75,11 +66,9 @@ public class TechniqueResteDeGrilleType1 implements TechniqueAide, VisiteurGrill
             }
         }
 
-        // 3. Condition Principale : Il ne doit y avoir qu'UN SEUL bloc partiel
         if (blocsPartiels.size() == 1) {
             GroupementCases blocCible = blocsPartiels.get(0);
 
-            // 4. Calcul du "CompteurInterne" (Cases du bloc situées DANS la ligne)
             int compteurInterne = 0;
             Case caseInterne = null;
             for (Case c : blocCible.getListeCases()) {
@@ -89,27 +78,55 @@ public class TechniqueResteDeGrilleType1 implements TechniqueAide, VisiteurGrill
                 }
             }
 
-            // 5. Validation finale de la technique
             if (compteurInterne == 1 && blocCible.getListeCases().size() > 1) {
                 
-                // Si la case est déjà résolue, on passe
-                if (caseInterne.getValeur() != 0) return;
-
+                // MODIFICATION : Calcul explicite de la solution via la somme théorique
+                int sommeTheoriqueZone = taille * (taille + 1) / 2;
+                int sommeBlocsInternes = 0;
+                
+                for (GroupementCases b : blocsTouches) {
+                    if (b != blocCible) {
+                        int sommeBloc = 0;
+                        if (b.getCombinaisonsMaths() != null && !b.getCombinaisonsMaths().isEmpty()) {
+                            // On déduit la somme du bloc avec sa combinaison
+                            for (int val : b.getCombinaisonsMaths().get(0)) {
+                                sommeBloc += val;
+                            }
+                        }
+                        sommeBlocsInternes += sommeBloc;
+                    }
+                }
+                
+                int reponseExacte = sommeTheoriqueZone - sommeBlocsInternes;
+                int valeurJoueur = caseInterne.getValeur();
+                
+                if (valeurJoueur == reponseExacte) return;
+                
+                // MODIFICATION : Détection d'erreur et message dynamique
+                boolean contientErreur = (valeurJoueur != 0);
                 String nomZone = estLigne ? "la ligne " + (index + 1) : "la colonne " + (index + 1);
-                String message = "Technique Reste de Grille (Intersection) sur " + nomZone + ".\n"
-                        + "Tous les blocs sont parfaitement contenus dans cette zone, sauf un seul qui n'y possède qu'une case (la \"porte d'entrée\").\n"
-                        + "Par déduction mathématique (la somme théorique de la zone par rapport à la somme des blocs), vous pouvez trouver la valeur exacte de cette case !";
+                String message;
+                
+                if (contientErreur) {
+                    message = "Erreur détectée sur " + nomZone + " !\n"
+                            + "Par déduction mathématique (la somme théorique de la zone par rapport aux blocs complets), "
+                            + "cette case devrait valoir " + reponseExacte + ".";
+                } else {
+                    message = "Technique Reste de Grille (Intersection) sur " + nomZone + ".\n"
+                            + "Tous les blocs sont parfaitement contenus dans cette zone, sauf un seul qui n'y possède qu'une case.\n"
+                            + "Par déduction mathématique, cette case vaut exactement " + reponseExacte + " !";
+                }
 
-                // Surbrillance : La ligne entière + le bloc qui déborde
                 List<Case> surbrillance = new ArrayList<>(casesDeLaZone);
                 for(Case c : blocCible.getListeCases()) {
                     if(!surbrillance.contains(c)) surbrillance.add(c);
                 }
 
-                // On ne donne pas la solution explicite pour faire réfléchir le joueur (Niveau 1)
-                Map<Case, Integer> solutionsVides = new HashMap<>();
+                // MODIFICATION : Injection de la vraie solution au lieu d'une Map vide
+                Map<Case, Integer> solutions = new HashMap<>();
+                solutions.put(caseInterne, reponseExacte);
 
-                this.indiceTrouve = new Indice("Intersection Simple", message, surbrillance, solutionsVides, false);
+                this.indiceTrouve = new Indice("Intersection Simple", message, surbrillance, solutions, contientErreur);
             }
         }
     }

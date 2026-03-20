@@ -13,11 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * Technique 5 : Reste de Grille - Exclusion Unique (Type 2 / Outie)
- * Cherche un bloc presque entièrement contenu dans une ligne/colonne, 
- * sauf pour UNE SEULE case qui déborde à l'extérieur.
- */
 public class TechniqueResteDeGrilleType2 implements TechniqueAide, VisiteurGrille {
 
     private Grille grilleActuelle;
@@ -35,7 +30,6 @@ public class TechniqueResteDeGrilleType2 implements TechniqueAide, VisiteurGrill
     public void visiter(Grille g) {
         if (indiceTrouve != null) return;
         int taille = g.getTaille();
-
         for (int i = 0; i < taille; i++) {
             analyserLigneOuColonne(i, true);
             if (indiceTrouve != null) return;
@@ -54,7 +48,6 @@ public class TechniqueResteDeGrilleType2 implements TechniqueAide, VisiteurGrill
         Set<GroupementCases> blocsTouches = new HashSet<>();
         List<Case> casesDeLaZone = new ArrayList<>();
 
-        // 1. Lister toutes les cases de la zone
         for (int i = 0; i < taille; i++) {
             int x = estLigne ? i : index;
             int y = estLigne ? index : i;
@@ -65,7 +58,6 @@ public class TechniqueResteDeGrilleType2 implements TechniqueAide, VisiteurGrill
             }
         }
 
-        // 2. Trouver les blocs partiels
         List<GroupementCases> blocsPartiels = new ArrayList<>();
         for (GroupementCases bloc : blocsTouches) {
             boolean estEntierementDedans = casesDeLaZone.containsAll(bloc.getListeCases());
@@ -74,11 +66,9 @@ public class TechniqueResteDeGrilleType2 implements TechniqueAide, VisiteurGrill
             }
         }
 
-        // 3. Condition : Un seul bloc partiel sur toute la ligne
         if (blocsPartiels.size() == 1) {
             GroupementCases blocCible = blocsPartiels.get(0);
 
-            // 4. Calcul du "CompteurExterne" (Cases du bloc situées EN DEHORS de la ligne)
             int compteurExterne = 0;
             Case caseExterne = null;
             for (Case c : blocCible.getListeCases()) {
@@ -88,26 +78,52 @@ public class TechniqueResteDeGrilleType2 implements TechniqueAide, VisiteurGrill
                 }
             }
 
-            // 5. Validation finale (Le bloc est tout entier dans la ligne, SAUF 1 case)
             if (compteurExterne == 1 && blocCible.getListeCases().size() > 1) {
                 
-                // Si la case externe est déjà trouvée par le joueur, on passe
-                if (caseExterne.getValeur() != 0) return;
-
+                // MODIFICATION : Calcul explicite de la solution via la somme théorique
+                int sommeTheoriqueZone = taille * (taille + 1) / 2;
+                int sommeTousBlocs = 0;
+                
+                for (GroupementCases b : blocsTouches) {
+                    int sommeBloc = 0;
+                    if (b.getCombinaisonsMaths() != null && !b.getCombinaisonsMaths().isEmpty()) {
+                        for (int val : b.getCombinaisonsMaths().get(0)) {
+                            sommeBloc += val;
+                        }
+                    }
+                    sommeTousBlocs += sommeBloc;
+                }
+                
+                int reponseExacte = sommeTousBlocs - sommeTheoriqueZone;
+                int valeurJoueur = caseExterne.getValeur();
+                
+                if (valeurJoueur == reponseExacte) return;
+                
+                // MODIFICATION : Détection d'erreur et message dynamique
+                boolean contientErreur = (valeurJoueur != 0);
                 String nomZone = estLigne ? "la ligne " + (index + 1) : "la colonne " + (index + 1);
-                String message = "Technique Reste de Grille (Exclusion) sur " + nomZone + ".\n"
-                        + "Ce bloc mathématique est presque entièrement contenu dans cette zone, à l'exception d'une seule case \"orpheline\" qui en sort.\n"
-                        + "En comparant la somme de la zone avec la somme du bloc, vous pouvez déduire la valeur de cette case externe !";
+                String message;
 
-                // Surbrillance : Ligne entière + le bloc qui déborde
+                if (contientErreur) {
+                    message = "Erreur détectée ! Technique Reste de Grille (Exclusion) sur " + nomZone + ".\n"
+                            + "En soustrayant la somme des blocs à la somme théorique de la zone, "
+                            + "la case externe doit obligatoirement valoir " + reponseExacte + ".";
+                } else {
+                    message = "Technique Reste de Grille (Exclusion) sur " + nomZone + ".\n"
+                            + "Ce bloc est entièrement dans cette zone, à l'exception d'une seule case \"orpheline\".\n"
+                            + "Par déduction, cette case externe vaut " + reponseExacte + " !";
+                }
+
                 List<Case> surbrillance = new ArrayList<>(casesDeLaZone);
                 for(Case c : blocCible.getListeCases()) {
                     if(!surbrillance.contains(c)) surbrillance.add(c);
                 }
 
-                Map<Case, Integer> solutionsVides = new HashMap<>();
+                // MODIFICATION : Injection de la vraie solution au lieu d'une Map vide
+                Map<Case, Integer> solutions = new HashMap<>();
+                solutions.put(caseExterne, reponseExacte);
 
-                this.indiceTrouve = new Indice("Exclusion Unique", message, surbrillance, solutionsVides, false);
+                this.indiceTrouve = new Indice("Exclusion Unique", message, surbrillance, solutions, contientErreur);
             }
         }
     }

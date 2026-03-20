@@ -24,6 +24,7 @@ public class TechniqueIntraBloc_1_3 implements TechniqueAide {
             boolean formeValide = verifierTopologieL(bloc);
 
             if (aUnDoublon && formeValide) {
+                // NOTE : Le calcul de la solution est déjà effectué explicitement !
                 Map<Case, Integer> reponses = calculerSolutions(bloc);
 
                 boolean estDejaCompletEtCorrect = true;
@@ -34,18 +35,26 @@ public class TechniqueIntraBloc_1_3 implements TechniqueAide {
                     
                     if (valeurJoueur != reponses.get(c)) {
                         estDejaCompletEtCorrect = false;
-                        
                         if (valeurJoueur != 0) {
-                            contientErreur = true;
+                            contientErreur = true; // Détection de l'erreur
                         }
                     }
                 }
 
                 if (!estDejaCompletEtCorrect) {
                     String nom = "Technique Intra-Bloc (Doublon en L)";
-                    String message = "Ce bloc de 3 cases en 'L' n'a qu'une seule combinaison possible comportant un doublon. " +
-                                     "Pour éviter d'avoir le même chiffre sur une ligne/colonne, le doublon se place aux extrémités.";
+                    String message;
+
+                    // MODIFICATION : Message dynamique pour différencier une erreur d'un simple indice
+                    if (contientErreur) {
+                        message = "Erreur détectée ! Ce bloc de 3 cases en 'L' n'a qu'une seule combinaison possible comportant un doublon.\n" +
+                                  "Certaines de vos valeurs ne correspondent pas à cette disposition (les chiffres doublons vont toujours aux extrémités).";
+                    } else {
+                        message = "Ce bloc de 3 cases en 'L' n'a qu'une seule combinaison possible comportant un doublon. " +
+                                  "Pour éviter d'avoir le même chiffre sur une ligne/colonne, le doublon se place obligatoirement aux extrémités.";
+                    }
                     
+                    // L'objet renvoie bien 'reponses' pour un affichage petit à petit
                     return new Indice(nom, message, bloc.getListeCases(), reponses, contientErreur);
                 }
             }
@@ -56,10 +65,7 @@ public class TechniqueIntraBloc_1_3 implements TechniqueAide {
 
     private boolean verifierDoublonMathematique(GroupementCases bloc) {
         List<List<Integer>> combinaisons = bloc.getCombinaisonsMaths();
-        
-        if (combinaisons == null || combinaisons.size() != 1) {
-            return false;
-        }
+        if (combinaisons == null || combinaisons.size() != 1) return false;
 
         List<Integer> combinaisonUnique = combinaisons.get(0);
         Set<Integer> valeursUniques = new HashSet<>();
