@@ -78,7 +78,7 @@ public class JeuController {
                 vc.setOnMouseEntered(event->{
                     GroupementCases g = modeleCase.getGroupement();
                     if (g != null) {
-                        g.calculerPossibilites(grille.getTaille());
+                        g.calculerPossibilites(grille);
                         mettreAJourAide(g, event.getScreenX(), event.getScreenY());
                     }
                 }); 
@@ -144,8 +144,9 @@ public class JeuController {
             if (modeAnnotationActif) {
                 caseModeleSelectionnee.basculerNote(valeur); 
             } else {
-                caseModeleSelectionnee.setValeur(valeur);   
-                
+                caseModeleSelectionnee.setValeur(valeur); 
+
+                rafraichirAideAlentours(caseModeleSelectionnee);
                 if (grilleModele.estGagnee()) {
                     System.out.println("VICTOIRE ! La grille est complétée correctement !");
                 }
@@ -261,5 +262,39 @@ private void mettreAJourAide(GroupementCases groupement, double x, double y) {
     this.aidePopup.setX(x + 25);
     this.aidePopup.setY(y + 25);
 }
+    private void rafraichirAideAlentours(Case caseModifiee) {
+        int x = caseModifiee.getX();
+        int y = caseModifiee.getY();
+        int taille = grilleModele.getTaille();
+
+        // 1. Rafraîchir LE GROUPEMENT de la case cliquée (indispensable !)
+        GroupementCases gActuel = caseModifiee.getGroupement();
+        if (gActuel != null) {
+            gActuel.calculerPossibilites(grilleModele);
+        }
+
+        // 2. Rafraîchir tous les groupements sur la même LIGNE
+        for (int i = 0; i < taille; i++) {
+            GroupementCases g = grilleModele.getCase(i, y).getGroupement();
+            // On vérifie g != gActuel pour ne pas calculer deux fois le même
+            if (g != null && g != gActuel) {
+                g.calculerPossibilites(grilleModele);
+            }
+        }
+
+        // 3. Rafraîchir tous les groupements sur la même COLONNE
+        for (int j = 0; j < taille; j++) {
+            GroupementCases g = grilleModele.getCase(x, j).getGroupement();
+            if (g != null && g != gActuel) {
+                g.calculerPossibilites(grilleModele);
+            }
+        }
+
+        // 4. Mettre à jour l'affichage visuel du Popup si il est ouvert
+        if (aidePopup != null && aidePopup.isShowing()) {
+            // On rafraîchit l'affichage avec le groupement de la case sélectionnée
+            mettreAJourAide(caseModifiee.getGroupement(), aidePopup.getX() - 25, aidePopup.getY() - 25);
+        }
+    }
     
 }

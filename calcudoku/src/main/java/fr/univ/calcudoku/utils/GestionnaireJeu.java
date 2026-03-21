@@ -67,7 +67,7 @@ public class GestionnaireJeu {
                 }
 
                 grille.ajouterGroupement(group);
-                group.calculerPossibilites(dim);
+                group.calculerPossibilites(grille);
             }
 
 
