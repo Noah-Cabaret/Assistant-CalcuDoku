@@ -1,17 +1,28 @@
 package fr.univ.calcudoku.controller;
 
+import java.io.IOException;
+import java.util.List;
+
 import fr.univ.calcudoku.model.Case;
 import fr.univ.calcudoku.model.Grille;
+import fr.univ.calcudoku.model.GroupementCases;
 import fr.univ.calcudoku.view.VueCase;
 import fr.univ.calcudoku.view.VueGrille;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.NumberBinding;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Parent;
 import javafx.scene.control.Button;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.util.Duration;
@@ -28,14 +39,19 @@ public class JeuController {
     @FXML private Button btnEffacer;
     @FXML private Button btnCalculatrice;
     @FXML private Label labelChrono;
+    @FXML private GridPane gridPaneVisual;
 
     private Grille grilleModele;
     private VueGrille vueGrille;
     private boolean modeAnnotationActif = false;
+    private javafx.stage.Popup calcPopup;
+    private javafx.stage.Popup aidePopup;
+    private VBox conteneurAide;
 
     private VueCase vueCaseSelectionnee = null;
     private Case caseModeleSelectionnee = null;
-
+    private double xOffset = 0;
+    private double yOffset = 0;
         
     private Timeline timeline;
     private int secondesEcoulees = 0;
@@ -58,6 +74,19 @@ public class JeuController {
                 final Case modeleCase = grille.getCase(x, y);
                 
                 vc.setOnMouseClicked(event -> selectionnerCase(vc, modeleCase));
+
+                vc.setOnMouseEntered(event->{
+                    GroupementCases g = modeleCase.getGroupement();
+                    if (g != null) {
+                        g.calculerPossibilites(grille.getTaille());
+                        mettreAJourAide(g, event.getScreenX(), event.getScreenY());
+                    }
+                }); 
+                vc.setOnMouseExited(event -> {
+                    if (aidePopup != null) {
+                        aidePopup.hide();
+                    }
+                });
             }
         }
 
@@ -155,5 +184,82 @@ public class JeuController {
     @FXML
     void actionCalculatrice(ActionEvent event) {
         System.out.println("Calculatrice cliquée");
+    try {
+        if (this.calcPopup != null && this.calcPopup.isShowing()) {
+            this.calcPopup.hide();
+            return; 
+        }
+
+        if (this.calcPopup == null) {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/VueCalculatrice.fxml"));
+            Parent root = loader.load();
+            
+            this.calcPopup = new javafx.stage.Popup();
+            this.calcPopup.getContent().add(root);
+
+            this.calcPopup.setAutoHide(false); // Reste affichée quand on clique sur la grille
+            root.setMouseTransparent(false); // Permet de cliquer sur les boutons de la calculette
+
+            root.setOnMousePressed(e -> {
+                xOffset = e.getSceneX();
+                yOffset = e.getSceneY();
+            });
+            root.setOnMouseDragged(e -> {
+                this.calcPopup.setX(e.getScreenX() - xOffset);
+                this.calcPopup.setY(e.getScreenY() - yOffset);
+            });
+
+            this.calcPopup.setX(50); 
+            this.calcPopup.setY(200);
+        }
+        Stage mainStage = (Stage) ((Button)event.getSource()).getScene().getWindow();
+        this.calcPopup.show(mainStage);
+
+    } catch (Exception e) {
+        e.printStackTrace();
     }
+}
+    
+private void mettreAJourAide(GroupementCases groupement, double x, double y) {
+    if (groupement == null) return;
+
+    if (this.aidePopup == null) {
+        this.aidePopup = new javafx.stage.Popup();
+        this.conteneurAide = new VBox(12);
+        this.conteneurAide.getStyleClass().add("calc-main-window");
+        this.conteneurAide.setPadding(new Insets(15));
+        this.conteneurAide.setAlignment(Pos.TOP_CENTER);
+        this.conteneurAide.setPrefWidth(220);
+        
+        this.conteneurAide.setMouseTransparent(true); 
+        
+        this.aidePopup.getContent().add(conteneurAide);
+    }
+
+    conteneurAide.getChildren().clear();
+    Label header = new Label(groupement.getResultatCible() + " " + groupement.getOperation());
+    header.setStyle("-fx-font-weight: bold; -fx-font-size: 20px; -fx-text-fill: #333;");
+    
+    VBox liste = new VBox(8);
+    liste.setAlignment(Pos.CENTER);
+
+    for (List<Integer> comb : groupement.getCombinaisonsMaths()) {
+        String texte = comb.toString().replace("[", "").replace("]", "");
+        Label lbl = new Label(texte);
+        lbl.getStyleClass().add("btn-light");
+        lbl.setPrefWidth(180);
+        lbl.setAlignment(Pos.CENTER);
+        liste.getChildren().add(lbl);
+    }
+
+    conteneurAide.getChildren().addAll(header, liste);
+
+    if (!aidePopup.isShowing()) {
+        aidePopup.show(conteneurGrille.getScene().getWindow());
+    }
+    
+    this.aidePopup.setX(x + 25);
+    this.aidePopup.setY(y + 25);
+}
+    
 }
