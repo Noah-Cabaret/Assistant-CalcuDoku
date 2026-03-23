@@ -12,6 +12,7 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.binding.NumberBinding;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
@@ -22,9 +23,11 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.util.Duration;
 import fr.univ.calcudoku.MainApp;
+import javafx.scene.Parent;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
+import javafx.stage.Stage;
 import javafx.embed.swing.SwingFXUtils;
 import javax.imageio.ImageIO;
 import java.io.File;
@@ -72,6 +75,10 @@ public class JeuController {
 
     private VueCase vueCaseSelectionnee = null;
     private Case caseModeleSelectionnee = null;
+
+    private javafx.stage.Popup calcPopup;
+    private double xOffset = 0;
+    private double yOffset = 0;
 
     private final AideService aideService = new AideService();
     private List<CommandeAide> listeAides = new ArrayList<>();
@@ -487,5 +494,41 @@ public class JeuController {
                 grilleModele.getCase(etapeSuivante.getX(), etapeSuivante.getY()).basculerNote(etapeSuivante.getN() - 30);
         }
     }
-    @FXML void actionCalculatrice(ActionEvent event) { sauvegarderImageGrille("1.png"); }
+    @FXML void actionCalculatrice(ActionEvent event) { 
+         System.out.println("Calculatrice cliquée");
+    try {
+        if (this.calcPopup != null && this.calcPopup.isShowing()) {
+            this.calcPopup.hide();
+            return; 
+        }
+
+        if (this.calcPopup == null) {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/VueCalculatrice.fxml"));
+            Parent root = loader.load();
+
+            this.calcPopup = new javafx.stage.Popup();
+            this.calcPopup.getContent().add(root);
+
+            this.calcPopup.setAutoHide(false); // Reste affichée quand on clique sur la grille
+            root.setMouseTransparent(false); // Permet de cliquer sur les boutons de la calculette
+
+            root.setOnMousePressed(e -> {
+                xOffset = e.getSceneX();
+                yOffset = e.getSceneY();
+            });
+            root.setOnMouseDragged(e -> {
+                this.calcPopup.setX(e.getScreenX() - xOffset);
+                this.calcPopup.setY(e.getScreenY() - yOffset);
+            });
+
+            this.calcPopup.setX(50); 
+            this.calcPopup.setY(200);
+        }
+        Stage mainStage = (Stage) ((Button)event.getSource()).getScene().getWindow();
+        this.calcPopup.show(mainStage);
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+}
 }
