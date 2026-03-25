@@ -2,6 +2,7 @@ package fr.univ.calcudoku.controller;
 
 import fr.univ.calcudoku.model.Case;
 import fr.univ.calcudoku.model.Grille;
+import fr.univ.calcudoku.model.GroupementCases;
 import fr.univ.calcudoku.model.Indice;
 import fr.univ.calcudoku.commande.CommandeAide;
 import fr.univ.calcudoku.commande.CommandeAfficherIndice;
@@ -62,6 +63,9 @@ public class JeuController {
     @FXML private HBox conteneurBoutonsHypothese;
     @FXML private Button btnValiderHypothese;
     @FXML private Button btnAnnulerHypothese;
+
+    @FXML private VBox boiteCombinaisons;
+    @FXML private Label labelCombinaisons;
 
     private boolean modeHypotheseActif = false;
      
@@ -124,7 +128,7 @@ public class JeuController {
         });
 
         for (fr.univ.calcudoku.model.GroupementCases bloc : grilleModele.getListeGroupements()) {
-            bloc.calculerPossibilites(grilleModele.getTaille());
+            bloc.calculerPossibilites(grilleModele);
         }
         
         demarrerChrono();
@@ -189,6 +193,7 @@ public class JeuController {
         this.vueCaseSelectionnee = vueCase;
         this.caseModeleSelectionnee = modeleCase;
         vueCaseSelectionnee.getStyleClass().add("case-selectionnee");
+        rafraichirZoneCombinaisons(modeleCase);
     }
 
     private void actionChiffreClique(int valeur) {
@@ -201,7 +206,7 @@ public class JeuController {
                 save.hist.addEtape(caseModeleSelectionnee.getX(), caseModeleSelectionnee.getY(), valeur + (modeHypotheseActif ? 20 : 0));
                 caseModeleSelectionnee.setValeur(valeur);   
                 vueCaseSelectionnee.setEstHypothese(modeHypotheseActif);
-
+                rafraichirZoneCombinaisons(caseModeleSelectionnee);
                 // Si on modifie la grille, on propose d'actualiser l'aide
                 if (bulleAide.isVisible()) {
                     btnActualiserAide.setVisible(true);
@@ -529,6 +534,37 @@ public class JeuController {
 
     } catch (Exception e) {
         e.printStackTrace();
+    }
+}
+    private void rafraichirZoneCombinaisons(Case modeleCase) {
+    if (modeleCase == null || modeleCase.getGroupement() == null) {
+        labelCombinaisons.setText("Selectionnez une case");
+        return;
+    }
+
+    GroupementCases group = modeleCase.getGroupement();    
+    group.calculerPossibilites(this.grilleModele); 
+    List<List<Integer>> combis = group.getCombinaisonsMaths();
+
+    /* debug */
+    System.out.println("Combinaisons trouvées pour " + group.getResultatCible() + " : " + combis.size());
+    if (combis.isEmpty()) {
+        labelCombinaisons.setText("Aucune combinaison possible !");
+        labelCombinaisons.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
+    } else {
+        StringBuilder sb = new StringBuilder();
+        sb.append(group.getResultatCible()).append(" ").append(group.getOperation().getSymbole()).append(" :\n");
+        
+        for (int i = 0; i < combis.size(); i++){
+            sb.append(combis.get(i).toString());
+            if(i < combis.size() - 1)
+                sb.append(" | ");
+        }
+        
+        labelCombinaisons.setText(sb.toString());
+        labelCombinaisons.setStyle("-fx-text-fill: black; -fx-font-weight: normal;");
+
+        labelCombinaisons.setWrapText(true);
     }
 }
 }

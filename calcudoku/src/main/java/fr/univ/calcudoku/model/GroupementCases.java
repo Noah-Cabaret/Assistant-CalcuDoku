@@ -118,17 +118,25 @@ public class GroupementCases  implements ElementVisitable {
     public void accepter(VisiteurGrille visiteur) {
         visiteur.visiter(this);
     }
-
-    public void calculerPossibilites(int tailleGrille) {
+    /**
+     * Calcule les combinaisons possibles du groupement selon l'état actuel de la grille.
+     * @param grille la grille de jeu pour vérifier les contraintes de ligne/colonne
+     */
+    public void calculerPossibilites(Grille grille) {
         this.combinaisonsMaths.clear();
         Set<List<Integer>> setUnique = new HashSet<>();
-        // On récupère la liste des cases pour connaître leurs coordonnées (x, y)
         List<Case> casesDuGroupe = getListeCases();
-        trouverCombinaisons(new ArrayList<>(), casesDuGroupe, tailleGrille, setUnique);
+        trouverCombinaisons(new ArrayList<>(), casesDuGroupe, setUnique,grille);
         this.combinaisonsMaths.addAll(setUnique);
     }
-    
-    private void trouverCombinaisons(List<Integer> valeursActuelles, List<Case> toutesLesCases, int max, Set<List<Integer>> setUnique) {
+    /**
+     * Recherche récursivement les combinaisons valides par backtracking.
+     * @param valeursActuelles nombres en cours de test pour le groupement
+     * @param toutesLesCases cases appartenant au groupement
+     * @param setUnique stockage des combinaisons uniques trouvées
+     * @param grille référence à la grille pour les vérifications globales
+     */
+    private void trouverCombinaisons(List<Integer> valeursActuelles, List<Case> toutesLesCases, Set<List<Integer>> setUnique, Grille grille) {
         if (valeursActuelles.size() == listeCases.size()) {
             if (operation.calculer(valeursActuelles) == resultatCible) {
                 List<Integer> copie = new ArrayList<>(valeursActuelles);
@@ -139,20 +147,47 @@ public class GroupementCases  implements ElementVisitable {
         }
         int indexCaseActuelle = valeursActuelles.size();
         Case caseAremplir = toutesLesCases.get(indexCaseActuelle);
-        for (int v = 1; v <= max; v++) {
-            if (estPossible(v, caseAremplir, valeursActuelles, toutesLesCases)) {
-                valeursActuelles.add(v);
-                trouverCombinaisons(valeursActuelles, toutesLesCases, max, setUnique);
-                valeursActuelles.remove(valeursActuelles.size() - 1); // Backtracking
+        int valeurDeLaGrille = caseAremplir.getValeur();
+        if (valeurDeLaGrille != 0) {
+            if (estPossible(valeurDeLaGrille, caseAremplir, valeursActuelles, toutesLesCases, grille)) {
+                valeursActuelles.add(valeurDeLaGrille);
+                trouverCombinaisons(valeursActuelles, toutesLesCases, setUnique, grille);
+                valeursActuelles.remove(valeursActuelles.size() - 1); 
             }
+            return;
         }
+        else {
+            for (int v = 1; v <= grille.getTaille(); v++) {
+                if (estPossible(v, caseAremplir, valeursActuelles, toutesLesCases, grille)) {
+                    valeursActuelles.add(v);
+                    trouverCombinaisons(valeursActuelles, toutesLesCases, setUnique, grille);
+                    valeursActuelles.remove(valeursActuelles.size() - 1); // Backtracking
+                }
+             }
+         }
     }
-    
-    private boolean estPossible(int valeur, Case caseCible, List<Integer> valeursPlacees, List<Case> toutesLesCases) {
+    /**
+     * Vérifie si une valeur respecte les règles du Calcudoku (groupement, ligne et colonne).
+     * @param valeur le chiffre à tester
+     * @param caseCible la case de destination
+     * @param valeursPlacees chiffres déjà simulés dans le groupement
+     * @param toutesLesCases liste des cases du groupe
+     * @param grille la grille complète pour détecter les doublons distants
+     * @return true si le coup est légal, false sinon
+     */
+    private boolean estPossible(int valeur, Case caseCible, List<Integer> valeursPlacees, List<Case> toutesLesCases, Grille grille) {
+        for (int i = 0; i < grille.getTaille(); i++) {
+            Case cLigne = grille.getCase(i, caseCible.getY());
+            if (cLigne != caseCible && cLigne.getValeur() == valeur) 
+                return false;
+
+            Case cCol = grille.getCase(caseCible.getX(), i);
+            if (cCol != caseCible && cCol.getValeur() == valeur)
+                return false;
+        }
         for (int i = 0; i < valeursPlacees.size(); i++) {
             Case casePrecedente = toutesLesCases.get(i);
-            int valeurPrecedente = valeursPlacees.get(i);
-            if (valeur == valeurPrecedente) {
+            if (valeur == valeursPlacees.get(i)) {
                 if (caseCible.getX() == casePrecedente.getX() || caseCible.getY() == casePrecedente.getY()) {
                     return false;
                 }
