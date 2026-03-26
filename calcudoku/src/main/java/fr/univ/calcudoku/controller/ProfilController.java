@@ -45,6 +45,7 @@ public class ProfilController {
             } else if (nouvelleValeur == radioClair) {
                 activerModeSombre(false);
             }
+            chargerPartiesSauvegardees(lblNomProfil.getText());
         });
     }
 

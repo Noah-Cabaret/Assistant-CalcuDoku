@@ -24,8 +24,14 @@ public class CarteUIFactory {
         String styleNormal = "-fx-cursor: hand; -fx-padding: 10; -fx-background-color: transparent; -fx-border-color: transparent; -fx-border-radius: 10; -fx-background-radius: 10;";
         String styleHover = "-fx-cursor: hand; -fx-padding: 10; -fx-background-color: #f5f5f5; -fx-border-color: #cccccc; -fx-border-radius: 10; -fx-background-radius: 10;";
 
+        // Si le mode sombre est activé, on met un fond de survol plus foncé !
+        if (fr.univ.calcudoku.MainApp.modeSombreActif) {
+            styleHover = "-fx-cursor: hand; -fx-padding: 10; -fx-background-color: #444444; -fx-border-color: #777777; -fx-border-radius: 10; -fx-background-radius: 10;";
+        }
+
         vBox.setStyle(styleNormal);
-        vBox.setOnMouseEntered(e -> vBox.setStyle(styleHover));
+        String finalStyleHover = styleHover;
+        vBox.setOnMouseEntered(e -> vBox.setStyle(finalStyleHover));
         vBox.setOnMouseExited(e -> vBox.setStyle(styleNormal));
 
         // L'image de la grille
@@ -47,10 +53,16 @@ public class CarteUIFactory {
 
         // Les textes
         Label titre = new Label(titreText);
-        titre.setStyle("-fx-font-family: 'Arial'; -fx-font-weight: bold; -fx-font-size: 13px;");
-
         Label lblTemps = new Label(tempsText);
-        lblTemps.setStyle("-fx-font-family: 'Arial'; -fx-font-size: 11px; -fx-text-fill: #555555;");
+
+        // --- ADAPTATION AU MODE SOMBRE ---
+        if (fr.univ.calcudoku.MainApp.modeSombreActif) {
+            titre.setStyle("-fx-font-family: 'Arial'; -fx-font-weight: bold; -fx-font-size: 13px; -fx-text-fill: white;");
+            lblTemps.setStyle("-fx-font-family: 'Arial'; -fx-font-size: 11px; -fx-text-fill: #cccccc;");
+        } else {
+            titre.setStyle("-fx-font-family: 'Arial'; -fx-font-weight: bold; -fx-font-size: 13px; -fx-text-fill: black;");
+            lblTemps.setStyle("-fx-font-family: 'Arial'; -fx-font-size: 11px; -fx-text-fill: #555555;");
+        }
 
         vBox.getChildren().addAll(vueMiniature, titre, lblTemps);
 
