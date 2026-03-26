@@ -1,5 +1,7 @@
 package fr.univ.calcudoku.controller;
 
+import java.io.File;
+
 import fr.univ.calcudoku.MainApp;
 import fr.univ.calcudoku.utils.CacheRessources;
 import fr.univ.calcudoku.utils.GestionnaireJeu;
@@ -7,6 +9,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.stage.Stage;
 
 public class MenuController {
 
@@ -51,16 +54,7 @@ public class MenuController {
 
     @FXML 
     private void onLibreClick() { 
-        // On récupère le nom du joueur
-        String nomJoueur = MainApp.getProfileManager().getProfilActif();
-        if (nomJoueur == null) nomJoueur = "Invité";
-        
-        // On cible le fichier de sauvegarde
-        File fichier = new File("profils/" + nomJoueur + "/jeu/json/libre_5_2_1.json");
-
-        // le Gestionnaire tout faire !
-        Stage stage = (Stage) boxSousMenu.getScene().getWindow();
-        GestionnaireJeu.chargerPartieDepuisFichier(stage, fichier);
+        MainApp.changerScene("/fxml/menu_libre.fxml");
     }
 
     @FXML private void onAventureClick() { MainApp.changerScene("/fxml/menu_aventure.fxml"); }
@@ -69,5 +63,10 @@ public class MenuController {
     @FXML
     private void onQuitterClick() {
         System.exit(0);
+    }
+
+    @FXML 
+    private void onReglesClick() { 
+        MainApp.changerScene("/fxml/reglesTechniques.fxml"); 
     }
 }
