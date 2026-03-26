@@ -9,17 +9,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
-/**
- * Technique : Bloc Unique.
- * Cherche les blocs dont l'opération mathématique n'autorise qu'une seule combinaison de chiffres.
- */
 public class TechniqueBlocUnique implements TechniqueAide {
 
     @Override
     public Indice analyser(Grille grille) {
-        Indice indiceNormal = null;
+        List<Indice> indicesErreurs = new ArrayList<>();
+        List<Indice> indicesNormaux = new ArrayList<>();
 
         for (GroupementCases bloc : grille.getListeGroupements()) {
             List<Case> casesDuBloc = bloc.getListeCases();
@@ -29,12 +27,8 @@ public class TechniqueBlocUnique implements TechniqueAide {
             
             if (combinaisonsPossibles != null && combinaisonsPossibles.size() == 1) {
                 
-                // NOUVEAU : On empêche le conflit avec "TechniqueIntraBloc".
-                // Si la combinaison unique possède un doublon, on ignore ce bloc ici.
                 List<Integer> combinaisonUnique = combinaisonsPossibles.get(0);
-                if (aDesChiffresIdentiques(combinaisonUnique)) {
-                    continue;
-                }
+                if (aDesChiffresIdentiques(combinaisonUnique)) continue;
 
                 boolean contientErreur = false;
                 List<Case> casesFausses = new ArrayList<>();
@@ -53,26 +47,26 @@ public class TechniqueBlocUnique implements TechniqueAide {
 
                 if (contientErreur) {
                     String msg = "Erreur détectée ! Ce bloc ne peut être résolu qu'avec une seule combinaison de chiffres précise.\nLes chiffres en surbrillance sont incorrects.";
-                    return new Indice("Combinaison Unique", msg, casesFausses, new HashMap<>(), true);
-                } else if (indiceNormal == null) {
+                    indicesErreurs.add(new Indice("Combinaison Unique", msg, casesFausses, new HashMap<>(), true));
+                } else {
                     String msg = "Techniques de blocs uniques : Observez ce bloc. Les règles du CalcuDoku font qu'il n'existe qu'une seule combinaison de nombres possible pour atteindre ce résultat avec cette opération ! Déduisez-la.";
-                    indiceNormal = new Indice("Combinaison Unique", msg, casesDuBloc, new HashMap<>(), false);
+                    indicesNormaux.add(new Indice("Combinaison Unique", msg, casesDuBloc, new HashMap<>(), false));
                 }
             }
         }
-        return indiceNormal;
+
+        Random rand = new Random();
+        if (!indicesErreurs.isEmpty()) return indicesErreurs.get(rand.nextInt(indicesErreurs.size()));
+        if (!indicesNormaux.isEmpty()) return indicesNormaux.get(rand.nextInt(indicesNormaux.size()));
+        
+        return null;
     }
 
-    /**
-     * Méthode utilitaire pour vérifier la présence de doublons dans la combinaison.
-     */
     private boolean aDesChiffresIdentiques(List<Integer> combinaison) {
         if (combinaison == null || combinaison.isEmpty()) return false;
         Set<Integer> valeursVues = new HashSet<>();
         for (Integer valeur : combinaison) {
-            if (!valeursVues.add(valeur)) {
-                return true; // Un doublon a été trouvé
-            }
+            if (!valeursVues.add(valeur)) return true;
         }
         return false;
     }

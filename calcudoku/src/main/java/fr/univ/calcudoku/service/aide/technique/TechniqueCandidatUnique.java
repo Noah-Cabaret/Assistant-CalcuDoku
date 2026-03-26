@@ -9,17 +9,16 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
-/**
- * Technique : Candidat Unique.
- */
 public class TechniqueCandidatUnique implements TechniqueAide {
 
     @Override
     public Indice analyser(Grille grille) {
         int taille = grille.getTaille();
-        Indice indiceNormal = null;
+        List<Indice> indicesErreurs = new ArrayList<>();
+        List<Indice> indicesNormaux = new ArrayList<>();
 
         for (int y = 0; y < taille; y++) {
             for (int x = 0; x < taille; x++) {
@@ -51,19 +50,25 @@ public class TechniqueCandidatUnique implements TechniqueAide {
 
                     List<Case> casesASurbriller = new ArrayList<>();
                     casesASurbriller.add(c);
-                    Map<Case, Integer> solutions = new HashMap<>(); // Vide : ne donne plus la solution exacte
+                    Map<Case, Integer> solutions = new HashMap<>(); 
 
                     if (contientErreur) {
                         String msg = "Erreur détectée ! La case ciblée ne peut contenir qu'un seul chiffre possible à cause des autres chiffres déjà présents sur sa ligne et sa colonne.";
-                        return new Indice("Candidat Unique", msg, casesASurbriller, solutions, true);
-                    } else if (indiceNormal == null) {
+                        indicesErreurs.add(new Indice("Candidat Unique", msg, casesASurbriller, solutions, true));
+                    } else {
                         String msg = "Techniques à candidat unique : Selon les règles, un nombre n'apparaît qu'une fois par ligne et colonne. En croisant la ligne et la colonne de cette case, il ne reste plus qu'un seul candidat possible !";
-                        indiceNormal = new Indice("Candidat Unique", msg, casesASurbriller, solutions, false);
+                        indicesNormaux.add(new Indice("Candidat Unique", msg, casesASurbriller, solutions, false));
                     }
                 }
             }
         }
-        return indiceNormal;
+
+        // Sélection aléatoire
+        Random rand = new Random();
+        if (!indicesErreurs.isEmpty()) return indicesErreurs.get(rand.nextInt(indicesErreurs.size()));
+        if (!indicesNormaux.isEmpty()) return indicesNormaux.get(rand.nextInt(indicesNormaux.size()));
+        
+        return null;
     }
 
     private int trouverChiffreManquant(Set<Integer> chiffresVus, int taille) {
