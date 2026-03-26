@@ -12,6 +12,7 @@ E:\Assistant-CalcuDoku\calcudoku\src\main\java\fr\univ\calcudoku\controller\Menu
 E:\Assistant-CalcuDoku\calcudoku\src\main\java\fr\univ\calcudoku\model\Operation.java
 E:\Assistant-CalcuDoku\calcudoku\src\main\java\fr\univ\calcudoku\view\VueCase.java
 E:\Assistant-CalcuDoku\calcudoku\src\main\java\fr\univ\calcudoku\model\GroupementCases.java
+E:\Assistant-CalcuDoku\calcudoku\src\main\java\fr\univ\calcudoku\controller\ReglesTechniquesController.java
 E:\Assistant-CalcuDoku\calcudoku\src\main\java\fr\univ\calcudoku\utils\CarteUIFactory.java
 E:\Assistant-CalcuDoku\calcudoku\src\main\java\fr\univ\calcudoku\service\JsonToModelAdapter.java
 E:\Assistant-CalcuDoku\calcudoku\src\main\java\fr\univ\calcudoku\controller\MenuController.java

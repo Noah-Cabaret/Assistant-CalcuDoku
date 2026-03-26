@@ -61,4 +61,9 @@ public class MenuController {
     private void onQuitterClick() {
         System.exit(0);
     }
+    
+    @FXML 
+    private void onReglesClick() { 
+        MainApp.changerScene("/fxml/reglesTechniques.fxml"); 
+    }
 }
