@@ -34,6 +34,7 @@
             </fx:define>
             
             <ToggleButton fx:id="btnRegles" text="Règles" toggleGroup="$groupeOnglets" selected="true" onAction="#afficherRegles" prefWidth="150" prefHeight="50" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 10; -fx-border-color: #999999; -fx-border-radius: 10;" />
+            <ToggleButton text="Fonctionnalités" toggleGroup="$groupeOnglets" onAction="#afficherFonctionnalites" prefWidth="150" prefHeight="50" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 10; -fx-border-color: #999999; -fx-border-radius: 10;" />
             <ToggleButton text="Techniques 1" toggleGroup="$groupeOnglets" onAction="#afficherTechnique1" prefWidth="150" prefHeight="50" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 10; -fx-border-color: #999999; -fx-border-radius: 10;" />
             <ToggleButton text="Techniques 2" toggleGroup="$groupeOnglets" onAction="#afficherTechnique2" prefWidth="150" prefHeight="50" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 10; -fx-border-color: #999999; -fx-border-radius: 10;" />
             <ToggleButton text="Techniques 3" toggleGroup="$groupeOnglets" onAction="#afficherTechnique3" prefWidth="150" prefHeight="50" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 10; -fx-border-color: #999999; -fx-border-radius: 10;" />

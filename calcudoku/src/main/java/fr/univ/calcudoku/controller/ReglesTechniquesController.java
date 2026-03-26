@@ -132,26 +132,63 @@ public class ReglesTechniquesController {
         
         // PAGE 1
         pages.add(new PageContenu(
-            "Le Calcudoku (ou Mathdoku) est une grille mathématique.\n\nRègle 1 : Remplir la grille avec les chiffres de 1 à N (N étant la taille de la grille).", 
-            "/grilles/images/4.png", 
+            "Le Calcudoku est une grille mathématique.\n\nRègle 1 : Remplir la grille avec les chiffres de 1 à N (N étant la taille de la grille).", 
+            "/grilles/images/regle1.png", 
             "Exemple de grille 4x4 basique"
         ));
         
         // PAGE 2 (Sans image)
         pages.add(new PageContenu(
-            "Règle 2 : Chaque chiffre ne doit apparaître qu'une seule fois par ligne et par colonne.\nC'est exactement le même principe qu'un Sudoku !", 
-            "/grilles/images/4.png", 
-            "les chiffres ne sont pas identique"
+            "Règle 2 : Chaque chiffre ne doit apparaître qu'une seule fois par ligne et par colonne.\nMais un nombre peut être utilisé plus d'une fois dans le même bloc", 
+            "/grilles/images/regle2.png", 
+            "les chiffres ne sont pas identiques"
         ));
         
         // PAGE 3
         pages.add(new PageContenu(
             "Règle 3 : Les cages (blocs entourés en gras) doivent respecter l'opération mathématique indiquée en haut à gauche pour obtenir le résultat cible.", 
-            "/grilles/images/4.png", // Mettez une image ici si vous en avez une !
+            "/grilles/images/regle3.png", // Mettez une image ici si vous en avez une !
             "Attention à l'opération (+, -, *, /)"
         ));
 
         chargerSection("Règles du Calcudoku", pages);
+    }
+
+    @FXML
+    private void afficherFonctionnalites() {
+        List<PageContenu> pages = new ArrayList<>();
+        
+        // PAGE 1 : Les aides au calcul depuis profil
+        pages.add(new PageContenu(
+            "Le jeu propose des aides pour vous assister dans vos calculs.\n\n" +
+            "Dans votre Profil, vous pouvez choisir entre :\n" +
+            "- Combinaisons : Affiche toutes les additions/multiplications possibles pour une cage donnée.\n" +
+            "- Calculatrice : Ouvre une petite calculatrice classique pour faire vos propres essais.\n" +
+            "De même, vous trouvez les statistiques liées à votre profil et les parties en cours depuis l'onglet de Profile.", 
+            null, // Vous pourrez mettre une capture d'écran de la calculatrice ici plus tard !
+            "Les aides au calcul"
+        ));
+        
+        // PAGE 2 : Les contrôles et annotations
+        pages.add(new PageContenu(
+            "Vous pouvez personnaliser la façon dont vous remplissez la grille :\n\n" +
+            "- Déplacement : Jouez principalement au clavier en naviguant avec les flèches.\n" +
+            "- Placer chiffre : Cliquez sur une case pour ouvrir un menu circulaire et choisir votre chiffre.\n" +
+            "- Annotation : Permet d'écrire des petits chiffres 'brouillon' dans les coins d'une case.", 
+            null, // Une capture d'écran d'une case avec des annotations serait top ici
+            "Les modes de saisie"
+        ));
+
+        // PAGE 3 : plein partie du jeu
+        pages.add(new PageContenu(
+            "Depuis une partie du jeu, vous possedez le menu roulant qui permet de :\n\n" +
+            "- Changer le mode d'aide au calcul : combinaisons, calculatrice.\n" +
+            "- Retour à Règles & Techniques : Consulter les règles du jeu, les fonctionnalités et les techniques.\n",
+            null, // Une capture d'écran d'une case avec des annotations serait top ici
+            "Menu roulant"
+        ));
+
+        chargerSection("Fonctionnalités et Outils", pages);
     }
 
     @FXML
