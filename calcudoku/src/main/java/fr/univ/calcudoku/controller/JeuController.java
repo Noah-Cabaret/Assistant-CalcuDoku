@@ -16,6 +16,8 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
@@ -35,6 +37,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import javafx.animation.PauseTransition;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import java.util.Optional;
 
 import fr.univ.calcudoku.save.*;
 
@@ -66,6 +71,14 @@ public class JeuController {
 
     @FXML private VBox boiteCombinaisons;
     @FXML private Label labelCombinaisons;
+
+    @FXML private Button btnRetour;
+    @FXML private Button btnMenu;
+    @FXML private VBox menuDeroulant;
+    @FXML private RadioButton radioCombinaisons;
+    @FXML private RadioButton radioCalculatrice;
+    @FXML private ToggleGroup groupeConfigAide;
+    @FXML private StackPane popupAbandon;
 
     private boolean modeHypotheseActif = false;
      
@@ -122,11 +135,14 @@ public class JeuController {
         genererBoutonsNombres(grille.getTaille());
         bulleAide.setVisible(false);
 
+        initialiserLogiqueMenu();
+        popupAbandon.setVisible(false);
         // Service d'aide en arrière-plan
         aideService.setOnSucceeded(event -> {
             indicesEnAttente = aideService.getValue();
         });
 
+        // CORRECTION DE L'ERREUR : on passe bien grilleModele et non grilleModele.getTaille()
         for (fr.univ.calcudoku.model.GroupementCases bloc : grilleModele.getListeGroupements()) {
             bloc.calculerPossibilites(grilleModele);
         }
@@ -134,6 +150,116 @@ public class JeuController {
         demarrerChrono();
         aideService.lancerAnalyse(grilleModele);
     }
+
+    // --- NOUVELLES MÉTHODES POUR LE MENU ---
+    private void initialiserLogiqueMenu() {
+        if (radioCombinaisons != null && groupeConfigAide != null) {
+            boolean modeCombiInitial = radioCombinaisons.isSelected();
+            boiteCombinaisons.setVisible(modeCombiInitial);
+            boiteCombinaisons.setManaged(modeCombiInitial);
+            btnCalculatrice.setDisable(modeCombiInitial);
+
+            groupeConfigAide.selectedToggleProperty().addListener((obs, oldVal, newVal) -> {
+                boolean modeCombi = (newVal == radioCombinaisons);
+                boiteCombinaisons.setVisible(modeCombi);
+                boiteCombinaisons.setManaged(modeCombi);
+                btnCalculatrice.setDisable(modeCombi);
+                
+                if (modeCombi && calcPopup != null && calcPopup.isShowing()) {
+                    calcPopup.hide();
+                }
+            });
+        }
+    }
+
+    @FXML
+    void actionBasculerMenu(ActionEvent event) {
+        if (menuDeroulant != null) {
+            menuDeroulant.setVisible(!menuDeroulant.isVisible());
+        }
+    }
+
+    @FXML 
+    void actionRetourMenu(ActionEvent event) { 
+        System.out.println("Sauvegarde et retour au menu principal...");
+        
+        // On arrête le chrono
+        if (timeline != null) {
+            timeline.stop();
+        }
+        
+        // Logique de sauvegarde (à adapter/décommenter avec la vraie méthode de ta classe Sauvegarde)
+        // if (save != null) {
+        //     save.sauvegarderEtatPartie(); 
+        // }
+
+        // Retour à la page Menu
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/menu.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) btnRetour.getScene().getWindow();
+            stage.getScene().setRoot(root);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    void actionAbandonner(ActionEvent event) {
+        // Ferme le menu déroulant et affiche notre belle pop-up d'abandon
+        if (menuDeroulant != null) menuDeroulant.setVisible(false);
+        if (popupAbandon != null) popupAbandon.setVisible(true);
+    }
+
+    @FXML
+    void actionAnnulerAbandon(ActionEvent event) {
+        // Cache la pop-up et permet de continuer à jouer
+        if (popupAbandon != null) popupAbandon.setVisible(false);
+    }
+
+    @FXML
+    void actionConfirmerAbandon(ActionEvent event) {
+        System.out.println("Abandon strict : suppression de la progression et retour menu.");
+        
+        if (timeline != null) timeline.stop();
+        if (save != null && save.hist != null) save.hist.viderQueue(); // On détruit l'historique
+        
+        // On charge le menu sans déclencher aucune sauvegarde
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/menu.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) btnRetour.getScene().getWindow();
+            stage.getScene().setRoot(root);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    void actionRecommencer(ActionEvent event) {
+        secondesEcoulees = 0;
+        for (int y = 0; y < grilleModele.getTaille(); y++) {
+            for (int x = 0; x < grilleModele.getTaille(); x++) {
+                Case c = grilleModele.getCase(x, y);
+                c.setValeur(0);
+                c.effacerNotes();
+                vueGrille.getGrilleVueCases(x, y).setEstHypothese(false);
+            }
+        }
+        save.hist.viderQueue();
+        quitterModeHypotheseVisuel();
+        if (menuDeroulant != null) menuDeroulant.setVisible(false);
+        aideService.lancerAnalyse(grilleModele);
+        if (caseModeleSelectionnee != null) {
+            rafraichirZoneCombinaisons(caseModeleSelectionnee);
+        }
+    }
+
+    @FXML
+    void actionReglesTechniques(ActionEvent event) {
+        System.out.println("Ouverture des règles");
+    }
+    // ---------------------------------------
 
     private void genererBoutonsNombres(int taille) {
         conteneurBoutonsNombres.getChildren().clear(); 
@@ -499,6 +625,7 @@ public class JeuController {
                 grilleModele.getCase(etapeSuivante.getX(), etapeSuivante.getY()).basculerNote(etapeSuivante.getN() - 30);
         }
     }
+    
     @FXML void actionCalculatrice(ActionEvent event) { 
          System.out.println("Calculatrice cliquée");
     try {
@@ -536,7 +663,7 @@ public class JeuController {
         e.printStackTrace();
     }
 }
-    private void rafraichirZoneCombinaisons(Case modeleCase) {
+private void rafraichirZoneCombinaisons(Case modeleCase) {
     if (modeleCase == null || modeleCase.getGroupement() == null) {
         labelCombinaisons.setText("Selectionnez une case");
         return;
