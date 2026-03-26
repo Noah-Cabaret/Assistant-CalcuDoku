@@ -96,6 +96,46 @@ public class GestionnaireJeu {
         }
     }
 
+    //MÉTHODE : Charge juste la grille depuis les ressources internes (pour les miniatures)
+    public static Grille chargerGrilleSeuleRessource(String fichierJsonRessource) {
+        try {
+            InputStream is = GestionnaireJeu.class.getResourceAsStream("/grilles/json/" + fichierJsonRessource);
+            if (is == null) return null;
+            
+            DonneesNiveau data = GSON.fromJson(new InputStreamReader(is), DonneesNiveau.class);
+            return JsonToModelAdapter.convertir(data);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * Lit les données brutes d'un niveau depuis les ressources internes (Jeu Libre).
+     */
+    public static DonneesNiveau lireDonneesNiveauRessource(String fichierJsonRessource) {
+        try {
+            InputStream is = GestionnaireJeu.class.getResourceAsStream("/grilles/json/" + fichierJsonRessource);
+            if (is == null) return null;
+            return GSON.fromJson(new InputStreamReader(is), DonneesNiveau.class);
+        } catch (Exception e) {
+            System.err.println("Erreur lecture ressource JSON : " + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Lit les données brutes d'un niveau depuis un fichier externe (Sauvegarde Profil).
+     */
+    public static DonneesNiveau lireDonneesNiveauFichier(File fichier) {
+        if (fichier == null || !fichier.exists()) return null;
+        try (FileReader reader = new FileReader(fichier)) {
+            return GSON.fromJson(reader, DonneesNiveau.class);
+        } catch (Exception e) {
+            System.err.println("Erreur lecture fichier JSON : " + e.getMessage());
+            return null;
+        }
+    }
+
     /**
      * Méthode commune pour initialiser la fenêtre de jeu (FXML + Controller)
      */

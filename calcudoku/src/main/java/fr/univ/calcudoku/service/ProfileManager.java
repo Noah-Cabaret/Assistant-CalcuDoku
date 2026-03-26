@@ -146,4 +146,29 @@ public class ProfileManager {
         }
         return stats;
     }
+
+    /**
+     * Met à jour une statistique spécifique pour un joueur et sauvegarde dans le fichier INI.
+     */
+    public void mettreAJourStatistique(String nomProfil, String cle, String valeur) {
+        try {
+            // On cible le MÊME fichier que la méthode lireStatistiques (profil.ini)
+            java.io.File fichierIni = new java.io.File("profils/" + nomProfil + "/" + FICHIER_OPTIONS);
+            
+            // On lit les statistiques actuelles
+            java.util.Map<String, String> stats = lireStatistiques(nomProfil);
+            
+            // On modifie la valeur demandée ("progression")
+            stats.put(cle, valeur);
+            
+            // On sauvegarde le tout dans le fichier INI
+            try (java.io.FileWriter writer = new java.io.FileWriter(fichierIni)) {
+                for (java.util.Map.Entry<String, String> entry : stats.entrySet()) {
+                    writer.write(entry.getKey() + "=" + entry.getValue() + "\n");
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Erreur lors de la mise à jour de la statistique : " + e.getMessage());
+        }
+    }
 }

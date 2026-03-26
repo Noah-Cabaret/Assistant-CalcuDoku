@@ -2,22 +2,11 @@ package fr.univ.calcudoku.controller;
 
 import fr.univ.calcudoku.MainApp;
 import fr.univ.calcudoku.utils.CacheRessources;
-//import fr.univ.calcudoku.model.DonneesNiveau;
-//import fr.univ.calcudoku.model.Grille;
-//import fr.univ.calcudoku.service.JsonToModelAdapter;
 import fr.univ.calcudoku.utils.GestionnaireJeu;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
-import javafx.stage.Stage;
-
-import java.io.File;
-//import java.io.FileReader;
-import java.io.InputStream;
-
-//import com.google.gson.Gson;
 
 public class MenuController {
 
@@ -28,7 +17,7 @@ public class MenuController {
     private ImageView imgAvatar;
     
     @FXML
-    private Label labelNomProfil; // Pour changer le texte "Nom"
+    private Label labelNomProfil; 
 
     @FXML
     public void initialize() {
@@ -42,6 +31,8 @@ public class MenuController {
         } else {
             labelNomProfil.setText("Invité");
         }
+
+        fr.univ.calcudoku.utils.ThemeUtil.appliquerFiltreBlancSiSombre(imgAvatar);
         GestionnaireJeu.prechargerPageJeu();
     }
 
@@ -53,11 +44,11 @@ public class MenuController {
     //Gestion du Clic sur le Profil (Retour Accueil)
     @FXML
     private void onProfilClick() {
-        // Ça va vers la page de statistiques/profil
+        // On prévient le Profil qu'il faudra revenir au menu
+        ProfilController.pagePrecedente = "/fxml/menu.fxml";
         MainApp.changerScene("/fxml/profil.fxml");
     }
 
-    //@FXML private void onLibreClick() { System.out.println("Mode Libre"); }
     @FXML 
     private void onLibreClick() { 
         // On récupère le nom du joueur
@@ -72,7 +63,7 @@ public class MenuController {
         GestionnaireJeu.chargerPartieDepuisFichier(stage, fichier);
     }
 
-    @FXML private void onAventureClick() { System.out.println("Mode Aventure"); }
+    @FXML private void onAventureClick() { MainApp.changerScene("/fxml/menu_aventure.fxml"); }
     
     
     @FXML
