@@ -24,11 +24,14 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.util.Duration;
 import fr.univ.calcudoku.MainApp;
 import javafx.scene.Parent;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.image.WritableImage;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.embed.swing.SwingFXUtils;
@@ -102,6 +105,8 @@ public class JeuController {
     private List<Indice> indicesEnAttente = new ArrayList<>();
     private int indexAideActuelle = 0;
 
+    private javafx.event.EventHandler<KeyEvent> filtreClavier;
+
     private Sauvegarde save;
 
     public void initialiserPartie(Grille grille, Sauvegarde save) {
@@ -146,7 +151,11 @@ public class JeuController {
         for (fr.univ.calcudoku.model.GroupementCases bloc : grilleModele.getListeGroupements()) {
             bloc.calculerPossibilites(grilleModele);
         }
-        
+        Platform.runLater(() -> {
+            if (conteneurGrille.getScene() != null) {
+                configurerClavier(conteneurGrille.getScene());
+            }
+        });
         demarrerChrono();
         aideService.lancerAnalyse(grilleModele);
     }
@@ -451,6 +460,60 @@ public class JeuController {
         btnAidePrecedente.setDisable(indexAideActuelle == 0);
         btnAideSuivante.setDisable(indexAideActuelle == listeAides.size() - 1);
         btnAmeliorerAide.setDisable(!listeAides.get(indexAideActuelle).peutEtreAmeliore());
+    }
+
+    private void configurerClavier(javafx.scene.Scene scene) {
+        // 1. Si un filtre existe déjà sur la scène, on le retire pour éviter les doublons
+        if (filtreClavier != null) {
+            scene.removeEventFilter(KeyEvent.KEY_PRESSED, filtreClavier);
+        }
+
+        // 2. On définit le nouveau filtre
+        filtreClavier = event -> {
+            if (caseModeleSelectionnee != null) {
+                int x = caseModeleSelectionnee.getX();
+                int y = caseModeleSelectionnee.getY();
+                int taille = grilleModele.getTaille(); // On utilise la taille actuelle
+
+                switch (event.getCode()) {
+                    case UP -> y = Math.max(0, y - 1);
+                    case DOWN -> y = Math.min(taille - 1, y + 1);
+                    case LEFT -> x = Math.max(0, x - 1);
+                    case RIGHT -> x = Math.min(taille - 1, x + 1);
+                    case BACK_SPACE, DELETE -> {
+                        actionEffacer(new ActionEvent());
+                        event.consume();
+                        return;
+                    }
+                }
+
+                // Si les coordonnées ont changé, on change la sélection
+                if (x != caseModeleSelectionnee.getX() || y != caseModeleSelectionnee.getY()) {
+                    selectionnerCase(vueGrille.getGrilleVueCases(x, y), grilleModele.getCase(x, y));
+                    event.consume();
+                    return; 
+                }
+            }
+
+            // Gestion des chiffres (Code pour Mac sans Shift)
+            if (event.getCode().isDigitKey()) {
+                String codeName = event.getCode().getName(); 
+                String lastChar = codeName.substring(codeName.length() - 1);
+                
+                try {
+                    int val = Integer.parseInt(lastChar);
+                    if (val > 0 && val <= grilleModele.getTaille()) {
+                        actionChiffreClique(val);
+                        event.consume();
+                    }
+                } catch (NumberFormatException e) {
+                    // Gestion erreur parsing si nécessaire
+                }
+            }
+        };
+
+        // 3. On applique le nouveau filtre à la scène
+        scene.addEventFilter(KeyEvent.KEY_PRESSED, filtreClavier);
     }
 
     @FXML
