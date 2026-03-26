@@ -546,8 +546,6 @@ public class JeuController {
     group.calculerPossibilites(this.grilleModele); 
     List<List<Integer>> combis = group.getCombinaisonsMaths();
 
-    /* debug */
-    System.out.println("Combinaisons trouvées pour " + group.getResultatCible() + " : " + combis.size());
     if (combis.isEmpty()) {
         labelCombinaisons.setText("Aucune combinaison possible !");
         labelCombinaisons.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
