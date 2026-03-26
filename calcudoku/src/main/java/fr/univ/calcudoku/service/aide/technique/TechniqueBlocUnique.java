@@ -7,7 +7,9 @@ import fr.univ.calcudoku.model.Indice;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Technique : Bloc Unique.
@@ -26,6 +28,14 @@ public class TechniqueBlocUnique implements TechniqueAide {
             List<List<Integer>> combinaisonsPossibles = bloc.getCombinaisonsMaths();
             
             if (combinaisonsPossibles != null && combinaisonsPossibles.size() == 1) {
+                
+                // NOUVEAU : On empêche le conflit avec "TechniqueIntraBloc".
+                // Si la combinaison unique possède un doublon, on ignore ce bloc ici.
+                List<Integer> combinaisonUnique = combinaisonsPossibles.get(0);
+                if (aDesChiffresIdentiques(combinaisonUnique)) {
+                    continue;
+                }
+
                 boolean contientErreur = false;
                 List<Case> casesFausses = new ArrayList<>();
                 int nbCasesVides = 0;
@@ -42,7 +52,6 @@ public class TechniqueBlocUnique implements TechniqueAide {
                 if (!contientErreur && nbCasesVides == 0) continue; 
 
                 if (contientErreur) {
-                    // Retrait de la construction de la chaîne détaillant la solution exacte
                     String msg = "Erreur détectée ! Ce bloc ne peut être résolu qu'avec une seule combinaison de chiffres précise.\nLes chiffres en surbrillance sont incorrects.";
                     return new Indice("Combinaison Unique", msg, casesFausses, new HashMap<>(), true);
                 } else if (indiceNormal == null) {
@@ -52,5 +61,19 @@ public class TechniqueBlocUnique implements TechniqueAide {
             }
         }
         return indiceNormal;
+    }
+
+    /**
+     * Méthode utilitaire pour vérifier la présence de doublons dans la combinaison.
+     */
+    private boolean aDesChiffresIdentiques(List<Integer> combinaison) {
+        if (combinaison == null || combinaison.isEmpty()) return false;
+        Set<Integer> valeursVues = new HashSet<>();
+        for (Integer valeur : combinaison) {
+            if (!valeursVues.add(valeur)) {
+                return true; // Un doublon a été trouvé
+            }
+        }
+        return false;
     }
 }
