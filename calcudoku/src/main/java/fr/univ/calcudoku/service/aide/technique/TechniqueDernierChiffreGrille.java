@@ -22,8 +22,6 @@ public class TechniqueDernierChiffreGrille implements TechniqueAide {
             boolean[] colContient = new boolean[taille];
             List<Case> casesAvecValeur = new ArrayList<>();
 
-            // On cherche s'il y a déjà (Taille - 1) occurrences d'un chiffre dans toute la
-            // grille
             for (int y = 0; y < taille; y++) {
                 for (int x = 0; x < taille; x++) {
                     Case c = grille.getCase(x, y);
@@ -40,35 +38,28 @@ public class TechniqueDernierChiffreGrille implements TechniqueAide {
                 int ligneManquante = -1;
                 int colManquante = -1;
 
-                // Par élimination, on trouve l'intersection vide
                 for (int i = 0; i < taille; i++) {
-                    if (!ligneContient[i])
-                        ligneManquante = i;
-                    if (!colContient[i])
-                        colManquante = i;
+                    if (!ligneContient[i]) ligneManquante = i;
+                    if (!colContient[i]) colManquante = i;
                 }
 
                 if (ligneManquante != -1 && colManquante != -1) {
                     Case caseCible = grille.getCase(colManquante, ligneManquante);
-                    if (caseCible.getValeur() == v)
-                        continue;
+                    if (caseCible.getValeur() == v) continue;
 
-                    boolean contientErreur = (caseCible.getValeur() != 0
-                            && caseCible.getValeur() != caseCible.getSolution());
+                    boolean contientErreur = (caseCible.getValeur() != 0 && caseCible.getValeur() != caseCible.getSolution());
 
-                    Map<Case, Integer> solutions = new HashMap<>();
-                    solutions.put(caseCible, v);
+                    Map<Case, Integer> solutions = new HashMap<>(); // Vide
                     List<Case> surbrillance = new ArrayList<>();
 
                     if (contientErreur) {
                         surbrillance.add(caseCible);
                         return new Indice("Dernier Chiffre Restant",
-                                "Erreur ! Il s'agit du tout dernier emplacement possible dans la grille pour le chiffre "
-                                        + v + ".",
+                                "Erreur ! Il s'agit du tout dernier emplacement possible dans la grille pour ce chiffre en particulier.",
                                 surbrillance, solutions, true);
                     } else if (indiceNormal == null) {
                         surbrillance.addAll(casesAvecValeur);
-                        String msg = "Déduction globale : Il ne manque plus qu'un seul exemplaire de ce chiffre dans toute la grille.\nTrouvez sa dernière position par simple élimination des lignes et colonnes !";
+                        String msg = "Déduction globale : Il ne manque plus qu'un seul exemplaire de l'un de ces chiffres dans toute la grille.\nTrouvez sa dernière position par simple élimination des lignes et colonnes !";
                         indiceNormal = new Indice("Dernier Chiffre Restant", msg, surbrillance, solutions, false);
                     }
                 }

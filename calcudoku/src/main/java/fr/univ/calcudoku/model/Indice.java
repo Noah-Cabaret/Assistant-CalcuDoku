@@ -9,6 +9,9 @@ public class Indice {
     private final List<Case> casesASurbriller;
     private final Map<Case, Integer> solutions;
     private final boolean contientErreur;
+    
+    // Attribut pour mémoriser le niveau de l'aide
+    private String niveauAide;
 
     public Indice(String nomTechnique, String messageExplicatif, List<Case> casesASurbriller, Map<Case, Integer> solutions, boolean contientErreur) {
         this.nomTechnique = nomTechnique;
@@ -40,5 +43,13 @@ public class Indice {
 
     public boolean aUneErreur() {
         return contientErreur;
+    }
+
+    public void setNiveauAide(String niveauAide) {
+        this.niveauAide = niveauAide;
+    }
+
+    public String getNiveauAide() {
+        return niveauAide;
     }
 }

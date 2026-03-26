@@ -103,7 +103,6 @@ public class TechniqueResteDeGrilleType2 implements TechniqueAide {
 
                 List<Case> surbrillance = new ArrayList<>();
                 Map<Case, Integer> solutions = new HashMap<>();
-                solutions.put(caseExterne, reponseExacte);
 
                 if (contientErreur) {
                     surbrillance.add(caseExterne); 

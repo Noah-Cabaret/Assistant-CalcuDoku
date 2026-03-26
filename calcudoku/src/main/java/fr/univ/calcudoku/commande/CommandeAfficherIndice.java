@@ -35,7 +35,9 @@ public class CommandeAfficherIndice implements CommandeAide {
     public void afficher() {
         labelMessageAide.setText("");
 
-        Text texteBase = new Text("[" + indice.getNomTechnique() + "] \n" + indice.getMessageExplicatif());
+        // On intègre le niveau d'aide directement dans le titre
+        String niveauTexte = (indice.getNiveauAide() != null) ? "Niveau " + indice.getNiveauAide() + " | " : "";
+        Text texteBase = new Text("[" + niveauTexte + indice.getNomTechnique() + "] \n" + indice.getMessageExplicatif());
         texteBase.setFill(Color.web("#2c3e50"));
         texteBase.setStyle("-fx-font-weight: bold; -fx-font-size: 13px;");
 

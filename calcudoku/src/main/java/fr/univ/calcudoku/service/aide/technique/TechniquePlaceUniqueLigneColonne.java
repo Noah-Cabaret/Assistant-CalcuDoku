@@ -68,7 +68,6 @@ public class TechniquePlaceUniqueLigneColonne implements TechniqueAide {
                 if (!contientErreur && nbCasesVides <= 1) continue;
 
                 Map<Case, Integer> solutions = new HashMap<>();
-                solutions.put(caseCible, chiffre);
                 List<Case> casesASurbriller = new ArrayList<>();
                 String axe = estLigne ? "la ligne " + (indexLigneOuCol + 1) : "la colonne " + (indexLigneOuCol + 1);
                 

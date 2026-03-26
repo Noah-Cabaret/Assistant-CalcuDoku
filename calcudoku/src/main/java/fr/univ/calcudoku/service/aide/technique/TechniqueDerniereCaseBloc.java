@@ -44,15 +44,14 @@ public class TechniqueDerniereCaseBloc implements TechniqueAide {
 
                         boolean contientErreur = (valeurOriginale != 0 && valeurOriginale != caseCible.getSolution());
                         
-                        Map<Case, Integer> solutions = new HashMap<>();
-                        solutions.put(caseCible, chiffreSolution);
+                        Map<Case, Integer> solutions = new HashMap<>(); // Vide
                         List<Case> casesASurbriller = new ArrayList<>();
                         String message;
 
                         if (contientErreur) {
                             casesASurbriller.add(caseCible);
                             message = "Erreur mathématique ! Toutes les autres cases de ce bloc sont remplies.\n" +
-                                      "Pour atteindre le résultat cible, cette case doit obligatoirement valoir " + chiffreSolution + ".";
+                                      "Pour atteindre le résultat cible, cette case doit obligatoirement avoir une valeur précise.";
                             return new Indice("Calcul Final du Bloc", message, casesASurbriller, solutions, true);
                         } else if (indiceNormal == null) {
                             casesASurbriller.addAll(bloc.getListeCases());

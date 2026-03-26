@@ -17,7 +17,6 @@ public class TechniqueBlocDe1 implements TechniqueAide {
 
     @Override
     public Indice analyser(Grille grille) {
-        // Recherche tous les blocs de taille 1
         VisiteurChercheurBlocN chercheur = new VisiteurChercheurBlocN(1);
         grille.accepter(chercheur);
 
@@ -26,15 +25,13 @@ public class TechniqueBlocDe1 implements TechniqueAide {
             int reponseExacte = bloc.getResultatCible();
             int valeurJoueur = caseUnique.getValeur();
 
-            // S'il reste à remplir ou s'il y a une erreur
             if (valeurJoueur != reponseExacte) {
                 boolean contientErreur = (valeurJoueur != 0 && valeurJoueur != caseUnique.getSolution());
 
-                Map<Case, Integer> reponses = new HashMap<>();
-                reponses.put(caseUnique, reponseExacte);
+                Map<Case, Integer> reponses = new HashMap<>(); // Vide : ne donne plus la solution exacte
 
                 String msg = contientErreur ? 
-                    "Erreur détectée ! Ce bloc ne contient qu'une seule case, elle doit donc obligatoirement valoir " + reponseExacte + "." :
+                    "Erreur détectée ! Ce bloc ne contient qu'une seule case, elle doit donc obligatoirement correspondre au résultat cible." :
                     "En commençant par les données : Certains blocs sont constitués d'un seul carré. Il s'agit d'une donnée, le nombre à placer est simplement le résultat affiché dans le coin !";
                 
                 return new Indice("Bloc à case unique", msg, bloc.getListeCases(), reponses, contientErreur);

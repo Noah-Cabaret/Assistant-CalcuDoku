@@ -65,7 +65,7 @@ public class MenuController {
         if (nomJoueur == null) nomJoueur = "Invité";
         
         // On cible le fichier de sauvegarde
-        File fichier = new File("profils/" + nomJoueur + "/jeu/json/4.json");
+        File fichier = new File("profils/" + nomJoueur + "/jeu/json/libre_9_3_1.json");
 
         // le Gestionnaire tout faire !
         Stage stage = (Stage) boxSousMenu.getScene().getWindow();
