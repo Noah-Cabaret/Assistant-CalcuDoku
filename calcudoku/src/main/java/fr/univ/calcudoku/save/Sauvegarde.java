@@ -42,6 +42,13 @@ public class Sauvegarde
 		MOYEN,
 		DIFFI,
 	};
+	public enum Defi
+	{
+		AUCUN,
+		SURVI,
+		CHRON,
+		NOAID,
+	};
 
 	public Historique hist;
 	public Temps tmp;
@@ -50,6 +57,7 @@ public class Sauvegarde
 	private int idGrille;
 	private ModeDeJeu mode;
 	private Difficulte diff;
+	private Defi defi;
 	private int bonus, malus;
 
 	private static String cheminResources = Sauvegarde.class.getResource("/fxml").getPath().replace("/target/classes/fxml", "/");
@@ -83,6 +91,11 @@ public class Sauvegarde
 		return this.diff;
 	}
 
+	public Sauvegarde.Defi getDefi()
+	{
+		return this.defi;
+	}
+
 	public void setTerminee(boolean newTerminee)
 	{
 		this.terminee = newTerminee;
@@ -103,13 +116,18 @@ public class Sauvegarde
 		this.diff = newDiff;
 	}
 
+	public void setDefi(Defi newDefi)
+	{
+		this.defi = newDefi;
+	}
+
 	/* Sauvegarde en format INI pour plus de facilité à scanner
 	 * le fichier dans le chargement
 	 */
 
 	public void enreg(String compte, Grille grille)
 	{
-		if(this.idGrille == 0 || this.tmp.tempsTotal() == 0.0 || this.hist.taille() == 0 || this.mode == null || this.diff == null)
+		if(this.idGrille == 0 || this.tmp.tempsTotal() == 0.0 || this.hist.taille() == 0 || this.mode == null || this.diff == null || (this.mode == ModeDeJeu.AVEN && this.defi == null))
 		{
 			System.out.println("ERREUR: attribut(s) non initialisé(s) :");
 			if(this.idGrille == 0)
@@ -122,6 +140,8 @@ public class Sauvegarde
 				System.out.println("mode");
 			if(this.diff == null)
 				System.out.println("difficulté");
+			if(this.mode == ModeDeJeu.AVEN && this.defi == null)
+				System.out.println("défi");
 			return;
 		}
 		String cheminSave = cheminResources + "profils/" + compte + "/parties";
@@ -142,6 +162,7 @@ public class Sauvegarde
 			ini.write("grille=" + this.idGrille + "\n");
 			ini.write("mode=" + this.mode + "\n");
 			ini.write("difficulte=" + this.diff + "\n");
+			ini.write("defi=" + (this.mode == ModeDeJeu.AVEN ? this.defi : Defi.AUCUN) + "\n");
 			ini.write("temps=" + this.tmp.toString() + "\n");
 			ini.write("historique=" + this.hist.toString() + "\n");
 			ini.write("index=" + this.hist.getIndex() + "\n");
@@ -211,6 +232,7 @@ public class Sauvegarde
 				sc.next(); this.idGrille = sc.nextInt();
 				sc.next(); this.mode = ModeDeJeu.valueOf(sc.next());
 				sc.next(); this.diff = Difficulte.valueOf(sc.next());
+				sc.next(); this.defi = Defi.valueOf(sc.next());
 				sc.next(); this.tmp.setTempsPrecedent(Double.parseDouble(sc.next()));
 
 				sc.useDelimiter("[,\\[\\]\\n]");
