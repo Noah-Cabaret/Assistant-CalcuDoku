@@ -1,5 +1,6 @@
 package fr.univ.calcudoku.save;
 
+import fr.univ.calcudoku.challenge.Defi;
 import fr.univ.calcudoku.model.Grille;
 import fr.univ.calcudoku.utils.GestionnaireJeu;
 import java.io.File;
@@ -41,13 +42,6 @@ public class Sauvegarde
 		FACIL,
 		MOYEN,
 		DIFFI,
-	};
-	public enum Defi
-	{
-		AUCUN,
-		SURVI,
-		CHRON,
-		NOAID,
 	};
 
 	public Historique hist;
@@ -91,7 +85,7 @@ public class Sauvegarde
 		return this.diff;
 	}
 
-	public Sauvegarde.Defi getDefi()
+	public Defi getDefi()
 	{
 		return this.defi;
 	}
