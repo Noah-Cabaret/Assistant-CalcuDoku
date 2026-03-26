@@ -13,8 +13,6 @@ import java.util.Set;
 
 /**
  * Technique : Candidat Unique.
- * Cherche une case vide à l'intersection d'une ligne et d'une colonne très remplies,
- * ne laissant qu'un seul chiffre possible.
  */
 public class TechniqueCandidatUnique implements TechniqueAide {
 
@@ -30,7 +28,6 @@ public class TechniqueCandidatUnique implements TechniqueAide {
                 Set<Integer> chiffresVus = new HashSet<>();
                 int nbSurLigne = 0, nbSurColonne = 0;
 
-                // Scan en croix (Ligne + Colonne)
                 for (int i = 0; i < taille; i++) {
                     if (i != x) {
                         int val = grille.getCase(i, y).getValeur();
@@ -42,7 +39,6 @@ public class TechniqueCandidatUnique implements TechniqueAide {
                     }
                 }
 
-                // Si (Taille - 1) chiffres différents ont été vus, il n'en reste qu'un
                 if (chiffresVus.size() == taille - 1) {
                     int chiffreManquant = trouverChiffreManquant(chiffresVus, taille);
                     int valeurJoueur = c.getValeur();
@@ -51,16 +47,14 @@ public class TechniqueCandidatUnique implements TechniqueAide {
 
                     boolean contientErreur = (valeurJoueur != 0 && valeurJoueur != c.getSolution());
                     
-                    // Laisse la priorité à "Dernière case Ligne/Col" si c'est plus simple
                     if (!contientErreur && (nbSurLigne == taille - 1 || nbSurColonne == taille - 1)) continue;
 
                     List<Case> casesASurbriller = new ArrayList<>();
                     casesASurbriller.add(c);
-                    Map<Case, Integer> solutions = new HashMap<>();
-                    solutions.put(c, chiffreManquant);
+                    Map<Case, Integer> solutions = new HashMap<>(); // Vide : ne donne plus la solution exacte
 
                     if (contientErreur) {
-                        String msg = "Erreur détectée ! La case ciblée ne peut contenir que le chiffre " + chiffreManquant + " à cause des autres chiffres présents sur sa ligne et sa colonne.";
+                        String msg = "Erreur détectée ! La case ciblée ne peut contenir qu'un seul chiffre possible à cause des autres chiffres déjà présents sur sa ligne et sa colonne.";
                         return new Indice("Candidat Unique", msg, casesASurbriller, solutions, true);
                     } else if (indiceNormal == null) {
                         String msg = "Techniques à candidat unique : Selon les règles, un nombre n'apparaît qu'une fois par ligne et colonne. En croisant la ligne et la colonne de cette case, il ne reste plus qu'un seul candidat possible !";

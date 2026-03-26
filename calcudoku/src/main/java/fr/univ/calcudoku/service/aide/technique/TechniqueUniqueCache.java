@@ -55,7 +55,6 @@ public class TechniqueUniqueCache implements TechniqueAide {
 
                     List<Case> casesASurbriller = new ArrayList<>();
                     Map<Case, Integer> solutions = new HashMap<>();
-                    solutions.put(caseCible, chiffre);
 
                     if (contientErreur) {
                         casesASurbriller.add(caseCible);

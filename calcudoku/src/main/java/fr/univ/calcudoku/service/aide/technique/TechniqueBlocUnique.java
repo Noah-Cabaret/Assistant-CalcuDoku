@@ -25,15 +25,11 @@ public class TechniqueBlocUnique implements TechniqueAide {
 
             List<List<Integer>> combinaisonsPossibles = bloc.getCombinaisonsMaths();
             
-            // Si la combinaison est strictement unique
             if (combinaisonsPossibles != null && combinaisonsPossibles.size() == 1) {
-                List<Integer> lUniqueCombinaison = combinaisonsPossibles.get(0);
-                
                 boolean contientErreur = false;
                 List<Case> casesFausses = new ArrayList<>();
                 int nbCasesVides = 0;
 
-                // Validation via la grille finale
                 for (Case c : casesDuBloc) {
                     if (c.getValeur() == 0) nbCasesVides++;
                     if (c.getValeur() != 0 && c.getValeur() != c.getSolution()) {
@@ -42,19 +38,12 @@ public class TechniqueBlocUnique implements TechniqueAide {
                     }
                 }
 
-                // Laisse la priorité à "Dernière Case Bloc" si le bloc est presque fini
                 if (!contientErreur && nbCasesVides <= 1) continue; 
                 if (!contientErreur && nbCasesVides == 0) continue; 
 
                 if (contientErreur) {
-                    StringBuilder chiffresTexte = new StringBuilder("{");
-                    for (int i = 0; i < lUniqueCombinaison.size(); i++) {
-                        chiffresTexte.append(lUniqueCombinaison.get(i));
-                        if (i < lUniqueCombinaison.size() - 1) chiffresTexte.append(", ");
-                    }
-                    chiffresTexte.append("}");
-
-                    String msg = "Erreur détectée ! Ce bloc ne peut être résolu qu'avec la combinaison : " + chiffresTexte.toString() + ".\nLes chiffres en surbrillance sont incorrects.";
+                    // Retrait de la construction de la chaîne détaillant la solution exacte
+                    String msg = "Erreur détectée ! Ce bloc ne peut être résolu qu'avec une seule combinaison de chiffres précise.\nLes chiffres en surbrillance sont incorrects.";
                     return new Indice("Combinaison Unique", msg, casesFausses, new HashMap<>(), true);
                 } else if (indiceNormal == null) {
                     String msg = "Techniques de blocs uniques : Observez ce bloc. Les règles du CalcuDoku font qu'il n'existe qu'une seule combinaison de nombres possible pour atteindre ce résultat avec cette opération ! Déduisez-la.";

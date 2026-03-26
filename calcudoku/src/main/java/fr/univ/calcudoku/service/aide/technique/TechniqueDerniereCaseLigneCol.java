@@ -25,8 +25,6 @@ public class TechniqueDerniereCaseLigneCol implements TechniqueAide {
         return indiceNormal;
     }
 
-   // ... (Voir l'import complet plus haut dans les précédentes réponses, j'isole la méthode logique)
-
     private Indice chercherDerniereCase(Grille grille, int index, boolean estLigne) {
         int taille = grille.getTaille();
 
@@ -38,7 +36,6 @@ public class TechniqueDerniereCaseLigneCol implements TechniqueAide {
             int nbAutresRemplies = 0;
             boolean[] presents = new boolean[taille + 1];
 
-            // On regarde si (Taille - 1) cases sont remplies
             for (int i = 0; i < taille; i++) {
                 if (i == indexCible) continue; 
                 Case c = grille.getCase(estLigne ? i : index, estLigne ? index : i);
@@ -50,7 +47,6 @@ public class TechniqueDerniereCaseLigneCol implements TechniqueAide {
                 }
             }
 
-            // Déduction basique : On cherche le trou
             if (nbAutresRemplies == taille - 1) {
                 int chiffreManquant = 0;
                 for (int v = 1; v <= taille; v++) {
@@ -62,14 +58,13 @@ public class TechniqueDerniereCaseLigneCol implements TechniqueAide {
                 if (chiffreManquant != 0) {
                     boolean contientErreur = (caseCible.getValeur() != 0 && caseCible.getValeur() != caseCible.getSolution());
 
-                    Map<Case, Integer> solutions = new HashMap<>();
-                    solutions.put(caseCible, chiffreManquant);
+                    Map<Case, Integer> solutions = new HashMap<>(); // Vide
                     List<Case> casesASurbriller = new ArrayList<>();
                     String message;
 
                     if (contientErreur) {
                         casesASurbriller.add(caseCible);
-                        message = "Erreur détectée ! Les autres cases de cette zone sont justes.\nLe seul chiffre manquant pour finir est le " + chiffreManquant + ".";
+                        message = "Erreur détectée ! Les autres cases de cette zone sont justes, mais la valeur de la dernière case est incorrecte.";
                         return new Indice("Dernière Case", message, casesASurbriller, solutions, true);
                     } else {
                         for (int i = 0; i < taille; i++) casesASurbriller.add(grille.getCase(estLigne ? i : index, estLigne ? index : i));
