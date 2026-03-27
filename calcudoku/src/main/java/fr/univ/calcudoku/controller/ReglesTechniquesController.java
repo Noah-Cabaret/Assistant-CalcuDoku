@@ -28,6 +28,8 @@ public class ReglesTechniquesController {
     private List<PageContenu> pagesDeLaSection = new ArrayList<>();
     private int indexPageActuelle = 0;
 
+    public static String pagePrecedente = "/fxml/menu.fxml";
+
     // Petite classe interne pour stocker les infos d'une page
     private class PageContenu {
         String texte;
@@ -285,6 +287,6 @@ public class ReglesTechniquesController {
 
     @FXML
     private void onRetourClick() {
-        MainApp.changerScene("/fxml/menu.fxml");
+        MainApp.changerScene(pagePrecedente);
     }
 }

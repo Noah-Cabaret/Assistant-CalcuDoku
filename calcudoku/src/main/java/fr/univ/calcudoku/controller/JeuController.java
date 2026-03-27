@@ -109,6 +109,8 @@ public class JeuController {
 
     private Sauvegarde save;
 
+    public static String pagePrecedente = "/fxml/menu.fxml";
+
     public void initialiserPartie(Grille grille, Sauvegarde save) {
         this.grilleModele = grille;
 
@@ -204,10 +206,11 @@ public class JeuController {
 
         // Retour à la page Menu
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/menu.fxml"));
+            /*FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/menu.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) btnRetour.getScene().getWindow();
-            stage.getScene().setRoot(root);
+            stage.getScene().setRoot(root);*/
+            MainApp.changerScene(pagePrecedente);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -235,10 +238,11 @@ public class JeuController {
         
         // On charge le menu sans déclencher aucune sauvegarde
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/menu.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) btnRetour.getScene().getWindow();
-            stage.getScene().setRoot(root);
+            // FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/menu.fxml"));
+            // Parent root = loader.load();
+            // Stage stage = (Stage) btnRetour.getScene().getWindow();
+            // stage.getScene().setRoot(root);
+            MainApp.changerScene(pagePrecedente);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -266,9 +270,9 @@ public class JeuController {
 
     @FXML
     void actionReglesTechniques(ActionEvent event) {
-        System.out.println("Ouverture des règles");
+        ReglesTechniquesController.pagePrecedente = "/fxml/partie.fxml";
+        MainApp.changerScene("/fxml/reglesTechniques.fxml");
     }
-    // ---------------------------------------
 
     private void genererBoutonsNombres(int taille) {
         conteneurBoutonsNombres.getChildren().clear(); 
