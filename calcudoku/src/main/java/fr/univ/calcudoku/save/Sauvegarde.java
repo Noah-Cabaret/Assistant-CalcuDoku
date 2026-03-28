@@ -142,6 +142,8 @@ public class Sauvegarde
 	public void setMalus(int newMalus)
 	{
 		this.malus = newMalus;
+		if(this.malus > this.bonus)
+			this.malus = this.bonus;
 	}
 
 	public void setVies(int newVies)
@@ -339,5 +341,42 @@ public class Sauvegarde
 			json.delete();
 
 		terminee = false;
+	}
+
+	/* Calcul du score en utilisant les bonus et malus enregistrés */
+
+	public int calculerScore()
+	{
+		if(this.bonus == 0 || this.malus == 0 || this.diff == null)
+		{
+			System.out.println("ERREUR: Variables non initialisées :");
+			if(this.bonus == 0)
+				System.out.println("Bonus");
+			if(this.malus == 0)
+				System.out.println("Malus");
+			if(this.diff == null)
+				System.out.println("Difficulté");
+			return -1;
+		}
+		else
+		{
+			int mult;
+			switch(this.diff)
+			{
+				case Difficulte.FACIL:
+					mult = 1;
+					break;
+				case Difficulte.MOYEN:
+					mult = 2;
+					break;
+				case Difficulte.DIFFI:
+					mult = 3;
+					break;
+				default:
+					mult = 0; // ne sert à rien, juste pour ne pas générer d'erreur à la compilation
+			}
+			return mult * (this.bonus - this.malus);
+		}
+
 	}
 }

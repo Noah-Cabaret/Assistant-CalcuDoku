@@ -163,23 +163,27 @@ public class JeuController {
             {
                 minutes = (int)((save.tmp.getTempsMax() - secondesEcoulees) / 60);
                 secondes = (int)((save.tmp.getTempsMax() - secondesEcoulees) % 60);
-                if(secondes < 0)
+                if(secondesEcoulees % 5 == 0 && secondes >= 0)
+                    save.setMalus(save.getMalus() + 2);
+                if(secondes <= 0)
                 {
                     tempsEcoule = true;
                     secondes = 0;
                 }
+
             }
             else
             {
                 minutes = secondesEcoulees / 60;
                 secondes = secondesEcoulees % 60;
             }
+
             if(tempsEcoule && !partiePerdue)
             {
                 System.out.println("DÉFAITE: Temps écoulé");
                 partiePerdue = true;
             }
-            labelChrono.setText(String.format("%02d:%02d", minutes, secondes));
+            labelChrono.setText(String.format("%02d:%02d — Score : %d", minutes, secondes, save.calculerScore()));
         }));
         timeline.setCycleCount(Timeline.INDEFINITE);
         timeline.play();
@@ -334,8 +338,18 @@ public class JeuController {
                 Case c = grilleModele.getCase(x, y);
                 if (c.getValeur() != 0 && c.getValeur() != c.getSolution()) {
                     casesEnErreur.add(vueGrille.getGrilleVueCases(x, y));
+                    save.setMalus(save.getMalus() + 1);
                     if(save.getDefi() == Defi.TypeDefi.SURVI)
                         caseIncorrecte = true;
+                    c.setValidee(false);
+                }
+                else if(c.getValeur() != 0)
+                {
+                    if(!c.getValidee())
+                    {
+                        save.setBonus(save.getBonus() + 1);
+                        c.setValidee(true);
+                    }
                 }
             }
         }
@@ -343,7 +357,6 @@ public class JeuController {
         if(caseIncorrecte)
         {
             save.setVies(save.getVies() - 1);
-            System.out.println(save.getVies());
             if(save.getVies() == 0 && !partiePerdue)
             {
                 System.out.println("DÉFAITE: À court de vies");
@@ -545,70 +558,70 @@ public class JeuController {
     }
     @FXML void actionCalculatrice(ActionEvent event) { 
          System.out.println("Calculatrice cliquée");
-    try {
-        if (this.calcPopup != null && this.calcPopup.isShowing()) {
-            this.calcPopup.hide();
-            return; 
+        try {
+            if (this.calcPopup != null && this.calcPopup.isShowing()) {
+                this.calcPopup.hide();
+                return;
+            }
+
+            if (this.calcPopup == null) {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/VueCalculatrice.fxml"));
+                Parent root = loader.load();
+
+                this.calcPopup = new javafx.stage.Popup();
+                this.calcPopup.getContent().add(root);
+
+                this.calcPopup.setAutoHide(false); // Reste affichée quand on clique sur la grille
+                root.setMouseTransparent(false); // Permet de cliquer sur les boutons de la calculette
+
+                root.setOnMousePressed(e -> {
+                    xOffset = e.getSceneX();
+                    yOffset = e.getSceneY();
+                });
+                root.setOnMouseDragged(e -> {
+                    this.calcPopup.setX(e.getScreenX() - xOffset);
+                    this.calcPopup.setY(e.getScreenY() - yOffset);
+                });
+
+                this.calcPopup.setX(50);
+                this.calcPopup.setY(200);
+            }
+            Stage mainStage = (Stage) ((Button)event.getSource()).getScene().getWindow();
+            this.calcPopup.show(mainStage);
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-        if (this.calcPopup == null) {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/VueCalculatrice.fxml"));
-            Parent root = loader.load();
-
-            this.calcPopup = new javafx.stage.Popup();
-            this.calcPopup.getContent().add(root);
-
-            this.calcPopup.setAutoHide(false); // Reste affichée quand on clique sur la grille
-            root.setMouseTransparent(false); // Permet de cliquer sur les boutons de la calculette
-
-            root.setOnMousePressed(e -> {
-                xOffset = e.getSceneX();
-                yOffset = e.getSceneY();
-            });
-            root.setOnMouseDragged(e -> {
-                this.calcPopup.setX(e.getScreenX() - xOffset);
-                this.calcPopup.setY(e.getScreenY() - yOffset);
-            });
-
-            this.calcPopup.setX(50); 
-            this.calcPopup.setY(200);
-        }
-        Stage mainStage = (Stage) ((Button)event.getSource()).getScene().getWindow();
-        this.calcPopup.show(mainStage);
-
-    } catch (Exception e) {
-        e.printStackTrace();
     }
-}
     private void rafraichirZoneCombinaisons(Case modeleCase) {
-    if (modeleCase == null || modeleCase.getGroupement() == null) {
-        labelCombinaisons.setText("Selectionnez une case");
-        return;
-    }
-
-    GroupementCases group = modeleCase.getGroupement();    
-    group.calculerPossibilites(this.grilleModele); 
-    List<List<Integer>> combis = group.getCombinaisonsMaths();
-
-    /* debug */
-    System.out.println("Combinaisons trouvées pour " + group.getResultatCible() + " : " + combis.size());
-    if (combis.isEmpty()) {
-        labelCombinaisons.setText("Aucune combinaison possible !");
-        labelCombinaisons.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
-    } else {
-        StringBuilder sb = new StringBuilder();
-        sb.append(group.getResultatCible()).append(" ").append(group.getOperation().getSymbole()).append(" :\n");
-        
-        for (int i = 0; i < combis.size(); i++){
-            sb.append(combis.get(i).toString());
-            if(i < combis.size() - 1)
-                sb.append(" | ");
+        if (modeleCase == null || modeleCase.getGroupement() == null) {
+            labelCombinaisons.setText("Selectionnez une case");
+            return;
         }
-        
-        labelCombinaisons.setText(sb.toString());
-        labelCombinaisons.setStyle("-fx-text-fill: black; -fx-font-weight: normal;");
 
-        labelCombinaisons.setWrapText(true);
+        GroupementCases group = modeleCase.getGroupement();
+        group.calculerPossibilites(this.grilleModele);
+        List<List<Integer>> combis = group.getCombinaisonsMaths();
+
+        /* debug */
+        System.out.println("Combinaisons trouvées pour " + group.getResultatCible() + " : " + combis.size());
+        if (combis.isEmpty()) {
+            labelCombinaisons.setText("Aucune combinaison possible !");
+            labelCombinaisons.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
+        } else {
+            StringBuilder sb = new StringBuilder();
+            sb.append(group.getResultatCible()).append(" ").append(group.getOperation().getSymbole()).append(" :\n");
+
+            for (int i = 0; i < combis.size(); i++){
+                sb.append(combis.get(i).toString());
+                if(i < combis.size() - 1)
+                    sb.append(" | ");
+            }
+
+            labelCombinaisons.setText(sb.toString());
+            labelCombinaisons.setStyle("-fx-text-fill: black; -fx-font-weight: normal;");
+
+            labelCombinaisons.setWrapText(true);
+        }
     }
-}
 }
