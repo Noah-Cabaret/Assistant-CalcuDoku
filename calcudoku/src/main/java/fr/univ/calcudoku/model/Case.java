@@ -19,6 +19,7 @@ public class Case implements ElementVisitable {
     private final IntegerProperty valeur;
     private final int solution;
     private GroupementCases groupement;
+    private boolean validee = false; // utilisée pour la validation et le système de points
 
     private final ObservableSet<Integer> annotations = FXCollections.observableSet(new HashSet<>());
 
@@ -99,6 +100,17 @@ public class Case implements ElementVisitable {
      * @return le groupement
      */
     public GroupementCases getGroupement() { return groupement; }
+
+    /**
+     * Assigne le nouvel état de validation de la case.
+     * @param newValidee le nouvel état de validation
+     */
+    public void setValidee(boolean newValidee) { this.validee = newValidee; }
+    /**
+     * Retourne l'état de validation actuel de la case.
+     * @return l'état actuel de validation
+     */
+    public boolean getValidee() { return validee; }
 
     /**
      * Bascule la visibilité d'une annotation (note) pour la case.
