@@ -17,10 +17,6 @@ import java.io.InputStreamReader;
 
 import fr.univ.calcudoku.save.Sauvegarde;
 
-/**
- * Gestionnaire du jeu pour charger et lancer les parties.
- * Supporte le chargement depuis les ressources (livrées avec l'app) et depuis des fichiers externes (profils).
- */
 public class GestionnaireJeu {
 
     private static final Gson GSON = new Gson();
@@ -42,104 +38,72 @@ public class GestionnaireJeu {
         });
     }
 
-    /**
-     * Charger une partie depuis les RESSOURCES (src/main/resources/json/)
-     * Utilisé pour le mode "Jeu Libre" de base.
-     */
+    // Nouvelle partie depuis le menu principal
     public static void chargerPartie(Stage stage, String fichierJsonRessource) {
         try {            
-            // On lit le fichier qui est DANS le .jar (dossier resources)
             InputStream is = GestionnaireJeu.class.getResourceAsStream("/grilles/json/" + fichierJsonRessource);
             if (is == null) {
                 System.err.println("Erreur : Fichier ressource introuvable -> " + fichierJsonRessource);
                 return;
             }
 
-            // Lecture JSON -> DTO
             DonneesNiveau data = GSON.fromJson(new InputStreamReader(is), DonneesNiveau.class);
-
-            // Conversion DTO -> Modèle (Via l'Adaptateur)
             Grille grille = JsonToModelAdapter.convertir(data);
 
-            // Lancement
-            lancerPartie(stage, grille, "Partie Libre");
+            lancerPartie(stage, grille, "Partie Libre", fichierJsonRessource.replace(".json", ""), false);
 
         } catch (Exception e) {
             e.printStackTrace();
-            System.err.println("Erreur lors du chargement de la ressource : " + e.getMessage());
         }
     }
 
-    /**
-     * Charger une partie depuis un FICHIER EXTERNE (profils/Nom/jeu/1.json)
-     * Utilisé pour reprendre une sauvegarde ou lancer un niveau spécifique du profil.
-     */
-    public static void chargerPartieDepuisFichier(Stage stage, File fichier) {
-        if (fichier == null || !fichier.exists()) {
-            System.err.println("Erreur : Le fichier de sauvegarde n'existe pas.");
-            return;
-        }
+    // Reprise d'une partie depuis le Profil
+    public static void chargerPartieDepuisFichier(Stage stage, File fichierSauvegardeJson) {
+        if (fichierSauvegardeJson == null || !fichierSauvegardeJson.exists()) return;
 
         try {
-            // Lecture JSON -> DTO (Depuis le disque dur)
-            DonneesNiveau data = GSON.fromJson(new FileReader(fichier), DonneesNiveau.class);
-
-            // Conversion DTO -> Modèle (Via l'Adaptateur)
+            // 1. Lire la structure de base depuis les ressources internes
+            String nomFichierBase = fichierSauvegardeJson.getName();
+            InputStream is = GestionnaireJeu.class.getResourceAsStream("/grilles/json/" + nomFichierBase);
+            if (is == null) return;
+            
+            DonneesNiveau data = GSON.fromJson(new InputStreamReader(is), DonneesNiveau.class);
             Grille grille = JsonToModelAdapter.convertir(data);
 
-            //Lancement
-            lancerPartie(stage, grille, "Reprise Partie - " + fichier.getName());
+            // 2. Lancer la partie en spécifiant qu'il faut charger les données du profil
+            lancerPartie(stage, grille, "Reprise Partie - " + nomFichierBase.replace(".json", ""), nomFichierBase.replace(".json", ""), true);
 
         } catch (Exception e) {
             e.printStackTrace();
-            System.err.println("Erreur lors du chargement du fichier : " + e.getMessage());
         }
     }
 
-    //MÉTHODE : Charge juste la grille depuis les ressources internes (pour les miniatures)
     public static Grille chargerGrilleSeuleRessource(String fichierJsonRessource) {
         try {
             InputStream is = GestionnaireJeu.class.getResourceAsStream("/grilles/json/" + fichierJsonRessource);
             if (is == null) return null;
-            
             DonneesNiveau data = GSON.fromJson(new InputStreamReader(is), DonneesNiveau.class);
             return JsonToModelAdapter.convertir(data);
-        } catch (Exception e) {
-            return null;
-        }
+        } catch (Exception e) { return null; }
     }
 
-    /**
-     * Lit les données brutes d'un niveau depuis les ressources internes (Jeu Libre).
-     */
     public static DonneesNiveau lireDonneesNiveauRessource(String fichierJsonRessource) {
         try {
             InputStream is = GestionnaireJeu.class.getResourceAsStream("/grilles/json/" + fichierJsonRessource);
             if (is == null) return null;
             return GSON.fromJson(new InputStreamReader(is), DonneesNiveau.class);
-        } catch (Exception e) {
-            System.err.println("Erreur lecture ressource JSON : " + e.getMessage());
-            return null;
-        }
+        } catch (Exception e) { return null; }
     }
 
-    /**
-     * Lit les données brutes d'un niveau depuis un fichier externe (Sauvegarde Profil).
-     */
     public static DonneesNiveau lireDonneesNiveauFichier(File fichier) {
         if (fichier == null || !fichier.exists()) return null;
         try (FileReader reader = new FileReader(fichier)) {
             return GSON.fromJson(reader, DonneesNiveau.class);
-        } catch (Exception e) {
-            System.err.println("Erreur lecture fichier JSON : " + e.getMessage());
-            return null;
-        }
+        } catch (Exception e) { return null; }
     }
 
-    /**
-     * Méthode commune pour initialiser la fenêtre de jeu (FXML + Controller)
-     */
-    public static void lancerPartie(Stage stage, Grille grille, String titre) {
+    // Lancement universel de la partie
+    public static void lancerPartie(Stage stage, Grille grille, String titre, String idGrille, boolean reprise) {
         try {
             Parent root;
             JeuController controller;
@@ -153,10 +117,18 @@ public class GestionnaireJeu {
             }
 
             save = new Sauvegarde();
+            save.setIdGrille(idGrille);
+
+            // Si c'est une reprise, on charge la sauvegarde DANS la grille et l'objet save
+            if (reprise) {
+                String profilActif = fr.univ.calcudoku.MainApp.getProfileManager().getProfilActif();
+                if (profilActif == null) profilActif = "Invité";
+                save.charger(profilActif, grille);
+            }
+
             controller.initialiserPartie(grille, save);
 
             Scene scene = stage.getScene();
-            
             if (scene == null) {
                 scene = new Scene(root);
                 stage.setScene(scene);
@@ -166,21 +138,15 @@ public class GestionnaireJeu {
 
             if (GestionnaireJeu.class.getResource("/styles/style.css") != null) {
                 String css = GestionnaireJeu.class.getResource("/styles/style.css").toExternalForm();
-                if (!scene.getStylesheets().contains(css)) {
-                    scene.getStylesheets().add(css);
-                }
+                if (!scene.getStylesheets().contains(css)) scene.getStylesheets().add(css);
             }
 
             stage.setTitle(titre);
             stage.show();
-
-            if (!stage.isMaximized()) {
-                stage.setMaximized(true);
-            }
+            if (!stage.isMaximized()) stage.setMaximized(true);
 
         } catch (Exception e) {
             e.printStackTrace();
-            System.err.println("Erreur ouverture jeu : " + e.getMessage());
         }
     }
 }

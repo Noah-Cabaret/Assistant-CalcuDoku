@@ -5,19 +5,21 @@ import fr.univ.calcudoku.model.DonneesNiveau;
 import fr.univ.calcudoku.service.ProfileManager;
 import fr.univ.calcudoku.utils.CacheRessources;
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 import java.io.File;
 import java.util.Map;
+import java.util.Scanner;
 
 public class ProfilController {
 
-    // mémorise la page de provenance (par défaut, le menu principal)
     public static String pagePrecedente = "/fxml/menu.fxml";
 
     @FXML private ImageView imgAvatar;
@@ -37,62 +39,123 @@ public class ProfilController {
         lblNomProfil.setText(nomActuel);
         chargerAvatar();
         chargerStatistiquesProfil(nomActuel, manager);
+        
+        // On nettoie la box avant de charger
+        if (boxParties != null) boxParties.getChildren().clear();
         chargerPartiesSauvegardees(nomActuel);
-        //ÉCOUTEUR POUR LE MODE SOMBRE/CLAIR EN DIRECT 
+        
         groupeTheme.selectedToggleProperty().addListener((observable, ancienneValeur, nouvelleValeur) -> {
             if (nouvelleValeur == radioSombre) {
                 activerModeSombre(true);
             } else if (nouvelleValeur == radioClair) {
                 activerModeSombre(false);
             }
+            if (boxParties != null) boxParties.getChildren().clear();
             chargerPartiesSauvegardees(lblNomProfil.getText());
         });
     }
 
     private void chargerPartiesSauvegardees(String nomProfil) {
-        File dossierJson = new File("profils/" + nomProfil + "/jeu/json");
-        
-        if (!dossierJson.exists() || !dossierJson.isDirectory()) return;
+        // 1. On cherche dans le dossier classique "parties" (mode Libre)
+        File dossierParties = new File("profils/" + nomProfil + "/parties");
+        chargerFichiersDossier(nomProfil, dossierParties);
 
-        File[] fichiersJson = dossierJson.listFiles((dir, name) -> name.endsWith(".json"));
+        // 2. On cherche dans le dossier "parties/aventure" (mode Aventure)
+        File dossierAventure = new File("profils/" + nomProfil + "/parties/aventure");
+        chargerFichiersDossier(nomProfil, dossierAventure);
+    }
+
+    private void chargerFichiersDossier(String nomProfil, File dossier) {
+        if (!dossier.exists() || !dossier.isDirectory()) return;
+
+        File[] fichiersJson = dossier.listFiles((dir, name) -> name.endsWith(".json"));
 
         if (fichiersJson != null && boxParties != null) {
-            boxParties.getChildren().clear();
-
-            for (File fichier : fichiersJson) {
-                DonneesNiveau niveau = fr.univ.calcudoku.utils.GestionnaireJeu.lireDonneesNiveauFichier(fichier);
+            for (File fichierJson : fichiersJson) {
+                // Récupérer la structure du niveau depuis les RESSOURCES de base
+                DonneesNiveau niveauBase = fr.univ.calcudoku.utils.GestionnaireJeu.lireDonneesNiveauRessource(fichierJson.getName());
                 
-                if (niveau != null) {
-                    VBox carte = creerCartePartie(niveau, fichier);
+                if (niveauBase != null) {
+                    // Le fichier .ini est dans le même dossier que le .json (dossier "parties")
+                    File fichierIni = new File(dossier, fichierJson.getName().replace(".json", ".ini"));
+                    int tempsSauvegarde = lireTempsDepuisIni(fichierIni);
+                    
+                    VBox carte = creerCartePartie(nomProfil, fichierJson, tempsSauvegarde);
                     boxParties.getChildren().add(carte);
                 }
             }
         }
     }
 
-    private VBox creerCartePartie(DonneesNiveau niveau, File fichierJson) {
-        File dossierJeu = fichierJson.getParentFile().getParentFile(); 
-        File fichierImage = new File(dossierJeu, "images/" + fichierJson.getName().replace(".json", ".png"));
+    private int lireTempsDepuisIni(File fichierIni) {
+        if (!fichierIni.exists()) return 0;
+        try (Scanner sc = new Scanner(fichierIni)) {
+            while (sc.hasNextLine()) {
+                String line = sc.nextLine();
+                if (line.startsWith("temps=")) {
+                    return (int) Double.parseDouble(line.split("=")[1].trim());
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    // --- CORRECTION : Méthode personnalisée pour forcer la taille de l'image ---
+    private VBox creerCartePartie(String nomProfil, File fichierJson, int temps) {
+        File fichierImage = new File("profils/" + nomProfil + "/jeu/images/" + fichierJson.getName().replace(".json", ".png"));
         
-        Image image = null;
+        ImageView imgView = new ImageView();
         if (fichierImage.exists()) {
-            image = new Image(fichierImage.toURI().toString());
+            imgView.setImage(new Image(fichierImage.toURI().toString()));
+        } else {
+            imgView.setStyle("-fx-background-color: lightgray;");
         }
 
-        String nomPropre = fichierJson.getName().replace(".json", "");
-        int min = niveau.temps / 60;
-        int sec = niveau.temps % 60;
+        // On FORCE la taille pour contrer le bug du ScrollPane
+        imgView.setFitHeight(150);
+        imgView.setFitWidth(150);
+        imgView.setPreserveRatio(true);
 
-        // la commande de la carte à Usine {factory pattern} 
-        return fr.univ.calcudoku.utils.CarteUIFactory.creerCarteGrille(
-            "Grille " + nomPropre, 
-            String.format("Temps : %d:%02d", min, sec), 
-            image, boxParties,
-            () -> {
-                javafx.stage.Stage stage = (javafx.stage.Stage) boxParties.getScene().getWindow();
-                fr.univ.calcudoku.utils.GestionnaireJeu.chargerPartieDepuisFichier(stage, fichierJson);
-            }
-        );
+        String nomPropre = fichierJson.getName().replace(".json", "");
+        int min = temps / 60;
+        int sec = temps % 60;
+
+        Label lblTitre = new Label("Grille " + nomPropre);
+        Label lblTemps = new Label(String.format("Temps : %d:%02d", min, sec));
+
+        // Application du thème sombre/clair sur la carte
+        if (MainApp.modeSombreActif) {
+            lblTitre.setStyle("-fx-font-family: 'Arial'; -fx-font-weight: bold; -fx-font-size: 13px; -fx-text-fill: white;");
+            lblTemps.setStyle("-fx-font-family: 'Arial'; -fx-font-size: 11px; -fx-text-fill: #cccccc;");
+        } else {
+            lblTitre.setStyle("-fx-font-family: 'Arial'; -fx-font-weight: bold; -fx-font-size: 13px; -fx-text-fill: black;");
+            lblTemps.setStyle("-fx-font-family: 'Arial'; -fx-font-size: 11px; -fx-text-fill: #555555;");
+        }
+
+        VBox carte = new VBox(10, imgView, lblTitre, lblTemps);
+        carte.setAlignment(Pos.CENTER);
+        carte.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+
+        String styleNormal = "-fx-cursor: hand; -fx-padding: 10; -fx-background-color: transparent; -fx-border-color: transparent; -fx-border-radius: 10; -fx-background-radius: 10;";
+        String styleHover = "-fx-cursor: hand; -fx-padding: 10; -fx-background-color: #f5f5f5; -fx-border-color: #cccccc; -fx-border-radius: 10; -fx-background-radius: 10;";
+
+        if (MainApp.modeSombreActif) {
+            styleHover = "-fx-cursor: hand; -fx-padding: 10; -fx-background-color: #444444; -fx-border-color: #777777; -fx-border-radius: 10; -fx-background-radius: 10;";
+        }
+
+        carte.setStyle(styleNormal);
+        String finalStyleHover = styleHover;
+        carte.setOnMouseEntered(e -> carte.setStyle(finalStyleHover));
+        carte.setOnMouseExited(e -> carte.setStyle(styleNormal));
+
+        carte.setOnMouseClicked(e -> {
+            javafx.stage.Stage stage = (javafx.stage.Stage) boxParties.getScene().getWindow();
+            fr.univ.calcudoku.utils.GestionnaireJeu.chargerPartieDepuisFichier(stage, fichierJson);
+        });
+
+        return carte;
     }
 
     private void chargerStatistiquesProfil(String nom, ProfileManager manager) {
@@ -118,10 +181,7 @@ public class ProfilController {
     
     private void chargerAvatar() {
         imgAvatar.setImage(CacheRessources.getImage("/images/utilisateur.png"));
-        
-        // --- RESPONSIVE AVATAR ---
         if (boxCentrale != null) {
-            // L'avatar fera toujours 20% de la hauteur dispo, mais ne dépassera jamais 90 pixels
             imgAvatar.fitHeightProperty().bind(javafx.beans.binding.Bindings.min(90, boxCentrale.heightProperty().multiply(0.2)));
             // On garde un carré parfait
             imgAvatar.fitWidthProperty().bind(imgAvatar.fitHeightProperty());
@@ -151,7 +211,6 @@ public class ProfilController {
             }
         }
         
-        // 2. --- MAGIE JAVA CENTRALISÉE POUR RENDRE L'ICÔNE BLANCHE ---
         fr.univ.calcudoku.utils.ThemeUtil.appliquerFiltreBlancSiSombre(imgAvatar);
     }
 
@@ -159,7 +218,9 @@ public class ProfilController {
     private void onRetourClick() { 
         MainApp.changerScene(pagePrecedente); 
     }
-    @FXML private void onDeconnexionClick() { 
+    
+    @FXML 
+    private void onDeconnexionClick() { 
         MainApp.changerScene("/fxml/accueil.fxml"); 
         MainApp.modeSombreActif = false;
     }

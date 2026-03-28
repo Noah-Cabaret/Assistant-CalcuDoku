@@ -9,126 +9,83 @@ import fr.univ.calcudoku.commande.CommandeAfficherIndice;
 import fr.univ.calcudoku.service.aide.AideService;
 import fr.univ.calcudoku.view.VueCase;
 import fr.univ.calcudoku.view.VueGrille;
+import fr.univ.calcudoku.utils.JeuUtilitaires;
+import fr.univ.calcudoku.save.Sauvegarde;
+import fr.univ.calcudoku.MainApp;
+
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.NumberBinding;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.util.Duration;
-import fr.univ.calcudoku.MainApp;
-import javafx.scene.Parent;
-import javafx.scene.SnapshotParameters;
-import javafx.scene.image.WritableImage;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-import javafx.embed.swing.SwingFXUtils;
-import javax.imageio.ImageIO;
-import java.io.File;
+
 import java.util.ArrayList;
 import java.util.List;
-import javafx.animation.PauseTransition;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
-import java.util.Optional;
-
-import fr.univ.calcudoku.save.*;
 
 public class JeuController {
 
-    @FXML private StackPane conteneurGrille;
-    @FXML private HBox conteneurBoutonsNombres;
-    
-    @FXML private Button btnUndo;
-    @FXML private Button btnRedo;
-    @FXML private Button btnAnnoter;
-    @FXML private Button btnEffacer;
-    @FXML private Button btnCalculatrice;
-
-    @FXML private VBox bulleAide;
-    @FXML private Label labelMessageAide;
-    @FXML private Button btnAmeliorerAide;
-    @FXML private Button btnAidePrecedente;
-    @FXML private Button btnAideSuivante;
-    @FXML private Button btnActualiserAide;
-
-    @FXML private Button btnValider; // Bouton ✔ à droite de la grille
-    @FXML private Button btnAide;    // Bouton ? à droite de la grille
-
-    @FXML private Button btnHypothese;
-    @FXML private HBox conteneurBoutonsHypothese;
-    @FXML private Button btnValiderHypothese;
-    @FXML private Button btnAnnulerHypothese;
-
-    @FXML private VBox boiteCombinaisons;
-    @FXML private Label labelCombinaisons;
-
-    @FXML private Button btnRetour;
-    @FXML private Button btnMenu;
-    @FXML private VBox menuDeroulant;
-    @FXML private RadioButton radioCombinaisons;
-    @FXML private RadioButton radioCalculatrice;
+    @FXML private StackPane conteneurGrille, popupAbandon;
+    @FXML private HBox conteneurBoutonsNombres, conteneurBoutonsHypothese;
+    @FXML private Button btnUndo, btnRedo, btnAnnoter, btnEffacer, btnCalculatrice, btnHypothese, btnRetour, btnMenu;
+    @FXML private VBox boiteCombinaisons, bulleAide, menuDeroulant;
+    @FXML private Label labelChrono, labelCombinaisons, labelMessageAide;
+    @FXML private RadioButton radioCombinaisons, radioCalculatrice;
     @FXML private ToggleGroup groupeConfigAide;
-    @FXML private StackPane popupAbandon;
+    @FXML private Button btnAmeliorerAide, btnAidePrecedente, btnAideSuivante, btnActualiserAide;
 
-    private boolean modeHypotheseActif = false;
-     
-    @FXML private Label labelChrono;
+    private boolean modeHypotheseActif = false, modeAnnotationActif = false;
     private Timeline timeline;
     private int secondesEcoulees = 0;
 
     private Grille grilleModele;
     private VueGrille vueGrille;
-    private boolean modeAnnotationActif = false;
-
     private VueCase vueCaseSelectionnee = null;
     private Case caseModeleSelectionnee = null;
-
-    private javafx.stage.Popup calcPopup;
-    private double xOffset = 0;
-    private double yOffset = 0;
+    private Sauvegarde save;
 
     private final AideService aideService = new AideService();
     private List<CommandeAide> listeAides = new ArrayList<>();
     private List<Indice> indicesEnAttente = new ArrayList<>();
     private int indexAideActuelle = 0;
 
-    private javafx.event.EventHandler<KeyEvent> filtreClavier;
-
-    private Sauvegarde save;
+    private EventHandler<KeyEvent> filtreClavier;
 
     public void initialiserPartie(Grille grille, Sauvegarde save) {
         this.grilleModele = grille;
-
         this.save = save;
-        // Il manque des trucs pour initialiser la sauvegarde (mode de jeu, id grille) donc le chargement est en commentaire pour l'instant
-        //save.charger(MainApp.getProfileManager().getProfilActif(), grille);
+
+        if (this.save != null && (this.save.getIdGrille() == null || this.save.getIdGrille().isEmpty())) {
+            this.save.setIdGrille("libre_" + grille.getTaille() + "_1_1"); 
+        }
 
         this.vueGrille = new VueGrille(grille);
-
         conteneurGrille.getChildren().clear(); 
         conteneurGrille.getChildren().add(vueGrille);
         
-        // Gestion de la taille de la grille
         NumberBinding tailleCarree = Bindings.min(conteneurGrille.widthProperty(), conteneurGrille.heightProperty());
         vueGrille.prefWidthProperty().bind(tailleCarree);
         vueGrille.prefHeightProperty().bind(tailleCarree);
         vueGrille.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
         vueGrille.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
 
-        // Initialisation des cases
         for (int y = 0; y < grille.getTaille(); y++) {
             for (int x = 0; x < grille.getTaille(); x++) {
                 VueCase vc = vueGrille.getGrilleVueCases(x, y);
@@ -138,29 +95,30 @@ public class JeuController {
         }
         
         genererBoutonsNombres(grille.getTaille());
+        if (popupAbandon != null) popupAbandon.setVisible(false);
+        if (menuDeroulant != null) menuDeroulant.setVisible(false);
         bulleAide.setVisible(false);
-
+        
         initialiserLogiqueMenu();
-        popupAbandon.setVisible(false);
-        // Service d'aide en arrière-plan
-        aideService.setOnSucceeded(event -> {
-            indicesEnAttente = aideService.getValue();
-        });
+        aideService.setOnSucceeded(event -> indicesEnAttente = aideService.getValue());
 
-        // CORRECTION DE L'ERREUR : on passe bien grilleModele et non grilleModele.getTaille()
-        for (fr.univ.calcudoku.model.GroupementCases bloc : grilleModele.getListeGroupements()) {
+        for (GroupementCases bloc : grilleModele.getListeGroupements()) {
             bloc.calculerPossibilites(grilleModele);
         }
+
+        // Ajout du clavier et des sécurités via nos Utilitaires !
         Platform.runLater(() -> {
-            if (conteneurGrille.getScene() != null) {
-                configurerClavier(conteneurGrille.getScene());
+            Scene scene = conteneurGrille.getScene();
+            if (scene != null) {
+                configurerClavier(scene);
+                JeuUtilitaires.installerSecuritesFermeture(scene, () -> forcerSauvegarde(true), () -> forcerSauvegarde(false));
             }
         });
+
         demarrerChrono();
         aideService.lancerAnalyse(grilleModele);
     }
 
-    // --- NOUVELLES MÉTHODES POUR LE MENU ---
     private void initialiserLogiqueMenu() {
         if (radioCombinaisons != null && groupeConfigAide != null) {
             boolean modeCombiInitial = radioCombinaisons.isSelected();
@@ -173,85 +131,69 @@ public class JeuController {
                 boiteCombinaisons.setVisible(modeCombi);
                 boiteCombinaisons.setManaged(modeCombi);
                 btnCalculatrice.setDisable(modeCombi);
-                
-                if (modeCombi && calcPopup != null && calcPopup.isShowing()) {
-                    calcPopup.hide();
-                }
+                if (modeCombi) JeuUtilitaires.cacherCalculatrice();
             });
         }
     }
 
-    @FXML
-    void actionBasculerMenu(ActionEvent event) {
-        if (menuDeroulant != null) {
-            menuDeroulant.setVisible(!menuDeroulant.isVisible());
+    private void forcerSauvegarde(boolean avecImage) {
+        if (save != null && grilleModele != null) {
+            if (timeline != null) timeline.stop();
+            String profilActif = MainApp.getProfileManager().getProfilActif();
+            if (profilActif == null) profilActif = "Invité";
+
+            if (save.tmp != null) save.tmp.setTempsPrecedent(save.tmp.tempsTotal());
+            save.enreg(profilActif, grilleModele);
+
+            if (avecImage && Platform.isFxApplicationThread() && save.getIdGrille() != null) {
+                JeuUtilitaires.sauvegarderImageGrille(grilleModele, vueGrille, vueCaseSelectionnee, save.getIdGrille() + ".png", this::actionFermerBulleAide);
+            }
         }
     }
 
-    @FXML 
-    void actionRetourMenu(ActionEvent event) { 
-        System.out.println("Sauvegarde et retour au menu principal...");
-        
-        // On arrête le chrono
-        if (timeline != null) {
-            timeline.stop();
-        }
-        
-        // Logique de sauvegarde (à adapter/décommenter avec la vraie méthode de ta classe Sauvegarde)
-        // if (save != null) {
-        //     save.sauvegarderEtatPartie(); 
-        // }
+    // ========================================================
+    // CHANGEMENTS DE SCENES ET SAUVEGARDES
+    // ========================================================
 
-        // Retour à la page Menu
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/menu.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) btnRetour.getScene().getWindow();
-            stage.getScene().setRoot(root);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    @FXML void actionRetourMenu(ActionEvent event) { 
+        forcerSauvegarde(true); 
+        changerScene("/fxml/menu.fxml");
     }
 
-    @FXML
-    void actionAbandonner(ActionEvent event) {
-        // Ferme le menu déroulant et affiche notre belle pop-up d'abandon
+    @FXML void actionAbandonner(ActionEvent event) {
         if (menuDeroulant != null) menuDeroulant.setVisible(false);
         if (popupAbandon != null) popupAbandon.setVisible(true);
     }
 
-    @FXML
-    void actionAnnulerAbandon(ActionEvent event) {
-        // Cache la pop-up et permet de continuer à jouer
+    @FXML void actionAnnulerAbandon(ActionEvent event) {
         if (popupAbandon != null) popupAbandon.setVisible(false);
     }
 
-    @FXML
-    void actionConfirmerAbandon(ActionEvent event) {
-        System.out.println("Abandon strict : suppression de la progression et retour menu.");
-        
+    @FXML void actionConfirmerAbandon(ActionEvent event) {
         if (timeline != null) timeline.stop();
-        if (save != null && save.hist != null) save.hist.viderQueue(); // On détruit l'historique
-        
-        // On charge le menu sans déclencher aucune sauvegarde
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/menu.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) btnRetour.getScene().getWindow();
-            stage.getScene().setRoot(root);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        if (save != null && save.hist != null) save.hist.viderQueue();
+        if (save != null) save.effacer(MainApp.getProfileManager().getProfilActif());
+        changerScene("/fxml/menu.fxml");
     }
 
-    @FXML
-    void actionRecommencer(ActionEvent event) {
-        secondesEcoulees = 0;
+    private void changerScene(String fxml) {
+        if (conteneurGrille.getScene() != null) {
+            JeuUtilitaires.desinstallerSecuritesFermeture(conteneurGrille.getScene());
+        }
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource(fxml));
+            Stage stage = (Stage) btnRetour.getScene().getWindow();
+            stage.getScene().setRoot(root);
+        } catch (Exception e) { e.printStackTrace(); }
+    }
+
+    @FXML void actionRecommencer(ActionEvent event) {
+        secondesEcoulees = 0; labelChrono.setText("00:00");
+        if (save != null && save.tmp != null) { save.tmp.setTempsPrecedent(0.0); save.tmp.lancer(); }
         for (int y = 0; y < grilleModele.getTaille(); y++) {
             for (int x = 0; x < grilleModele.getTaille(); x++) {
                 Case c = grilleModele.getCase(x, y);
-                c.setValeur(0);
-                c.effacerNotes();
+                c.setValeur(0); c.effacerNotes();
                 vueGrille.getGrilleVueCases(x, y).setEstHypothese(false);
             }
         }
@@ -259,72 +201,29 @@ public class JeuController {
         quitterModeHypotheseVisuel();
         if (menuDeroulant != null) menuDeroulant.setVisible(false);
         aideService.lancerAnalyse(grilleModele);
-        if (caseModeleSelectionnee != null) {
-            rafraichirZoneCombinaisons(caseModeleSelectionnee);
-        }
+        if (caseModeleSelectionnee != null) rafraichirZoneCombinaisons(caseModeleSelectionnee);
     }
 
-    @FXML
-    void actionReglesTechniques(ActionEvent event) {
-        System.out.println("Ouverture des règles");
-    }
-    // ---------------------------------------
+    // ========================================================
+    // GESTION DU CLAVIER ET INTERACTIONS GRILLE
+    // ========================================================
 
-    private void genererBoutonsNombres(int taille) {
-        conteneurBoutonsNombres.getChildren().clear(); 
-        for (int i = 1; i <= taille; i++) {
-            Button btnChiffre = new Button(String.valueOf(i));
-            btnChiffre.setMinSize(55, 55); 
-            btnChiffre.setStyle("-fx-font-size: 22px; -fx-font-weight: bold;");
-            final int valeur = i; 
-            btnChiffre.setOnAction(e -> actionChiffreClique(valeur));
-            conteneurBoutonsNombres.getChildren().add(btnChiffre);
-        }
-    }
-
-    private void demarrerChrono() {
-        secondesEcoulees = 0; 
-        timeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
-            secondesEcoulees++;
-            int minutes = secondesEcoulees / 60;
-            int secondes = secondesEcoulees % 60;
-            labelChrono.setText(String.format("%02d:%02d", minutes, secondes));
-        }));
-        timeline.setCycleCount(Timeline.INDEFINITE); 
-        timeline.play();
-
-        save.tmp.lancer();
-    }
-
-    public void sauvegarderImageGrille(String nomFichier) {
-        try {
-            String nomJoueur = MainApp.getProfileManager().getProfilActif();
-            if (nomJoueur == null) nomJoueur = "Invité";
-
-            File dossierImages = new File("profils/" + nomJoueur + "/jeu/images");
-            if (!dossierImages.exists()) { dossierImages.mkdirs(); }
-
-            String nomImage = nomFichier.endsWith(".png") ? nomFichier : nomFichier.replace(".json", "") + ".png";
-            File fichierFinal = new File(dossierImages, nomImage);
-
-            // Nettoyage visuel pour la capture
-            actionFermerBulleAide(); 
-            if (vueCaseSelectionnee != null) vueCaseSelectionnee.getStyleClass().remove("case-selectionnee");
-            
-            vueGrille.setStyle("-fx-background-color: white;");
-
-            SnapshotParameters params = new SnapshotParameters();
-            params.setFill(Color.TRANSPARENT); 
-            WritableImage image = vueGrille.snapshot(params, null);
-            ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", fichierFinal);
-            
-        } catch (Exception e) { e.printStackTrace(); }
+    private void configurerClavier(Scene scene) {
+        if (filtreClavier != null) scene.removeEventFilter(KeyEvent.KEY_PRESSED, filtreClavier);
+        
+        // Utilisation propre de notre nouveau Handler Clavier
+        filtreClavier = ClavierHandler.creerFiltre(
+            grilleModele, 
+            () -> caseModeleSelectionnee, 
+            (x, y) -> selectionnerCase(vueGrille.getGrilleVueCases(x, y), grilleModele.getCase(x, y)), 
+            this::actionChiffreClique, 
+            () -> actionEffacer(null)
+        );
+        scene.addEventFilter(KeyEvent.KEY_PRESSED, filtreClavier);
     }
 
     private void selectionnerCase(VueCase vueCase, Case modeleCase) {
-        if (vueCaseSelectionnee != null) {
-            vueCaseSelectionnee.getStyleClass().remove("case-selectionnee");
-        }
+        if (vueCaseSelectionnee != null) vueCaseSelectionnee.getStyleClass().remove("case-selectionnee");
         this.vueCaseSelectionnee = vueCase;
         this.caseModeleSelectionnee = modeleCase;
         vueCaseSelectionnee.getStyleClass().add("case-selectionnee");
@@ -342,116 +241,118 @@ public class JeuController {
                 caseModeleSelectionnee.setValeur(valeur);   
                 vueCaseSelectionnee.setEstHypothese(modeHypotheseActif);
                 rafraichirZoneCombinaisons(caseModeleSelectionnee);
-                // Si on modifie la grille, on propose d'actualiser l'aide
-                if (bulleAide.isVisible()) {
-                    btnActualiserAide.setVisible(true);
-                    btnActualiserAide.setManaged(true);
-                }
+                if (bulleAide.isVisible()) { btnActualiserAide.setVisible(true); btnActualiserAide.setManaged(true); }
                 aideService.lancerAnalyse(grilleModele);
             }
         }
     }
 
-    @FXML
-    void actionBasculeAnnotation(ActionEvent event) {
+    @FXML void actionBasculeAnnotation(ActionEvent event) {
         modeAnnotationActif = !modeAnnotationActif;
         btnAnnoter.setStyle(modeAnnotationActif ? "-fx-background-color: #bbdefb;" : "");
     }
 
-    @FXML
-    void actionEffacer(ActionEvent event) {
+    @FXML void actionEffacer(ActionEvent event) {
         if (caseModeleSelectionnee != null) {
             caseModeleSelectionnee.setValeur(0);
             caseModeleSelectionnee.effacerNotes();
-            if (bulleAide.isVisible()) {
-                btnActualiserAide.setVisible(true);
-                btnActualiserAide.setManaged(true);
-            }
+            if (bulleAide.isVisible()) { btnActualiserAide.setVisible(true); btnActualiserAide.setManaged(true); }
             aideService.lancerAnalyse(grilleModele);
             save.hist.addEtape(caseModeleSelectionnee.getX(), caseModeleSelectionnee.getY(), (modeHypotheseActif ? 20 : 0));
         }
     }
 
-    @FXML
-    public void actionBoutonAidePointInterrogation() {
-        if (!listeAides.isEmpty() && indexAideActuelle < listeAides.size()) {
-            listeAides.get(indexAideActuelle).masquer();
+    // ========================================================
+    // UNDO / REDO / HYPOTHESES (Délégués à Historique)
+    // ========================================================
+
+    @FXML void actionUndo(ActionEvent event) {
+        save.hist.appliquerUndo(grilleModele, modeHypotheseActif);
+        if (caseModeleSelectionnee != null) rafraichirZoneCombinaisons(caseModeleSelectionnee);
+    }
+
+    @FXML void actionRedo(ActionEvent event) {
+        save.hist.appliquerRedo(grilleModele);
+        if (caseModeleSelectionnee != null) rafraichirZoneCombinaisons(caseModeleSelectionnee);
+    }
+
+    @FXML void actionHypothese(ActionEvent event) {
+        modeHypotheseActif = true;
+        btnHypothese.setDisable(true); conteneurBoutonsHypothese.setVisible(true);
+    }
+
+    @FXML void actionValiderHypothese(ActionEvent event) {
+        quitterModeHypotheseVisuel();
+        save.hist.validerHypotheses();
+    }
+
+    @FXML void actionAnnulerHypothese(ActionEvent event) {
+        quitterModeHypotheseVisuel();
+        save.hist.rollbackHypotheses(grilleModele, modeHypotheseActif);
+    }
+
+    private void quitterModeHypotheseVisuel() {
+        modeHypotheseActif = false;
+        btnHypothese.setDisable(false); conteneurBoutonsHypothese.setVisible(false);
+        for (int y = 0; y < grilleModele.getTaille(); y++) {
+            for (int x = 0; x < grilleModele.getTaille(); x++) vueGrille.getGrilleVueCases(x, y).setEstHypothese(false);
         }
+    }
 
-        listeAides.clear();
-        indexAideActuelle = 0;
+    // ========================================================
+    // AIDE & UTILITAIRES
+    // ========================================================
 
+    @FXML void actionCalculatrice(ActionEvent event) { JeuUtilitaires.afficherCalculatrice(event); }
+    @FXML void actionBasculerMenu(ActionEvent event) { if (menuDeroulant != null) menuDeroulant.setVisible(!menuDeroulant.isVisible()); }
+    @FXML void actionReglesTechniques(ActionEvent event) { System.out.println("Règles ouvertes"); }
+    
+    @FXML public void actionBoutonAidePointInterrogation() {
+        if (!listeAides.isEmpty() && indexAideActuelle < listeAides.size()) listeAides.get(indexAideActuelle).masquer();
+        listeAides.clear(); indexAideActuelle = 0;
         if (indicesEnAttente != null) {
-            for (Indice ind : indicesEnAttente) {
-                listeAides.add(new CommandeAfficherIndice(ind, labelMessageAide, vueGrille));
-            }
+            for (Indice ind : indicesEnAttente) listeAides.add(new CommandeAfficherIndice(ind, labelMessageAide, vueGrille));
         }
-
         if (listeAides.isEmpty()) return;
-
-        btnActualiserAide.setVisible(false);
-        btnActualiserAide.setManaged(false);
-        bulleAide.setVisible(true);
-        listeAides.get(indexAideActuelle).afficher();
+        btnActualiserAide.setVisible(false); btnActualiserAide.setManaged(false);
+        bulleAide.setVisible(true); listeAides.get(indexAideActuelle).afficher();
         mettreAJourBoutonsNavigation();
     }
 
-    @FXML
-    public void actionFermerBulleAide() {
-        if (!listeAides.isEmpty()) {
-            listeAides.get(indexAideActuelle).masquer();
-        }
+    @FXML public void actionFermerBulleAide() {
+        if (!listeAides.isEmpty()) listeAides.get(indexAideActuelle).masquer();
         bulleAide.setVisible(false);
     }
 
-    @FXML
-    public void actionAmeliorerAide() {
-        if (!listeAides.isEmpty()) {
-            listeAides.get(indexAideActuelle).ameliorerNiveau();
-            mettreAJourBoutonsNavigation();
-        }
+    @FXML public void actionAmeliorerAide() {
+        if (!listeAides.isEmpty()) { listeAides.get(indexAideActuelle).ameliorerNiveau(); mettreAJourBoutonsNavigation(); }
     }
 
-    @FXML
-    public void actionAideSuivante() {
+    @FXML public void actionAideSuivante() {
         if (indexAideActuelle < listeAides.size() - 1) {
-            listeAides.get(indexAideActuelle).masquer();
-            indexAideActuelle++;
-            listeAides.get(indexAideActuelle).afficher();
-            mettreAJourBoutonsNavigation();
+            listeAides.get(indexAideActuelle).masquer(); indexAideActuelle++;
+            listeAides.get(indexAideActuelle).afficher(); mettreAJourBoutonsNavigation();
         }
     }
 
-    @FXML
-    public void actionAidePrecedente() {
+    @FXML public void actionAidePrecedente() {
         if (indexAideActuelle > 0) {
-            listeAides.get(indexAideActuelle).masquer();
-            indexAideActuelle--;
-            listeAides.get(indexAideActuelle).afficher();
-            mettreAJourBoutonsNavigation();
+            listeAides.get(indexAideActuelle).masquer(); indexAideActuelle--;
+            listeAides.get(indexAideActuelle).afficher(); mettreAJourBoutonsNavigation();
         }
     }
 
-    @FXML
-    void actionVerifier(ActionEvent event) {
+    @FXML void actionVerifier(ActionEvent event) {
         List<VueCase> casesEnErreur = new ArrayList<>();
-        int taille = grilleModele.getTaille();
-
-        for (int y = 0; y < taille; y++) {
-            for (int x = 0; x < taille; x++) {
+        for (int y = 0; y < grilleModele.getTaille(); y++) {
+            for (int x = 0; x < grilleModele.getTaille(); x++) {
                 Case c = grilleModele.getCase(x, y);
-                if (c.getValeur() != 0 && c.getValeur() != c.getSolution()) {
-                    casesEnErreur.add(vueGrille.getGrilleVueCases(x, y));
-                }
+                if (c.getValeur() != 0 && c.getValeur() != c.getSolution()) casesEnErreur.add(vueGrille.getGrilleVueCases(x, y));
             }
         }
-
         for (VueCase vc : casesEnErreur) vc.getStyleClass().add("case-erreur");
-
         PauseTransition pause = new PauseTransition(Duration.seconds(3));
-        pause.setOnFinished(e -> {
-            for (VueCase vc : casesEnErreur) vc.getStyleClass().remove("case-erreur");
-        });
+        pause.setOnFinished(e -> { for (VueCase vc : casesEnErreur) vc.getStyleClass().remove("case-erreur"); });
         pause.play();
     }
 
@@ -462,297 +363,51 @@ public class JeuController {
         btnAmeliorerAide.setDisable(!listeAides.get(indexAideActuelle).peutEtreAmeliore());
     }
 
-    private void configurerClavier(javafx.scene.Scene scene) {
-        // 1. Si un filtre existe déjà sur la scène, on le retire pour éviter les doublons
-        if (filtreClavier != null) {
-            scene.removeEventFilter(KeyEvent.KEY_PRESSED, filtreClavier);
-        }
+    private void rafraichirZoneCombinaisons(Case modeleCase) {
+        if (modeleCase == null || modeleCase.getGroupement() == null) { labelCombinaisons.setText("Selectionnez une case"); return; }
+        GroupementCases group = modeleCase.getGroupement();    
+        group.calculerPossibilites(this.grilleModele); 
+        List<List<Integer>> combis = group.getCombinaisonsMaths();
 
-        // 2. On définit le nouveau filtre
-        filtreClavier = event -> {
-            if (caseModeleSelectionnee != null) {
-                int x = caseModeleSelectionnee.getX();
-                int y = caseModeleSelectionnee.getY();
-                int taille = grilleModele.getTaille(); // On utilise la taille actuelle
-
-                switch (event.getCode()) {
-                    case UP -> y = Math.max(0, y - 1);
-                    case DOWN -> y = Math.min(taille - 1, y + 1);
-                    case LEFT -> x = Math.max(0, x - 1);
-                    case RIGHT -> x = Math.min(taille - 1, x + 1);
-                    case BACK_SPACE, DELETE -> {
-                        actionEffacer(new ActionEvent());
-                        event.consume();
-                        return;
-                    }
-                }
-
-                // Si les coordonnées ont changé, on change la sélection
-                if (x != caseModeleSelectionnee.getX() || y != caseModeleSelectionnee.getY()) {
-                    selectionnerCase(vueGrille.getGrilleVueCases(x, y), grilleModele.getCase(x, y));
-                    event.consume();
-                    return; 
-                }
+        if (combis.isEmpty()) {
+            labelCombinaisons.setText("Aucune combinaison possible !");
+            labelCombinaisons.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
+        } else {
+            StringBuilder sb = new StringBuilder();
+            sb.append(group.getResultatCible()).append(" ").append(group.getOperation().getSymbole()).append(" :\n");
+            for (int i = 0; i < combis.size(); i++){
+                sb.append(combis.get(i).toString());
+                if(i < combis.size() - 1) sb.append(" | ");
             }
-
-            // Gestion des chiffres (Code pour Mac sans Shift)
-            if (event.getCode().isDigitKey()) {
-                String codeName = event.getCode().getName(); 
-                String lastChar = codeName.substring(codeName.length() - 1);
-                
-                try {
-                    int val = Integer.parseInt(lastChar);
-                    if (val > 0 && val <= grilleModele.getTaille()) {
-                        actionChiffreClique(val);
-                        event.consume();
-                    }
-                } catch (NumberFormatException e) {
-                    // Gestion erreur parsing si nécessaire
-                }
-            }
-        };
-
-        // 3. On applique le nouveau filtre à la scène
-        scene.addEventFilter(KeyEvent.KEY_PRESSED, filtreClavier);
-    }
-
-    @FXML
-    void actionHypothese(ActionEvent event) {
-        modeHypotheseActif = true;
-        btnHypothese.setDisable(true); 
-        conteneurBoutonsHypothese.setVisible(true);
-    }
-
-    @FXML
-    void actionValiderHypothese(ActionEvent event)
-    {
-        quitterModeHypotheseVisuel();
-        validerHypothese();
-    }
-
-    @FXML
-    void actionAnnulerHypothese(ActionEvent event)
-    {
-        quitterModeHypotheseVisuel();
-        rollbackHypothese();
-    }
-
-    private void quitterModeHypotheseVisuel() {
-        modeHypotheseActif = false;
-        btnHypothese.setDisable(false);
-        conteneurBoutonsHypothese.setVisible(false);
-        for (int y = 0; y < grilleModele.getTaille(); y++) {
-            for (int x = 0; x < grilleModele.getTaille(); x++) {
-                vueGrille.getGrilleVueCases(x, y).setEstHypothese(false);
-            }
-        }
-    }
-    
-    /* Isolement du undo pour l'utiliser à la fois pour le bouton undo et pour le rollback */
-    void undo()
-    {
-        if(save.hist.getIndex() > 0)
-        {
-            Etape etapeCourante = save.hist.getEtapeCourante();
-            Etape etapePrecedente;
-            int i = save.hist.getIndex();
-            boolean etapeExiste = false;
-            do
-                etapePrecedente = save.hist.precedent();
-            while((save.hist.getIndex() > 1) && !(etapeCourante.getX() == etapePrecedente.getX() && etapeCourante.getY() == etapePrecedente.getY()));
-
-            if(etapeCourante.getX() == etapePrecedente.getX() && etapeCourante.getY() == etapePrecedente.getY())
-                etapeExiste = true;
-
-            save.hist.setIndex(i - 1);
-
-            if(etapeCourante.normale())
-            {
-                if(modeHypotheseActif)
-                    save.hist.suivant();
-                else
-                {
-                    if(etapeExiste)
-                    {
-                        if(etapePrecedente.annotation())
-                        {
-                            List<Integer> valeursNote = new ArrayList<Integer>();
-                            i = save.hist.getIndex();
-                            Case caseCourante = grilleModele.getCase(etapeCourante.getX(), etapeCourante.getY());
-                            etapeCourante = save.hist.getEtapeCourante();
-                            while(save.hist.getIndex() > 0 && etapeCourante.getN() != 0)
-                            {
-                                if(etapeCourante.annotation())
-                                    valeursNote.add(etapeCourante.getN());
-                                etapeCourante = save.hist.precedent();
-                            }
-                            save.hist.setIndex(i);
-                            if(valeursNote.size() > 0)
-                            {
-                                caseCourante.setValeur(0);
-                                caseCourante.effacerNotes();
-                                for(Integer note : valeursNote)
-                                    caseCourante.basculerNote(note - 10);
-                            }
-                        }
-                        else
-                            grilleModele.getCase(etapePrecedente.getX(), etapePrecedente.getY()).setValeur(etapePrecedente.getN());
-                    }
-                    else
-                        grilleModele.getCase(etapeCourante.getX(), etapeCourante.getY()).setValeur(0);
-                }
-            }
-            else if(etapeCourante.annotation())
-            {
-                if(!modeHypotheseActif)
-                    grilleModele.getCase(etapeCourante.getX(), etapeCourante.getY()).basculerNote(etapeCourante.getN() - 10);
-                else
-                    save.hist.suivant();
-            }
-            else if(etapeCourante.hypotheseNormale())
-            {
-                if(etapeExiste)
-                {
-                    if(etapePrecedente.annotation() || etapePrecedente.hypotheseAnnotation())
-                    {
-                        List<Integer> valeursNote = new ArrayList<Integer>();
-                        i = save.hist.getIndex();
-                        Case caseCourante = grilleModele.getCase(etapeCourante.getX(), etapeCourante.getY());
-                        etapeCourante = save.hist.getEtapeCourante();
-                        while(save.hist.getIndex() > 0 && etapeCourante.getN() != 0)
-                        {
-                            if(etapeCourante.annotation() || etapeCourante.hypotheseAnnotation())
-                                valeursNote.add(etapeCourante.getN());
-                            etapeCourante = save.hist.precedent();
-                        }
-                        save.hist.setIndex(i);
-                        if(valeursNote.size() > 0)
-                        {
-                            caseCourante.setValeur(0);
-                            caseCourante.effacerNotes();
-                            for(Integer note : valeursNote)
-                                caseCourante.basculerNote(note % 10);
-                        }
-                    }
-                    else
-                        grilleModele.getCase(etapePrecedente.getX(), etapePrecedente.getY()).setValeur(etapePrecedente.getN() - (etapePrecedente.hypotheseNormale() ? 20 : 0));
-                }
-                else
-                    grilleModele.getCase(etapeCourante.getX(), etapeCourante.getY()).setValeur(0);
-            }
-            else if(etapeCourante.hypotheseAnnotation())
-                grilleModele.getCase(etapeCourante.getX(), etapeCourante.getY()).basculerNote(etapeCourante.getN() - 30);
+            labelCombinaisons.setText(sb.toString());
+            labelCombinaisons.setStyle("-fx-text-fill: black; -fx-font-weight: normal;");
+            labelCombinaisons.setWrapText(true);
         }
     }
 
-    void validerHypothese()
-    {
-        Etape etapeCourante = save.hist.getEtapeCourante();
-        while(save.hist.getIndex() > 0 && etapeCourante.hypotheseNormale())
-        {
-            etapeCourante.setN(etapeCourante.getN() - 20);
-            etapeCourante = save.hist.precedent();
-        }
-        save.hist.setIndex(save.hist.taille() - 1);
-    }
-
-    void rollbackHypothese()
-    {
-        while(save.hist.getIndex() > 0 && (save.hist.getEtapeCourante().hypotheseNormale() || save.hist.getEtapeCourante().hypotheseAnnotation()))
-            undo();
-        save.hist.viderQueue();
-    }
-
-    // Stubs pour Undo/Redo/Calculatrice
-    @FXML void actionUndo(ActionEvent event)
-    {
-        undo();
-    }
-
-    @FXML void actionRedo(ActionEvent event)
-    {
-        if(save.hist.getIndex() < save.hist.taille() - 1)
-        {
-            Etape etapeSuivante = save.hist.suivant();
-            if(etapeSuivante.normale())
-            {
-                Case caseCourante = grilleModele.getCase(etapeSuivante.getX(), etapeSuivante.getY());
-                caseCourante.effacerNotes();
-                caseCourante.setValeur(etapeSuivante.getN());
-            }
-            else if(etapeSuivante.annotation())
-                grilleModele.getCase(etapeSuivante.getX(), etapeSuivante.getY()).basculerNote(etapeSuivante.getN() - 10);
-            else if(etapeSuivante.hypotheseNormale())
-                grilleModele.getCase(etapeSuivante.getX(), etapeSuivante.getY()).setValeur(etapeSuivante.getN() - 20);
-            else if(etapeSuivante.hypotheseAnnotation())
-                grilleModele.getCase(etapeSuivante.getX(), etapeSuivante.getY()).basculerNote(etapeSuivante.getN() - 30);
+    private void genererBoutonsNombres(int taille) {
+        conteneurBoutonsNombres.getChildren().clear(); 
+        for (int i = 1; i <= taille; i++) {
+            Button btnChiffre = new Button(String.valueOf(i));
+            btnChiffre.setMinSize(55, 55); 
+            btnChiffre.setStyle("-fx-font-size: 22px; -fx-font-weight: bold;");
+            final int valeur = i; btnChiffre.setOnAction(e -> actionChiffreClique(valeur));
+            conteneurBoutonsNombres.getChildren().add(btnChiffre);
         }
     }
-    
-    @FXML void actionCalculatrice(ActionEvent event) { 
-         System.out.println("Calculatrice cliquée");
-    try {
-        if (this.calcPopup != null && this.calcPopup.isShowing()) {
-            this.calcPopup.hide();
-            return; 
-        }
 
-        if (this.calcPopup == null) {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/VueCalculatrice.fxml"));
-            Parent root = loader.load();
+    private void demarrerChrono() {
+        if (save != null && save.tmp != null && save.tmp.getTempsPrecedent() != null) {
+            secondesEcoulees = save.tmp.getTempsPrecedent().intValue();
+        } else { secondesEcoulees = 0; }
 
-            this.calcPopup = new javafx.stage.Popup();
-            this.calcPopup.getContent().add(root);
-
-            this.calcPopup.setAutoHide(false); // Reste affichée quand on clique sur la grille
-            root.setMouseTransparent(false); // Permet de cliquer sur les boutons de la calculette
-
-            root.setOnMousePressed(e -> {
-                xOffset = e.getSceneX();
-                yOffset = e.getSceneY();
-            });
-            root.setOnMouseDragged(e -> {
-                this.calcPopup.setX(e.getScreenX() - xOffset);
-                this.calcPopup.setY(e.getScreenY() - yOffset);
-            });
-
-            this.calcPopup.setX(50); 
-            this.calcPopup.setY(200);
-        }
-        Stage mainStage = (Stage) ((Button)event.getSource()).getScene().getWindow();
-        this.calcPopup.show(mainStage);
-
-    } catch (Exception e) {
-        e.printStackTrace();
+        labelChrono.setText(String.format("%02d:%02d", secondesEcoulees / 60, secondesEcoulees % 60));
+        timeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
+            secondesEcoulees++;
+            labelChrono.setText(String.format("%02d:%02d", secondesEcoulees / 60, secondesEcoulees % 60));
+        }));
+        timeline.setCycleCount(Timeline.INDEFINITE); 
+        timeline.play();
+        if (save != null && save.tmp != null) save.tmp.lancer();
     }
-}
-private void rafraichirZoneCombinaisons(Case modeleCase) {
-    if (modeleCase == null || modeleCase.getGroupement() == null) {
-        labelCombinaisons.setText("Selectionnez une case");
-        return;
-    }
-
-    GroupementCases group = modeleCase.getGroupement();    
-    group.calculerPossibilites(this.grilleModele); 
-    List<List<Integer>> combis = group.getCombinaisonsMaths();
-
-    if (combis.isEmpty()) {
-        labelCombinaisons.setText("Aucune combinaison possible !");
-        labelCombinaisons.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
-    } else {
-        StringBuilder sb = new StringBuilder();
-        sb.append(group.getResultatCible()).append(" ").append(group.getOperation().getSymbole()).append(" :\n");
-        
-        for (int i = 0; i < combis.size(); i++){
-            sb.append(combis.get(i).toString());
-            if(i < combis.size() - 1)
-                sb.append(" | ");
-        }
-        
-        labelCombinaisons.setText(sb.toString());
-        labelCombinaisons.setStyle("-fx-text-fill: black; -fx-font-weight: normal;");
-
-        labelCombinaisons.setWrapText(true);
-    }
-}
 }
