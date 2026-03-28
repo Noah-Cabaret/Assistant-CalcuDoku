@@ -1,9 +1,12 @@
 package fr.univ.calcudoku.challenge;
 
-public enum Defi
+public class Defi
 {
-	AUCUN,
-	SURVI,
-	CHRON,
-	NOAID
+	public enum TypeDefi
+	{
+		AUCUN,
+		SURVI,
+		CHRON,
+		NOAID
+	}
 }

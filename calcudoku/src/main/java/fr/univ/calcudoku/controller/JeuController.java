@@ -1,7 +1,9 @@
 package fr.univ.calcudoku.controller;
 
+import fr.univ.calcudoku.challenge.Defi;
 import fr.univ.calcudoku.model.Case;
 import fr.univ.calcudoku.model.Grille;
+import fr.univ.calcudoku.model.GroupementCases;
 import fr.univ.calcudoku.model.Indice;
 import fr.univ.calcudoku.commande.CommandeAide;
 import fr.univ.calcudoku.commande.CommandeAfficherIndice;
@@ -12,6 +14,7 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.binding.NumberBinding;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
@@ -22,9 +25,11 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.util.Duration;
 import fr.univ.calcudoku.MainApp;
+import javafx.scene.Parent;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
+import javafx.stage.Stage;
 import javafx.embed.swing.SwingFXUtils;
 import javax.imageio.ImageIO;
 import java.io.File;
@@ -60,11 +65,15 @@ public class JeuController {
     @FXML private Button btnValiderHypothese;
     @FXML private Button btnAnnulerHypothese;
 
+    @FXML private VBox boiteCombinaisons;
+    @FXML private Label labelCombinaisons;
+
     private boolean modeHypotheseActif = false;
      
     @FXML private Label labelChrono;
     private Timeline timeline;
     private int secondesEcoulees = 0;
+    private boolean tempsEcoule = false;
 
     private Grille grilleModele;
     private VueGrille vueGrille;
@@ -73,18 +82,23 @@ public class JeuController {
     private VueCase vueCaseSelectionnee = null;
     private Case caseModeleSelectionnee = null;
 
+    private javafx.stage.Popup calcPopup;
+    private double xOffset = 0;
+    private double yOffset = 0;
+
     private final AideService aideService = new AideService();
     private List<CommandeAide> listeAides = new ArrayList<>();
     private List<Indice> indicesEnAttente = new ArrayList<>();
     private int indexAideActuelle = 0;
 
     private Sauvegarde save;
+    private boolean partiePerdue = false;
 
     public void initialiserPartie(Grille grille, Sauvegarde save) {
         this.grilleModele = grille;
 
         this.save = save;
-        // Il manque des trucs pour initialiser la sauvegarde (mode de jeu, id grille) donc le chargement est en commentaire pour l'instant
+        // Il manque la sélection de la grille pour initialiser la sauvegarde (mode de jeu, id grille) donc le chargement est en commentaire pour l'instant
         //save.charger(MainApp.getProfileManager().getProfilActif(), grille);
 
         this.vueGrille = new VueGrille(grille);
@@ -117,11 +131,15 @@ public class JeuController {
         });
 
         for (fr.univ.calcudoku.model.GroupementCases bloc : grilleModele.getListeGroupements()) {
-            bloc.calculerPossibilites(grilleModele.getTaille());
+            bloc.calculerPossibilites(grilleModele);
         }
         
-        demarrerChrono();
         aideService.lancerAnalyse(grilleModele);
+
+        if(save.getDefi() == Defi.TypeDefi.NOAID)
+            btnAide.setDisable(true);
+
+        demarrerChrono();
     }
 
     private void genererBoutonsNombres(int taille) {
@@ -137,14 +155,33 @@ public class JeuController {
     }
 
     private void demarrerChrono() {
-        secondesEcoulees = 0; 
+        secondesEcoulees = 0;
         timeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
             secondesEcoulees++;
-            int minutes = secondesEcoulees / 60;
-            int secondes = secondesEcoulees % 60;
+            int minutes, secondes;
+            if(save.getDefi() == Defi.TypeDefi.CHRON)
+            {
+                minutes = (int)((save.tmp.getTempsMax() - secondesEcoulees) / 60);
+                secondes = (int)((save.tmp.getTempsMax() - secondesEcoulees) % 60);
+                if(secondes < 0)
+                {
+                    tempsEcoule = true;
+                    secondes = 0;
+                }
+            }
+            else
+            {
+                minutes = secondesEcoulees / 60;
+                secondes = secondesEcoulees % 60;
+            }
+            if(tempsEcoule && !partiePerdue)
+            {
+                System.out.println("DÉFAITE: Temps écoulé");
+                partiePerdue = true;
+            }
             labelChrono.setText(String.format("%02d:%02d", minutes, secondes));
         }));
-        timeline.setCycleCount(Timeline.INDEFINITE); 
+        timeline.setCycleCount(Timeline.INDEFINITE);
         timeline.play();
 
         save.tmp.lancer();
@@ -182,6 +219,7 @@ public class JeuController {
         this.vueCaseSelectionnee = vueCase;
         this.caseModeleSelectionnee = modeleCase;
         vueCaseSelectionnee.getStyleClass().add("case-selectionnee");
+        rafraichirZoneCombinaisons(modeleCase);
     }
 
     private void actionChiffreClique(int valeur) {
@@ -194,7 +232,7 @@ public class JeuController {
                 save.hist.addEtape(caseModeleSelectionnee.getX(), caseModeleSelectionnee.getY(), valeur + (modeHypotheseActif ? 20 : 0));
                 caseModeleSelectionnee.setValeur(valeur);   
                 vueCaseSelectionnee.setEstHypothese(modeHypotheseActif);
-
+                rafraichirZoneCombinaisons(caseModeleSelectionnee);
                 // Si on modifie la grille, on propose d'actualiser l'aide
                 if (bulleAide.isVisible()) {
                     btnActualiserAide.setVisible(true);
@@ -289,13 +327,27 @@ public class JeuController {
     void actionVerifier(ActionEvent event) {
         List<VueCase> casesEnErreur = new ArrayList<>();
         int taille = grilleModele.getTaille();
+        boolean caseIncorrecte = false;
 
         for (int y = 0; y < taille; y++) {
             for (int x = 0; x < taille; x++) {
                 Case c = grilleModele.getCase(x, y);
                 if (c.getValeur() != 0 && c.getValeur() != c.getSolution()) {
                     casesEnErreur.add(vueGrille.getGrilleVueCases(x, y));
+                    if(save.getDefi() == Defi.TypeDefi.SURVI)
+                        caseIncorrecte = true;
                 }
+            }
+        }
+
+        if(caseIncorrecte)
+        {
+            save.setVies(save.getVies() - 1);
+            System.out.println(save.getVies());
+            if(save.getVies() == 0 && !partiePerdue)
+            {
+                System.out.println("DÉFAITE: À court de vies");
+                partiePerdue = true;
             }
         }
 
@@ -482,10 +534,81 @@ public class JeuController {
             else if(etapeSuivante.annotation())
                 grilleModele.getCase(etapeSuivante.getX(), etapeSuivante.getY()).basculerNote(etapeSuivante.getN() - 10);
             else if(etapeSuivante.hypotheseNormale())
-                grilleModele.getCase(etapeSuivante.getX(), etapeSuivante.getY()).setValeur(etapeSuivante.getN() - 20);
+            {
+                Case caseCourante = grilleModele.getCase(etapeSuivante.getX(), etapeSuivante.getY());
+                caseCourante.effacerNotes();
+                caseCourante.setValeur(etapeSuivante.getN() - 20);
+            }
             else if(etapeSuivante.hypotheseAnnotation())
                 grilleModele.getCase(etapeSuivante.getX(), etapeSuivante.getY()).basculerNote(etapeSuivante.getN() - 30);
         }
     }
-    @FXML void actionCalculatrice(ActionEvent event) { sauvegarderImageGrille("1.png"); }
+    @FXML void actionCalculatrice(ActionEvent event) { 
+         System.out.println("Calculatrice cliquée");
+    try {
+        if (this.calcPopup != null && this.calcPopup.isShowing()) {
+            this.calcPopup.hide();
+            return; 
+        }
+
+        if (this.calcPopup == null) {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/VueCalculatrice.fxml"));
+            Parent root = loader.load();
+
+            this.calcPopup = new javafx.stage.Popup();
+            this.calcPopup.getContent().add(root);
+
+            this.calcPopup.setAutoHide(false); // Reste affichée quand on clique sur la grille
+            root.setMouseTransparent(false); // Permet de cliquer sur les boutons de la calculette
+
+            root.setOnMousePressed(e -> {
+                xOffset = e.getSceneX();
+                yOffset = e.getSceneY();
+            });
+            root.setOnMouseDragged(e -> {
+                this.calcPopup.setX(e.getScreenX() - xOffset);
+                this.calcPopup.setY(e.getScreenY() - yOffset);
+            });
+
+            this.calcPopup.setX(50); 
+            this.calcPopup.setY(200);
+        }
+        Stage mainStage = (Stage) ((Button)event.getSource()).getScene().getWindow();
+        this.calcPopup.show(mainStage);
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+}
+    private void rafraichirZoneCombinaisons(Case modeleCase) {
+    if (modeleCase == null || modeleCase.getGroupement() == null) {
+        labelCombinaisons.setText("Selectionnez une case");
+        return;
+    }
+
+    GroupementCases group = modeleCase.getGroupement();    
+    group.calculerPossibilites(this.grilleModele); 
+    List<List<Integer>> combis = group.getCombinaisonsMaths();
+
+    /* debug */
+    System.out.println("Combinaisons trouvées pour " + group.getResultatCible() + " : " + combis.size());
+    if (combis.isEmpty()) {
+        labelCombinaisons.setText("Aucune combinaison possible !");
+        labelCombinaisons.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
+    } else {
+        StringBuilder sb = new StringBuilder();
+        sb.append(group.getResultatCible()).append(" ").append(group.getOperation().getSymbole()).append(" :\n");
+        
+        for (int i = 0; i < combis.size(); i++){
+            sb.append(combis.get(i).toString());
+            if(i < combis.size() - 1)
+                sb.append(" | ");
+        }
+        
+        labelCombinaisons.setText(sb.toString());
+        labelCombinaisons.setStyle("-fx-text-fill: black; -fx-font-weight: normal;");
+
+        labelCombinaisons.setWrapText(true);
+    }
+}
 }

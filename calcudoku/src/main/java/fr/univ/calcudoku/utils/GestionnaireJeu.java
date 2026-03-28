@@ -1,5 +1,6 @@
 package fr.univ.calcudoku.utils;
 
+import fr.univ.calcudoku.challenge.Defi;
 import fr.univ.calcudoku.controller.JeuController;
 import fr.univ.calcudoku.model.DonneesNiveau;
 import fr.univ.calcudoku.model.Grille;
@@ -62,7 +63,7 @@ public class GestionnaireJeu {
             Grille grille = JsonToModelAdapter.convertir(data);
 
             // Lancement
-            lancerPartie(stage, grille, "Partie Libre");
+            lancerPartie(stage, grille, "Partie Libre", data);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -88,7 +89,7 @@ public class GestionnaireJeu {
             Grille grille = JsonToModelAdapter.convertir(data);
 
             //Lancement
-            lancerPartie(stage, grille, "Reprise Partie - " + fichier.getName());
+            lancerPartie(stage, grille, "Reprise Partie - " + fichier.getName(), data);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -99,7 +100,7 @@ public class GestionnaireJeu {
     /**
      * Méthode commune pour initialiser la fenêtre de jeu (FXML + Controller)
      */
-    public static void lancerPartie(Stage stage, Grille grille, String titre) {
+    public static void lancerPartie(Stage stage, Grille grille, String titre, DonneesNiveau data) {
         try {
             Parent root;
             JeuController controller;
@@ -113,6 +114,9 @@ public class GestionnaireJeu {
             }
 
             save = new Sauvegarde();
+            save.setDefi(data.defi);
+            save.setVies(data.vies);
+            save.tmp.setTempsMax(data.temps);
             controller.initialiserPartie(grille, save);
 
             Scene scene = stage.getScene();

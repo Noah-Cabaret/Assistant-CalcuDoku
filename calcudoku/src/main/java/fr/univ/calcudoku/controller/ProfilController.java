@@ -98,8 +98,8 @@ public class ProfilController {
         Label titre = new Label("Grille " + nomPropre);
         titre.setStyle("-fx-font-family: 'Arial'; -fx-font-weight: bold; -fx-font-size: 11px;");
 
-        int min = niveau.temps / 60;
-        int sec = niveau.temps % 60;
+        int min = niveau.temps.intValue() / 60;
+        int sec = niveau.temps.intValue() % 60;
         Label lblTemps = new Label(String.format("Temps : %d:%02d", min, sec));
         lblTemps.setStyle("-fx-font-family: 'Arial'; -fx-font-size: 10px; -fx-text-fill: #333333;");
 

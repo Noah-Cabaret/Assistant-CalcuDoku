@@ -51,8 +51,9 @@ public class Sauvegarde
 	private int idGrille;
 	private ModeDeJeu mode;
 	private Difficulte diff;
-	private Defi defi;
+	private Defi.TypeDefi defi;
 	private int bonus, malus;
+	private int vies;
 
 	private static String cheminResources = Sauvegarde.class.getResource("/fxml").getPath().replace("/target/classes/fxml", "/");
 
@@ -61,6 +62,9 @@ public class Sauvegarde
 		this.idGrille = 0;
 		this.tmp = new Temps();
 		this.hist = new Historique();
+		this.bonus = 0;
+		this.malus = 0;
+		this.vies = 0;
 	}
 
 	/* Méthodes get() et set() */
@@ -85,9 +89,24 @@ public class Sauvegarde
 		return this.diff;
 	}
 
-	public Defi getDefi()
+	public Defi.TypeDefi getDefi()
 	{
 		return this.defi;
+	}
+
+	public int getBonus()
+	{
+		return this.bonus;
+	}
+
+	public int getMalus()
+	{
+		return this.malus;
+	}
+
+	public int getVies()
+	{
+		return this.vies;
 	}
 
 	public void setTerminee(boolean newTerminee)
@@ -110,9 +129,24 @@ public class Sauvegarde
 		this.diff = newDiff;
 	}
 
-	public void setDefi(Defi newDefi)
+	public void setDefi(Defi.TypeDefi newDefi)
 	{
 		this.defi = newDefi;
+	}
+
+	public void setBonus(int newBonus)
+	{
+		this.bonus = newBonus;
+	}
+
+	public void setMalus(int newMalus)
+	{
+		this.malus = newMalus;
+	}
+
+	public void setVies(int newVies)
+	{
+		this.vies = newVies;
 	}
 
 	/* Sauvegarde en format INI pour plus de facilité à scanner
@@ -156,12 +190,13 @@ public class Sauvegarde
 			ini.write("grille=" + this.idGrille + "\n");
 			ini.write("mode=" + this.mode + "\n");
 			ini.write("difficulte=" + this.diff + "\n");
-			ini.write("defi=" + (this.mode == ModeDeJeu.AVEN ? this.defi : Defi.AUCUN) + "\n");
+			ini.write("defi=" + (this.mode == ModeDeJeu.AVEN ? this.defi : Defi.TypeDefi.AUCUN) + "\n");
 			ini.write("temps=" + this.tmp.toString() + "\n");
 			ini.write("historique=" + this.hist.toString() + "\n");
 			ini.write("index=" + this.hist.getIndex() + "\n");
 			ini.write("bonus=" + this.bonus + "\n");
 			ini.write("malus=" + this.malus + "\n");
+			ini.write("vies=" + this.vies + "\n");
 
 			ini.close();
 		}
@@ -226,7 +261,7 @@ public class Sauvegarde
 				sc.next(); this.idGrille = sc.nextInt();
 				sc.next(); this.mode = ModeDeJeu.valueOf(sc.next());
 				sc.next(); this.diff = Difficulte.valueOf(sc.next());
-				sc.next(); this.defi = Defi.valueOf(sc.next());
+				sc.next(); this.defi = Defi.TypeDefi.valueOf(sc.next());
 				sc.next(); this.tmp.setTempsPrecedent(Double.parseDouble(sc.next()));
 
 				sc.useDelimiter("[,\\[\\]\\n]");
@@ -243,6 +278,7 @@ public class Sauvegarde
 				sc.next(); this.hist.setIndex(Integer.parseInt(sc.next()));
 				sc.next(); this.bonus = sc.nextInt();
 				sc.next(); this.malus = sc.nextInt();
+				sc.next(); this.vies = sc.nextInt();
 
 				sc.close();
 				ini.close();

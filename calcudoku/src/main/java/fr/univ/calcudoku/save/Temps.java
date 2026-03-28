@@ -12,10 +12,12 @@ public class Temps
 
 	private Double debut;
 	private Double tempsPrecedent;
+	private Double tempsMax;
 
 	public Temps()
 	{
 		this.tempsPrecedent = 0.0;
+		this.tempsMax = 0.0;
 		this.debut = 0.0;
 	}
 
@@ -39,6 +41,16 @@ public class Temps
 	public void setTempsPrecedent(Double newTempsPrecedent)
 	{
 		this.tempsPrecedent = newTempsPrecedent;
+	}
+
+	public Double getTempsMax()
+	{
+		return this.tempsMax;
+	}
+
+	public void setTempsMax(Double newTempsMax)
+	{
+		this.tempsMax = newTempsMax;
 	}
 
 	/* Temps total passé sur la grille
