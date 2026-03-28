@@ -27,6 +27,7 @@ public class ReglesTechniquesController {
     @FXML private Button btnSuivant;
     @FXML private FontIcon iconPrecedent;
     @FXML private FontIcon iconSuivant;
+    public static Runnable actionRetour = null;
 
     // --- SYSTÈME DE PAGINATION ---
     private List<PageContenu> pagesDeLaSection = new ArrayList<>();

@@ -2,7 +2,7 @@ package fr.univ.calcudoku.service;
 
 import fr.univ.calcudoku.save.Options;
 import fr.univ.calcudoku.save.Statistiques;
-import fr.univ.calcudoku.save.Sauvegarde.Difficulte;
+import fr.univ.calcudoku.save.Sauvegarde;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -10,10 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Gestionnaire des profils utilisateur.
- * Gère la création, la sélection et la récupération des profils.
- */
 public class ProfileManager {
 
     private static final String DOSSIER_ROOT = "profils";
@@ -29,17 +25,13 @@ public class ProfileManager {
         if (dossierProfil.exists()) return false;
 
         if (dossierProfil.mkdirs()) {
-            // 1. Création stricte des dossiers utiles
             new File(dossierProfil, "parties/aventure").mkdirs();
             new File(dossierProfil, "jeu/images").mkdirs();
             new File(dossierProfil, "jeu/json").mkdirs();
             new File(dossierProfil, "jeu/ini").mkdirs();
 
-            // 2. L'ASTUCE : On force tes classes à générer leurs fichiers formatés avec des valeurs à 0 !
             new Options().enreg(nom);
             new Statistiques().enreg(nom);
-
-            System.out.println("Profil créé et formaté avec succès : " + nom);
             return true;
         }
         return false;
@@ -71,85 +63,76 @@ public class ProfileManager {
 
     public void chargerProfil(String nom) {
         this.profilActif = nom;
-        System.out.println("Profil actif : " + nom);
     }
 
     public String getProfilActif() {
         return profilActif;
     }
+    
+    // --- NOUVEAU : CALCULE ET SAUVEGARDE LA FIN D'UNE PARTIE ---
+    public void enregistrerFinDePartie(String nomProfil, boolean victoire, double temps, long score, Sauvegarde.Difficulte diff, boolean estAventure) {
+        if(nomProfil.equals("Invité")) return; 
+        
+        Statistiques stats = new Statistiques();
+        stats.charger(nomProfil);
 
-    /**
-     * Utilise TA vraie classe Statistiques pour nourrir l'interface visuelle du profil !
-     */
+        stats.setPartiesJouees(stats.getPartiesJouees() + 1);
+        
+        if (victoire) {
+            stats.setVictoires(stats.getVictoires() + 1);
+            if (score > stats.getScore()) stats.setScore(score);
+            if (diff != null && diff.ordinal() > stats.getDiffMax().ordinal()) stats.setDiffMax(diff);
+            if (estAventure) stats.setProgressionAventure(stats.getProgressionAventure() + 1);
+        }
+        stats.setRatioVictoires();
+
+        // Calcul de la moyenne de temps globale
+        double ancienneMoyenne = stats.getMoyenne() != null ? stats.getMoyenne() : 0.0;
+        int parties = stats.getPartiesJouees();
+        double nouvelleMoyenne = ancienneMoyenne + ((temps - ancienneMoyenne) / parties);
+        stats.setMoyenne(nouvelleMoyenne);
+
+        stats.enreg(nomProfil);
+    }
+
     public Map<String, String> lireStatistiques(String nomProfil) {
         Map<String, String> statsMap = new HashMap<>();
         Statistiques stats = new Statistiques();
         
         File fichierStats = new File("profils/" + nomProfil + "/statistiques.ini");
-        if (fichierStats.exists()) {
-            stats.charger(nomProfil);
-        }
+        if (fichierStats.exists()) stats.charger(nomProfil);
 
-        // On convertit les attributs de ta classe pour l'affichage
-        statsMap.put("temps_total", String.valueOf((int)(stats.getMoyenne() != null ? stats.getMoyenne() : 0.0))); 
+        // --- NOUVEAU : Toutes les stats sont envoyées à l'interface ---
+        statsMap.put("parties_jouees", String.valueOf(stats.getPartiesJouees()));
+        statsMap.put("victoires", String.valueOf(stats.getVictoires()));
+        statsMap.put("temps_moyen", String.valueOf((int)(stats.getMoyenne() != null ? stats.getMoyenne() : 0.0))); 
         statsMap.put("ratio_parties", String.valueOf(stats.getRatioVictoires() != null ? stats.getRatioVictoires() : 0.0));
         statsMap.put("progression", String.valueOf(stats.getProgressionAventure()));
         
         String diff = "1";
-        if (stats.getDiffMax() == Difficulte.MOYEN) diff = "2";
-        else if (stats.getDiffMax() == Difficulte.DIFFI) diff = "3";
+        if (stats.getDiffMax() == Sauvegarde.Difficulte.MOYEN) diff = "2";
+        else if (stats.getDiffMax() == Sauvegarde.Difficulte.DIFFI) diff = "3";
         statsMap.put("difficulte_max", diff);
         
         statsMap.put("score_max", String.valueOf(stats.getScore()));
         
-        // On lit aussi le thème depuis Options
         Options opt = new Options();
         if (new File("profils/" + nomProfil + "/options.ini").exists()) opt.charger(nomProfil);
+        
         statsMap.put("mode_sombre", String.valueOf(opt.isThemeSombre()));
+        if (opt.getAide() == Options.AideAuCalcul.CALCULATRICE) statsMap.put("aide_calcul", "calculatrice");
+        else statsMap.put("aide_calcul", "combinaisons");
 
         return statsMap;
     }
 
-    /**
-     * Traducteur Universel : Permet au reste de ton jeu de continuer à mettre à jour
-     * les statistiques sans crasher, en utilisant tes nouvelles classes !
-     */
     public void mettreAJourStatistique(String nomProfil, String cle, String valeur) {
-        
-        // 1. Si on modifie une option (comme le mode sombre)
-        if (cle.equals("mode_sombre")) {
+        if (cle.equals("mode_sombre") || cle.equals("aide_calcul")) {
             Options opt = new Options();
             opt.charger(nomProfil);
-            opt.setThemeSombre(Boolean.parseBoolean(valeur));
+            if (cle.equals("mode_sombre")) opt.setThemeSombre(Boolean.parseBoolean(valeur));
+            else if (cle.equals("aide_calcul")) opt.setAide(valeur.equals("calculatrice") ? Options.AideAuCalcul.CALCULATRICE : Options.AideAuCalcul.COMBINAISONS);
             opt.enreg(nomProfil);
-            return;
-        }
-        
-        // 2. Si on modifie une statistique de jeu
-        Statistiques stats = new Statistiques();
-        stats.charger(nomProfil);
-        
-        try {
-            if (cle.equals("progression") || cle.equals("progression_aventure")) {
-                stats.setProgressionAventure(Integer.parseInt(valeur));
-            } else if (cle.equals("parties_jouees")) {
-                stats.setPartiesJouees(Integer.parseInt(valeur));
-            } else if (cle.equals("victoires")) {
-                stats.setVictoires(Integer.parseInt(valeur));
-            } else if (cle.equals("score_max") || cle.equals("score")) {
-                stats.setScore(Long.parseLong(valeur));
-            } else if (cle.equals("temps_total") || cle.equals("temps_moyen")) {
-                stats.setMoyenne(Double.parseDouble(valeur));
-            }
-            
-            // On recalcule le ratio automatiquement pour éviter les bugs
-            stats.setRatioVictoires();
-            
-            // On sauvegarde le tout proprement dans le fichier .ini
-            stats.enreg(nomProfil);
-            
-        } catch (Exception e) {
-            System.err.println("Erreur lors de la mise à jour stat : " + e.getMessage());
         }
     }
 }

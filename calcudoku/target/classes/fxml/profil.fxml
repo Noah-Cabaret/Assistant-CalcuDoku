@@ -49,6 +49,9 @@
                 <VBox alignment="TOP_CENTER" spacing="5.0" style="-fx-border-color: black; -fx-border-radius: 20; -fx-border-width: 1; -fx-padding: 10;" HBox.hgrow="ALWAYS">
                     <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Statistiques :" />
                     <VBox alignment="CENTER" spacing="5.0">
+                        <Label fx:id="lblPartiesJouees" style="-fx-font-size: 13px;" text="Parties jouées : 0" />
+                        <Label fx:id="lblVictoires" style="-fx-font-size: 13px;" text="Victoires : 0" />
+                        
                         <Label fx:id="lblTempsMoyen" style="-fx-font-size: 13px;" text="Temps moyen : --:--" />
                         <Label fx:id="lblTauxReussite" style="-fx-font-size: 13px;" text="Taux de réussite : 0%" />
                         <Label fx:id="lblNiveauAventure" style="-fx-font-size: 13px;" text="Niveau mode aventure : 1" />
@@ -67,8 +70,8 @@
                         <Label style="-fx-font-weight: bold; -fx-padding: 5 0 0 0;" text="Bouton d'aide au calcul" />
                         
                         <fx:define><ToggleGroup fx:id="groupeAide" /></fx:define>
-                        <RadioButton mnemonicParsing="false" text="Combinaisons" toggleGroup="$groupeAide" selected="true" />
-                        <RadioButton mnemonicParsing="false" text="Calculatrice" toggleGroup="$groupeAide" />
+                        <RadioButton fx:id="radioProfilCombinaisons" mnemonicParsing="false" text="Combinaisons" toggleGroup="$groupeAide" selected="true" />
+                        <RadioButton fx:id="radioProfilCalculatrice" mnemonicParsing="false" text="Calculatrice" toggleGroup="$groupeAide" />
                     </VBox>
                 </VBox>
             </HBox>

@@ -104,6 +104,10 @@ public class AccueilController {
         // Clic sur la carte
         carte.setOnMouseClicked(e -> {
             manager.chargerProfil(nom);
+            
+            java.util.Map<String, String> stats = manager.lireStatistiques(nom);
+            MainApp.modeSombreActif = Boolean.parseBoolean(stats.getOrDefault("mode_sombre", "false"));
+            
             MainApp.changerScene("/fxml/menu.fxml");
         });
 

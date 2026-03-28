@@ -29,6 +29,7 @@ E:\Assistant-CalcuDoku\calcudoku\src\main\java\fr\univ\calcudoku\model\Indice.ja
 E:\Assistant-CalcuDoku\calcudoku\src\main\java\fr\univ\calcudoku\utils\GestionnaireJeu.java
 E:\Assistant-CalcuDoku\calcudoku\src\main\java\fr\univ\calcudoku\controller\MenuAventureController.java
 E:\Assistant-CalcuDoku\calcudoku\src\main\java\fr\univ\calcudoku\service\aide\visitor\VisiteurGrille.java
+E:\Assistant-CalcuDoku\calcudoku\src\main\java\fr\univ\calcudoku\challenge\Defi.java
 E:\Assistant-CalcuDoku\calcudoku\src\main\java\fr\univ\calcudoku\commande\CommandeAide.java
 E:\Assistant-CalcuDoku\calcudoku\src\main\java\fr\univ\calcudoku\save\Sauvegarde.java
 E:\Assistant-CalcuDoku\calcudoku\src\main\java\fr\univ\calcudoku\service\aide\technique\TechniqueDernierChiffreGrille.java
