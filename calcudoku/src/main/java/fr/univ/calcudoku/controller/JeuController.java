@@ -36,6 +36,11 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.embed.swing.SwingFXUtils;
 import javax.imageio.ImageIO;
+import org.kordamp.ikonli.javafx.FontIcon;
+import javafx.scene.paint.Color;
+
+import org.kordamp.ikonli.javafx.FontIcon;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -140,6 +145,7 @@ public class JeuController {
         }
         
         genererBoutonsNombres(grille.getTaille());
+        appliquerModeSombre();
         bulleAide.setVisible(false);
 
         initialiserLogiqueMenu();
@@ -216,6 +222,82 @@ public class JeuController {
         }
     }
 
+    private void appliquerModeSombre() {
+        boolean sombre = MainApp.modeSombreActif;
+        
+        // 1. Appliquer le fichier CSS global à la page
+        Platform.runLater(() -> {
+            javafx.scene.Scene scene = conteneurGrille.getScene();
+            if (scene != null) {
+                String cssPath = getClass().getResource("/styles/sombre.css").toExternalForm();
+                if (sombre && !scene.getStylesheets().contains(cssPath)) {
+                    scene.getStylesheets().add(cssPath);
+                } else if (!sombre) {
+                    scene.getStylesheets().remove(cssPath);
+                }
+            }
+            
+            // ---> CORRECTION DE LA GRILLE (Texte invisible) <---
+            // On force tous les Labels à l'intérieur de la grille à rester noirs !
+            if (vueGrille != null) {
+                vueGrille.lookupAll(".label").forEach(noeud -> noeud.setStyle("-fx-text-fill: black;"));
+            }
+        });
+
+        // 2. Définir les palettes de couleurs
+        String couleurTexte = sombre ? "white" : "black";
+        String couleurFond = sombre ? "#2b2b2b" : "white";
+        String couleurBordure = sombre ? "#888888" : "black";
+        
+        // 3. Repeindre les conteneurs classiques
+        labelChrono.setStyle("-fx-text-fill: " + couleurTexte + ";");
+        labelCombinaisons.setStyle("-fx-text-fill: " + couleurTexte + ";");
+        boiteCombinaisons.setStyle("-fx-background-color: " + couleurFond + "; -fx-border-color: " + couleurBordure + "; -fx-border-width: 1px; -fx-padding: 10px;");
+        
+        String couleurMenu = sombre ? "-fx-background-color: #333333; -fx-border-color: #555555; -fx-border-width: 1px; -fx-background-radius: 8px; -fx-border-radius: 8px; -fx-padding: 15px;" 
+                                    : "-fx-background-color: white; -fx-border-color: #dddddd; -fx-border-width: 1px; -fx-background-radius: 8px; -fx-border-radius: 8px; -fx-padding: 15px;";
+        menuDeroulant.setStyle(couleurMenu);
+
+        // ---> CORRECTION DU MENU DÉROULANT <---
+        // On parcourt les éléments du menu pour adapter leurs couleurs
+        for (javafx.scene.Node node : menuDeroulant.getChildren()) {
+            if (node instanceof Button) {
+                // Les boutons (Abandonner, Recommencer...)
+                node.setStyle("-fx-background-color: " + couleurFond + "; -fx-text-fill: " + couleurTexte + "; -fx-border-color: " + couleurBordure + "; -fx-cursor: hand; -fx-padding: 8px; -fx-font-weight: bold;");
+            } else if (node instanceof VBox) {
+                // La boîte contenant "Aide au calcul" et les RadioButtons
+                node.setStyle("-fx-border-color: " + couleurBordure + "; -fx-border-width: 1 0 0 0; -fx-padding: 10 0 0 0;");
+                for (javafx.scene.Node subNode : ((VBox) node).getChildren()) {
+                    if (subNode instanceof Label) {
+                        subNode.setStyle("-fx-font-weight: bold; -fx-font-size: 13px; -fx-text-fill: " + couleurTexte + ";");
+                    } else if (subNode instanceof RadioButton) {
+                        subNode.setStyle("-fx-text-fill: " + couleurTexte + "; -fx-cursor: hand;");
+                    }
+                }
+            }
+        }
+
+        // 4. Repeindre les boutons ronds (Valider, Aide, Hypothèse)
+        String styleRondBase = " -fx-border-width: 3px; -fx-border-radius: 50%; -fx-background-radius: 50%; -fx-cursor: hand; ";
+        String couleurBoutonRond = sombre ? "-fx-background-color: #444444; -fx-border-color: #888888;" : "-fx-background-color: white; -fx-border-color: black;";
+        
+        btnValider.setStyle(couleurBoutonRond + styleRondBase + "-fx-min-width: 60px; -fx-min-height: 60px;");
+        btnAide.setStyle(couleurBoutonRond + styleRondBase + "-fx-min-width: 60px; -fx-min-height: 60px;");
+        btnHypothese.setStyle(couleurBoutonRond + styleRondBase + "-fx-min-width: 60px; -fx-min-height: 60px; -fx-font-size: 38px; -fx-font-family: 'Times New Roman', serif; -fx-font-style: italic; -fx-text-fill: " + couleurTexte + "; -fx-padding: 0;");
+        btnValiderHypothese.setStyle(couleurBoutonRond + styleRondBase + "-fx-min-width: 45px; -fx-min-height: 45px;");
+        btnAnnulerHypothese.setStyle(couleurBoutonRond + styleRondBase + "-fx-min-width: 45px; -fx-min-height: 45px;");
+
+        // 5. Repeindre TOUTES les icônes (FontIcons)
+        Color iconColor = sombre ? Color.WHITE : Color.BLACK;
+        Button[] boutonsAvecIcones = {btnRetour, btnMenu, btnValider, btnAide, btnValiderHypothese, btnAnnulerHypothese, btnUndo, btnRedo, btnAnnoter, btnEffacer, btnCalculatrice, btnActualiserAide};
+        
+        for (Button btn : boutonsAvecIcones) {
+            if (btn != null && btn.getGraphic() instanceof FontIcon) {
+                ((FontIcon) btn.getGraphic()).setIconColor(iconColor);
+            }
+        }
+    }
+
     @FXML
     void actionAbandonner(ActionEvent event) {
         // Ferme le menu déroulant et affiche notre belle pop-up d'abandon
@@ -276,10 +358,15 @@ public class JeuController {
 
     private void genererBoutonsNombres(int taille) {
         conteneurBoutonsNombres.getChildren().clear(); 
+        
+        String couleurTexte = MainApp.modeSombreActif ? "white" : "black";
+        String couleurFond = MainApp.modeSombreActif ? "#444444" : "#f4f4f4";
+
         for (int i = 1; i <= taille; i++) {
             Button btnChiffre = new Button(String.valueOf(i));
             btnChiffre.setMinSize(55, 55); 
-            btnChiffre.setStyle("-fx-font-size: 22px; -fx-font-weight: bold;");
+            // On ajoute la couleur de fond et de texte selon le thème
+            btnChiffre.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: " + couleurTexte + "; -fx-background-color: " + couleurFond + "; -fx-cursor: hand; -fx-background-radius: 10;");
             final int valeur = i; 
             btnChiffre.setOnAction(e -> actionChiffreClique(valeur));
             conteneurBoutonsNombres.getChildren().add(btnChiffre);
