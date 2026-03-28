@@ -2,7 +2,6 @@ package fr.univ.calcudoku.controller;
 
 import fr.univ.calcudoku.MainApp;
 import fr.univ.calcudoku.service.ProfileManager;
-import fr.univ.calcudoku.utils.CacheRessources;
 import fr.univ.calcudoku.utils.GestionnaireJeu;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
@@ -13,6 +12,10 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.Cursor;
+import org.kordamp.ikonli.javafx.FontIcon;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.Color;
+import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.util.Optional;
 
@@ -20,22 +23,31 @@ public class MenuAventureController {
 
     @FXML private HBox boxNiveaux;
     @FXML private StackPane ligneFond; // récupère l'ancienne ligne du FXML
-    @FXML private ImageView imgParametres;
-    @FXML private ImageView imgReset;
+    @FXML private FontIcon imgParametres;
+    @FXML private FontIcon imgReset;
+    @FXML private Button btnRetour;
     
     private final int NB_NIVEAUX_TOTAL = 5;
 
     @FXML
     public void initialize() {
-        imgParametres.setImage(CacheRessources.getImage("/images/parametres.png"));
-        imgReset.setImage(CacheRessources.getImage("/images/restart.png"));
+        Color couleurIcone = MainApp.modeSombreActif ? Color.WHITE : Color.BLACK;
+        imgParametres.setIconColor(couleurIcone);
+        imgReset.setIconColor(couleurIcone);
 
-        // On désactive l'ancienne ligne buggée du FXML
         if (ligneFond != null) {
             ligneFond.setVisible(false); 
         }
 
-        fr.univ.calcudoku.utils.ThemeUtil.appliquerFiltreBlancSiSombre(imgParametres, imgReset);
+        boolean sombre = MainApp.modeSombreActif;
+        Color couleurC = sombre ? Color.WHITE : Color.BLACK;
+        String couleurT = sombre ? "white" : "black";
+        if (btnRetour != null) {
+            btnRetour.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-text-fill: " + couleurT + ";");
+            if (btnRetour.getGraphic() instanceof FontIcon) {
+                ((FontIcon) btnRetour.getGraphic()).setIconColor(couleurC);
+            }
+        }
 
         chargerProgression();
     }

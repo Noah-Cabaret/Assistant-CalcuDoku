@@ -9,17 +9,22 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fr.univ.calcudoku.controller.MenuAventureController">
    <top>
       <BorderPane style="-fx-padding: 20;">
          <left>
-            <Button mnemonicParsing="false" onAction="#onRetourClick" style="-fx-background-color: transparent; -fx-font-size: 30px; -fx-font-weight: bold; -fx-cursor: hand;" text="⬅" />
+            <Button fx:id="btnRetour" mnemonicParsing="false" onAction="#onRetourClick" style="-fx-background-color: transparent; -fx-cursor: hand;">
+               <graphic>
+                   <FontIcon iconLiteral="fas-arrow-left" iconSize="35" />
+               </graphic>
+            </Button>
          </left>
          <right>
             <Button mnemonicParsing="false" onAction="#onParametresClick" style="-fx-background-color: transparent; -fx-cursor: hand;">
                <graphic>
-                  <ImageView fx:id="imgParametres" styleClass="icone-blanche" fitHeight="35.0" fitWidth="35.0" preserveRatio="true" />
+                  <FontIcon fx:id="imgParametres" iconLiteral="fas-cog" iconSize="35" />
                </graphic>
             </Button>
          </right>
@@ -51,7 +56,7 @@
        <HBox alignment="BOTTOM_RIGHT" style="-fx-padding: 30;">
            <Button mnemonicParsing="false" onAction="#onResetClick" style="-fx-background-color: transparent; -fx-cursor: hand;">
                <graphic>
-                  <ImageView fx:id="imgReset" styleClass="icone-blanche" fitHeight="40.0" fitWidth="40.0" preserveRatio="true" />
+                  <FontIcon fx:id="imgReset" iconLiteral="fas-trash-alt" iconSize="40" />
                </graphic>
            </Button>
        </HBox>

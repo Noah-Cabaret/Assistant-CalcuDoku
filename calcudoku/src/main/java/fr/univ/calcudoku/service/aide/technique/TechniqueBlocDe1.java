@@ -35,7 +35,7 @@ public class TechniqueBlocDe1 implements TechniqueAide {
                     String msg = "Erreur détectée ! Ce bloc ne contient qu'une seule case, elle doit donc obligatoirement correspondre au résultat cible.";
                     indicesErreurs.add(new Indice("Bloc à case unique", msg, bloc.getListeCases(), reponses, true));
                 } else {
-                    String msg = "En commençant par les données : Certains blocs sont constitués d'un seul carré. Il s'agit d'une donnée, le nombre à placer est simplement le résultat affiché dans le coin !";
+                    String msg = "Certains blocs sont constitués d'un seul carré, le résultat est simple explicite";
                     indicesNormaux.add(new Indice("Bloc à case unique", msg, bloc.getListeCases(), reponses, false));
                 }
             }

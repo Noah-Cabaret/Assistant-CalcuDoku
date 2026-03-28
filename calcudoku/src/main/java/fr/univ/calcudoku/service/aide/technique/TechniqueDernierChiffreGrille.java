@@ -55,11 +55,11 @@ public class TechniqueDernierChiffreGrille implements TechniqueAide {
                     if (contientErreur) {
                         surbrillance.add(caseCible);
                         return new Indice("Dernier Chiffre Restant",
-                                "Erreur ! Il s'agit du tout dernier emplacement possible dans la grille pour ce chiffre en particulier.",
+                                "Erreur ! Le dernier exemplaire d'un des chiffres est incorrect ",
                                 surbrillance, solutions, true);
                     } else if (indiceNormal == null) {
                         surbrillance.addAll(casesAvecValeur);
-                        String msg = "Déduction globale : Il ne manque plus qu'un seul exemplaire de l'un de ces chiffres dans toute la grille.\nTrouvez sa dernière position par simple élimination des lignes et colonnes !";
+                        String msg = "Il ne manque plus qu'un seul exemplaire d'un des chiffres dans toute la grille.\nTrouvez sa dernière position par simple élimination des lignes et colonnes !";
                         indiceNormal = new Indice("Dernier Chiffre Restant", msg, surbrillance, solutions, false);
                     }
                 }

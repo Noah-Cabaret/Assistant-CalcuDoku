@@ -9,6 +9,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Line?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
 <BorderPane style="-fx-padding: 15;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fr.univ.calcudoku.controller.MenuController">
 
@@ -45,7 +46,7 @@
     <bottom>
         <HBox alignment="BOTTOM_RIGHT" BorderPane.alignment="CENTER" minWidth="0" minHeight="0">
             <VBox fx:id="boxProfil" alignment="CENTER" spacing="5" onMouseClicked="#onProfilClick" style="-fx-cursor: hand; -fx-padding: 5;" minWidth="0" minHeight="0">
-                <ImageView fx:id="imgAvatar" styleClass="icone-blanche" fitWidth="60" fitHeight="60" preserveRatio="true"/>
+                <FontIcon fx:id="imgAvatar" iconLiteral="fas-user-circle" iconSize="60" />
                 <Label fx:id="labelNomProfil" text="Nom" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
             </VBox>
         </HBox>

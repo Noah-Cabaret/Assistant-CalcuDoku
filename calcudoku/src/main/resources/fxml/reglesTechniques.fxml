@@ -10,13 +10,16 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
 <BorderPane style="-fx-padding: 15;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fr.univ.calcudoku.controller.ReglesTechniquesController">
 
     <top>
         <BorderPane style="-fx-padding: 0 0 20 0;">
             <left>
-                <Button onAction="#onRetourClick" style="-fx-background-color: transparent; -fx-font-size: 35px; -fx-cursor: hand; -fx-font-weight: bold;" text="⬅" />
+                <Button fx:id="btnRetour" onAction="#onRetourClick" style="-fx-background-color: transparent; -fx-cursor: hand;">
+                     <graphic><FontIcon iconLiteral="fas-arrow-left" iconSize="35" /></graphic>
+                </Button>
             </left>
             <center>
                 <Label fx:id="lblTitreHaut" style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-border-color: #cccccc; -fx-border-radius: 10; -fx-padding: 10 30 10 30;" text="Règles du Calcudoku" BorderPane.alignment="CENTER" />
@@ -52,9 +55,13 @@
                 <ImageView fx:id="imgExemple" fitWidth="300" preserveRatio="true" />
 
                 <HBox alignment="CENTER" spacing="100">
-                    <Button fx:id="btnPrecedent" onAction="#onPagePrecedente" text="⬅" style="-fx-background-color: transparent; -fx-font-size: 40px; -fx-cursor: hand; -fx-font-weight: bold;" />
+                    <Button fx:id="btnPrecedent" onAction="#onPagePrecedente" style="-fx-background-color: transparent; -fx-cursor: hand;">
+                        <graphic><FontIcon fx:id="iconPrecedent" iconLiteral="fas-chevron-left" iconSize="40"/></graphic>
+                    </Button>
                     <Label fx:id="lblLegendeImage" text="Grille si besoin de montrer" style="-fx-font-size: 12px; -fx-text-fill: gray;" />
-                    <Button fx:id="btnSuivant" onAction="#onPageSuivante" text="➡" style="-fx-background-color: transparent; -fx-font-size: 40px; -fx-cursor: hand; -fx-font-weight: bold;" />
+                    <Button fx:id="btnSuivant" onAction="#onPageSuivante" style="-fx-background-color: transparent; -fx-cursor: hand;">
+                        <graphic><FontIcon fx:id="iconSuivant" iconLiteral="fas-chevron-right" iconSize="40"/></graphic>
+                    </Button>
                 </HBox>
 
             </VBox>

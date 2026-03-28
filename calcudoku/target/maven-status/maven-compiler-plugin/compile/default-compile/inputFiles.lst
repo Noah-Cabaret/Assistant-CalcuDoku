@@ -39,6 +39,7 @@ E:\Assistant-CalcuDoku\calcudoku\src\main\java\fr\univ\calcudoku\model\Operation
 E:\Assistant-CalcuDoku\calcudoku\src\main\java\fr\univ\calcudoku\model\GroupementCases.java
 E:\Assistant-CalcuDoku\calcudoku\src\main\java\fr\univ\calcudoku\utils\CarteUIFactory.java
 E:\Assistant-CalcuDoku\calcudoku\src\main\java\fr\univ\calcudoku\service\aide\technique\TechniqueDerniereCaseBloc.java
+E:\Assistant-CalcuDoku\calcudoku\src\main\java\fr\univ\calcudoku\utils\JeuUtilitaires.java
 E:\Assistant-CalcuDoku\calcudoku\src\main\java\fr\univ\calcudoku\controller\MenuController.java
 E:\Assistant-CalcuDoku\calcudoku\src\main\java\fr\univ\calcudoku\service\aide\AideService.java
 E:\Assistant-CalcuDoku\calcudoku\src\main\java\fr\univ\calcudoku\controller\AccueilController.java
@@ -48,6 +49,7 @@ E:\Assistant-CalcuDoku\calcudoku\src\main\java\fr\univ\calcudoku\save\Statistiqu
 E:\Assistant-CalcuDoku\calcudoku\src\main\java\fr\univ\calcudoku\save\Etape.java
 E:\Assistant-CalcuDoku\calcudoku\src\main\java\fr\univ\calcudoku\utils\GenerateurSnapshot.java
 E:\Assistant-CalcuDoku\calcudoku\src\main\java\fr\univ\calcudoku\commande\CommandeAfficherIndice.java
+E:\Assistant-CalcuDoku\calcudoku\src\main\java\fr\univ\calcudoku\controller\ClavierHandler.java
 E:\Assistant-CalcuDoku\calcudoku\src\main\java\fr\univ\calcudoku\model\BlocData.java
 E:\Assistant-CalcuDoku\calcudoku\src\main\java\fr\univ\calcudoku\save\Donnees.java
 E:\Assistant-CalcuDoku\calcudoku\src\main\java\fr\univ\calcudoku\service\ProfileManager.java

@@ -10,14 +10,15 @@ import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
+import org.kordamp.ikonli.javafx.FontIcon;
+import javafx.scene.paint.Color;
 
 public class MenuController {
 
     @FXML
     private HBox boxSousMenu;
 
-    @FXML
-    private ImageView imgAvatar;
+    @FXML private FontIcon imgAvatar;
     
     @FXML
     private Label labelNomProfil; 
@@ -25,9 +26,7 @@ public class MenuController {
     @FXML
     public void initialize() {
 
-        imgAvatar.setImage(CacheRessources.getImage("/images/utilisateur.png"));
-
-        // Récupérer le nom du profil connecté via le Manager
+        imgAvatar.setIconColor(MainApp.modeSombreActif ? Color.WHITE : Color.BLACK);
         String nomActuel = MainApp.getProfileManager().getProfilActif();
         if (nomActuel != null) {
             labelNomProfil.setText(nomActuel);
@@ -35,7 +34,6 @@ public class MenuController {
             labelNomProfil.setText("Invité");
         }
 
-        fr.univ.calcudoku.utils.ThemeUtil.appliquerFiltreBlancSiSombre(imgAvatar);
         GestionnaireJeu.prechargerPageJeu();
     }
 
