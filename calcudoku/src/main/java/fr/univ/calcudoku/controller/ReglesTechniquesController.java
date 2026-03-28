@@ -26,6 +26,7 @@ public class ReglesTechniquesController {
     @FXML private Button btnSuivant;
     @FXML private FontIcon iconPrecedent;
     @FXML private FontIcon iconSuivant;
+    public static Runnable actionRetour = null;
 
     // --- SYSTÈME DE PAGINATION ---
     private List<PageContenu> pagesDeLaSection = new ArrayList<>();
@@ -296,6 +297,12 @@ public class ReglesTechniquesController {
 
     @FXML
     private void onRetourClick() {
-        MainApp.changerScene("/fxml/menu.fxml");
+        if (actionRetour != null) {
+            Runnable action = actionRetour;
+            actionRetour = null;
+            action.run();
+        } else {
+            MainApp.changerScene("/fxml/menu.fxml");
+        }
     }
 }

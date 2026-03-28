@@ -27,8 +27,13 @@ public class ProfilController {
     @FXML private FontIcon imgAvatar;
     @FXML private Label lblNomProfil;
     @FXML private VBox boxCentrale;
-    @FXML private Label lblTempsMoyen, lblTauxReussite, lblNiveauAventure, lblDifficulteMax, lblMeilleurScore;
+    
+    // --- NOUVEAU : Labels des statistiques complets ---
+    @FXML private Label lblPartiesJouees, lblVictoires, lblTempsMoyen, lblTauxReussite, lblNiveauAventure, lblDifficulteMax, lblMeilleurScore;
+    
     @FXML private RadioButton radioSombre, radioClair;
+    @FXML private RadioButton radioProfilCombinaisons, radioProfilCalculatrice;
+    @FXML private javafx.scene.control.ToggleGroup groupeAide;
     @FXML private HBox boxParties;
     @FXML private javafx.scene.control.ToggleGroup groupeTheme;
 
@@ -45,15 +50,20 @@ public class ProfilController {
         if (boxParties != null) boxParties.getChildren().clear();
         chargerPartiesSauvegardees(nomActuel);
         
-        groupeTheme.selectedToggleProperty().addListener((observable, ancienneValeur, nouvelleValeur) -> {
-            if (nouvelleValeur == radioSombre) {
-                activerModeSombre(true);
-            } else if (nouvelleValeur == radioClair) {
-                activerModeSombre(false);
-            }
-            if (boxParties != null) boxParties.getChildren().clear();
-            chargerPartiesSauvegardees(lblNomProfil.getText());
+        if (radioSombre != null) radioSombre.setOnAction(e -> {
+            activerModeSombre(true);
+            if (boxParties != null) { boxParties.getChildren().clear(); chargerPartiesSauvegardees(lblNomProfil.getText()); }
+            manager.mettreAJourStatistique(lblNomProfil.getText(), "mode_sombre", "true");
         });
+        
+        if (radioClair != null) radioClair.setOnAction(e -> {
+            activerModeSombre(false);
+            if (boxParties != null) { boxParties.getChildren().clear(); chargerPartiesSauvegardees(lblNomProfil.getText()); }
+            manager.mettreAJourStatistique(lblNomProfil.getText(), "mode_sombre", "false");
+        });
+
+        if (radioProfilCombinaisons != null) radioProfilCombinaisons.setOnAction(e -> manager.mettreAJourStatistique(lblNomProfil.getText(), "aide_calcul", "combinaisons"));
+        if (radioProfilCalculatrice != null) radioProfilCalculatrice.setOnAction(e -> manager.mettreAJourStatistique(lblNomProfil.getText(), "aide_calcul", "calculatrice"));
     }
 
     private void chargerPartiesSauvegardees(String nomProfil) {
@@ -89,36 +99,23 @@ public class ProfilController {
         try (Scanner sc = new Scanner(fichierIni)) {
             while (sc.hasNextLine()) {
                 String line = sc.nextLine();
-                if (line.startsWith("temps=")) {
-                    return (int) Double.parseDouble(line.split("=")[1].trim());
-                }
+                if (line.startsWith("temps=")) return (int) Double.parseDouble(line.split("=")[1].trim());
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) {}
         return 0;
     }
 
     private VBox creerCartePartie(String nomProfil, File fichierJson, int temps) {
         File fichierImage = new File("profils/" + nomProfil + "/jeu/images/" + fichierJson.getName().replace(".json", ".png"));
-        
         ImageView imgView = new ImageView();
-        if (fichierImage.exists()) {
-            imgView.setImage(new Image(fichierImage.toURI().toString()));
-        } else {
-            imgView.setStyle("-fx-background-color: lightgray;");
-        }
+        if (fichierImage.exists()) imgView.setImage(new Image(fichierImage.toURI().toString()));
+        else imgView.setStyle("-fx-background-color: lightgray;");
 
-        imgView.setFitHeight(150);
-        imgView.setFitWidth(150);
-        imgView.setPreserveRatio(true);
+        imgView.setFitHeight(150); imgView.setFitWidth(150); imgView.setPreserveRatio(true);
 
         String nomPropre = fichierJson.getName().replace(".json", "");
-        int min = temps / 60;
-        int sec = temps % 60;
-
         Label lblTitre = new Label("Grille " + nomPropre);
-        Label lblTemps = new Label(String.format("Temps : %d:%02d", min, sec));
+        Label lblTemps = new Label(String.format("Temps : %d:%02d", temps / 60, temps % 60));
 
         if (MainApp.modeSombreActif) {
             lblTitre.setStyle("-fx-font-family: 'Arial'; -fx-font-weight: bold; -fx-font-size: 13px; -fx-text-fill: white;");
@@ -129,15 +126,12 @@ public class ProfilController {
         }
 
         VBox carte = new VBox(10, imgView, lblTitre, lblTemps);
-        carte.setAlignment(Pos.CENTER);
-        carte.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+        carte.setAlignment(Pos.CENTER); carte.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
 
         String styleNormal = "-fx-cursor: hand; -fx-padding: 10; -fx-background-color: transparent; -fx-border-color: transparent; -fx-border-radius: 10; -fx-background-radius: 10;";
         String styleHover = "-fx-cursor: hand; -fx-padding: 10; -fx-background-color: #f5f5f5; -fx-border-color: #cccccc; -fx-border-radius: 10; -fx-background-radius: 10;";
 
-        if (MainApp.modeSombreActif) {
-            styleHover = "-fx-cursor: hand; -fx-padding: 10; -fx-background-color: #444444; -fx-border-color: #777777; -fx-border-radius: 10; -fx-background-radius: 10;";
-        }
+        if (MainApp.modeSombreActif) styleHover = "-fx-cursor: hand; -fx-padding: 10; -fx-background-color: #444444; -fx-border-color: #777777; -fx-border-radius: 10; -fx-background-radius: 10;";
 
         carte.setStyle(styleNormal);
         String finalStyleHover = styleHover;
@@ -155,7 +149,10 @@ public class ProfilController {
     private void chargerStatistiquesProfil(String nom, ProfileManager manager) {
         Map<String, String> stats = manager.lireStatistiques(nom);
 
-        lblTempsMoyen.setText("Temps total : " + formatTemps(stats.getOrDefault("temps_total", "0")));
+        // --- NOUVEAU : Affichage de toutes les statistiques ---
+        if (lblPartiesJouees != null) lblPartiesJouees.setText("Parties jouées : " + stats.getOrDefault("parties_jouees", "0"));
+        if (lblVictoires != null) lblVictoires.setText("Victoires : " + stats.getOrDefault("victoires", "0"));
+        lblTempsMoyen.setText("Temps moyen : " + formatTemps(stats.getOrDefault("temps_moyen", "0")));
         
         try {
             double ratio = Double.parseDouble(stats.getOrDefault("ratio_parties", "0")) * 100;
@@ -171,47 +168,40 @@ public class ProfilController {
         boolean isSombre = Boolean.parseBoolean(stats.getOrDefault("mode_sombre", "false"));
         if (radioSombre != null) radioSombre.setSelected(isSombre);
         if (radioClair != null) radioClair.setSelected(!isSombre);
+
+        String aide = stats.getOrDefault("aide_calcul", "combinaisons");
+        if (aide.equals("calculatrice") && radioProfilCalculatrice != null) radioProfilCalculatrice.setSelected(true);
+        else if (radioProfilCombinaisons != null) radioProfilCombinaisons.setSelected(true);
     }
     
-    private void chargerAvatar() {
-        // Plus besoin de complexité ici, le FXML fixe la taille, on gère juste la couleur !
-        imgAvatar.setIconColor(MainApp.modeSombreActif ? Color.WHITE : Color.BLACK);
-    }
+    private void chargerAvatar() { imgAvatar.setIconColor(MainApp.modeSombreActif ? Color.WHITE : Color.BLACK); }
     
     private String formatTemps(String s) {
         try {
-            int t = Integer.parseInt(s);
-            return (t / 3600 > 0 ? t/3600 + "h " : "") + (t % 3600) / 60 + "min";
-        } catch (Exception e) { return "0min"; }
+            int totalSecondes = Integer.parseInt(s);
+            int minutes = totalSecondes / 60;
+            int secondes = totalSecondes % 60;
+            // %02d permet de forcer l'affichage sur 2 chiffres (ex: 05:09 au lieu de 5:9)
+            return String.format("%02d:%02d", minutes, secondes);
+        } catch (Exception e) { 
+            return "00:00"; 
+        }
     }
 
     private void activerModeSombre(boolean activer) {
         MainApp.modeSombreActif = activer;
-        
         javafx.scene.Scene sceneActuelle = boxParties.getScene();
         if (sceneActuelle != null) {
             String cssPath = getClass().getResource("/styles/sombre.css").toExternalForm();
             if (activer) {
-                if (!sceneActuelle.getStylesheets().contains(cssPath)) {
-                    sceneActuelle.getStylesheets().add(cssPath);
-                }
+                if (!sceneActuelle.getStylesheets().contains(cssPath)) sceneActuelle.getStylesheets().add(cssPath);
             } else {
                 sceneActuelle.getStylesheets().remove(cssPath);
             }
         }
-        
-        // C'est tout ce dont on a besoin pour inverser les couleurs maintenant !
         imgAvatar.setIconColor(activer ? Color.WHITE : Color.BLACK);
     }
 
-    @FXML 
-    private void onRetourClick() { 
-        MainApp.changerScene(pagePrecedente); 
-    }
-    
-    @FXML 
-    private void onDeconnexionClick() { 
-        MainApp.changerScene("/fxml/accueil.fxml"); 
-        MainApp.modeSombreActif = false;
-    }
+    @FXML private void onRetourClick() { MainApp.changerScene(pagePrecedente); }
+    @FXML private void onDeconnexionClick() { MainApp.changerScene("/fxml/accueil.fxml"); MainApp.modeSombreActif = false; }
 }

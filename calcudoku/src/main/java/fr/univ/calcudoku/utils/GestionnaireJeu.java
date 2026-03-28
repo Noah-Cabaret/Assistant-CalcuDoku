@@ -1,5 +1,6 @@
 package fr.univ.calcudoku.utils;
 
+import fr.univ.calcudoku.challenge.Defi;
 import fr.univ.calcudoku.controller.JeuController;
 import fr.univ.calcudoku.model.DonneesNiveau;
 import fr.univ.calcudoku.model.Grille;
@@ -9,6 +10,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import com.google.gson.Gson;
+import fr.univ.calcudoku.MainApp;
 
 import java.io.File;
 import java.io.FileReader;
@@ -38,72 +40,44 @@ public class GestionnaireJeu {
         });
     }
 
-    // Nouvelle partie depuis le menu principal
     public static void chargerPartie(Stage stage, String fichierJsonRessource) {
         try {            
             InputStream is = GestionnaireJeu.class.getResourceAsStream("/grilles/json/" + fichierJsonRessource);
+            if (is == null) return;
+            DonneesNiveau data = GSON.fromJson(new InputStreamReader(is), DonneesNiveau.class);
+            Grille grille = JsonToModelAdapter.convertir(data);
+            
+            // --- CORRECTION : On extrait l'ID de la grille pour la sauvegarde ---
+            String idGrille = fichierJsonRessource.replace(".json", "");
+            
+            lancerPartie(stage, grille, "Partie", data, idGrille, false);
+        } catch (Exception e) { e.printStackTrace(); }
+    }
+
+    public static void chargerPartieDepuisFichier(Stage stage, File fichier) {
+        if (fichier == null || !fichier.exists()) return;
+        try {
+            // 1. On récupère l'ID du niveau grâce au nom du fichier de sauvegarde
+            String idGrille = fichier.getName().replace(".json", "");
+
+            // 2. On charge la grille DE BASE (les cages, le temps cible) depuis les ressources du jeu !
+            InputStream is = GestionnaireJeu.class.getResourceAsStream("/grilles/json/" + idGrille + ".json");
             if (is == null) {
-                System.err.println("Erreur : Fichier ressource introuvable -> " + fichierJsonRessource);
+                System.err.println("Erreur: Grille de base introuvable pour " + idGrille);
                 return;
             }
-
             DonneesNiveau data = GSON.fromJson(new InputStreamReader(is), DonneesNiveau.class);
             Grille grille = JsonToModelAdapter.convertir(data);
-
-            lancerPartie(stage, grille, "Partie Libre", fichierJsonRessource.replace(".json", ""), false);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    // Reprise d'une partie depuis le Profil
-    public static void chargerPartieDepuisFichier(Stage stage, File fichierSauvegardeJson) {
-        if (fichierSauvegardeJson == null || !fichierSauvegardeJson.exists()) return;
-
-        try {
-            // 1. Lire la structure de base depuis les ressources internes
-            String nomFichierBase = fichierSauvegardeJson.getName();
-            InputStream is = GestionnaireJeu.class.getResourceAsStream("/grilles/json/" + nomFichierBase);
-            if (is == null) return;
             
-            DonneesNiveau data = GSON.fromJson(new InputStreamReader(is), DonneesNiveau.class);
-            Grille grille = JsonToModelAdapter.convertir(data);
-
-            // 2. Lancer la partie en spécifiant qu'il faut charger les données du profil
-            lancerPartie(stage, grille, "Reprise Partie - " + nomFichierBase.replace(".json", ""), nomFichierBase.replace(".json", ""), true);
-
-        } catch (Exception e) {
-            e.printStackTrace();
+            // 3. On lance la partie en mode "reprise" (c'est Sauvegarde.java qui lira le tableau du joueur)
+            lancerPartie(stage, grille, "Reprise Partie", data, idGrille, true);
+            
+        } catch (Exception e) { 
+            e.printStackTrace(); 
         }
     }
 
-    public static Grille chargerGrilleSeuleRessource(String fichierJsonRessource) {
-        try {
-            InputStream is = GestionnaireJeu.class.getResourceAsStream("/grilles/json/" + fichierJsonRessource);
-            if (is == null) return null;
-            DonneesNiveau data = GSON.fromJson(new InputStreamReader(is), DonneesNiveau.class);
-            return JsonToModelAdapter.convertir(data);
-        } catch (Exception e) { return null; }
-    }
-
-    public static DonneesNiveau lireDonneesNiveauRessource(String fichierJsonRessource) {
-        try {
-            InputStream is = GestionnaireJeu.class.getResourceAsStream("/grilles/json/" + fichierJsonRessource);
-            if (is == null) return null;
-            return GSON.fromJson(new InputStreamReader(is), DonneesNiveau.class);
-        } catch (Exception e) { return null; }
-    }
-
-    public static DonneesNiveau lireDonneesNiveauFichier(File fichier) {
-        if (fichier == null || !fichier.exists()) return null;
-        try (FileReader reader = new FileReader(fichier)) {
-            return GSON.fromJson(reader, DonneesNiveau.class);
-        } catch (Exception e) { return null; }
-    }
-
-    // Lancement universel de la partie
-    public static void lancerPartie(Stage stage, Grille grille, String titre, String idGrille, boolean reprise) {
+    public static void lancerPartie(Stage stage, Grille grille, String titre, DonneesNiveau data, String idGrille, boolean reprise) {
         try {
             Parent root;
             JeuController controller;
@@ -118,14 +92,34 @@ public class GestionnaireJeu {
 
             save = new Sauvegarde();
             save.setIdGrille(idGrille);
-
-            // Si c'est une reprise, on charge la sauvegarde DANS la grille et l'objet save
-            if (reprise) {
-                String profilActif = fr.univ.calcudoku.MainApp.getProfileManager().getProfilActif();
-                if (profilActif == null) profilActif = "Invité";
-                save.charger(profilActif, grille);
+            
+            // --- CORRECTION : SÉPARATION CLAIRE AVENTURE / LIBRE ---
+            if (idGrille.startsWith("aventure")) {
+                save.setMode(Sauvegarde.ModeDeJeu.AVEN);
+                // On fixe une valeur par défaut silencieuse pour l'aventure
+                save.setDiff(Sauvegarde.Difficulte.FACIL); 
+            } else if (idGrille.startsWith("libre")) {
+                save.setMode(Sauvegarde.ModeDeJeu.LIBR);
+                // En libre, on lit la vraie difficulté dans le nom (ex: libre_5_2_1 -> 2 = MOYEN)
+                String[] parts = idGrille.split("_");
+                if (parts.length >= 3) {
+                    if (parts[2].equals("2")) save.setDiff(Sauvegarde.Difficulte.MOYEN);
+                    else if (parts[2].equals("3")) save.setDiff(Sauvegarde.Difficulte.DIFFI);
+                    else save.setDiff(Sauvegarde.Difficulte.FACIL);
+                }
             }
 
+            if (reprise) {
+                String nomActuel = MainApp.getProfileManager().getProfilActif();
+                if (nomActuel == null) nomActuel = "Invité";
+                save.charger(nomActuel, grille);
+            } else {
+                if (data.defi != null) save.setDefi(data.defi);
+                else save.setDefi(Defi.TypeDefi.AUCUN);
+                save.setVies(data.vies);
+                save.tmp.setTempsMax(data.temps);
+            }
+            
             controller.initialiserPartie(grille, save);
 
             Scene scene = stage.getScene();
@@ -143,10 +137,19 @@ public class GestionnaireJeu {
 
             stage.setTitle(titre);
             stage.show();
+
             if (!stage.isMaximized()) stage.setMaximized(true);
 
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) { e.printStackTrace(); }
+    }
+
+    public static DonneesNiveau lireDonneesNiveauRessource(String nomFichierJson) {
+        try {
+            InputStream is = GestionnaireJeu.class.getResourceAsStream("/grilles/json/" + nomFichierJson);
+            if (is != null) {
+                return GSON.fromJson(new InputStreamReader(is), DonneesNiveau.class);
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        return null;
     }
 }

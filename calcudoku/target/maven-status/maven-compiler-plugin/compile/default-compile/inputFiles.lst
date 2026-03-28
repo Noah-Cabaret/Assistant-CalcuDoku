@@ -19,6 +19,7 @@
 /Users/noahcabaret/Documents/projet_calcudoku/calcudoku/src/main/java/fr/univ/calcudoku/utils/JeuUtilitaires.java
 /Users/noahcabaret/Documents/projet_calcudoku/calcudoku/src/main/java/fr/univ/calcudoku/model/DonneesNiveau.java
 /Users/noahcabaret/Documents/projet_calcudoku/calcudoku/src/main/java/fr/univ/calcudoku/commande/CommandeAfficherIndice.java
+/Users/noahcabaret/Documents/projet_calcudoku/calcudoku/src/main/java/fr/univ/calcudoku/challenge/Defi.java
 /Users/noahcabaret/Documents/projet_calcudoku/calcudoku/src/main/java/fr/univ/calcudoku/service/JsonToModelAdapter.java
 /Users/noahcabaret/Documents/projet_calcudoku/calcudoku/src/main/java/fr/univ/calcudoku/model/BlocData.java
 /Users/noahcabaret/Documents/projet_calcudoku/calcudoku/src/main/java/fr/univ/calcudoku/service/aide/technique/TechniqueDerniereCaseBloc.java

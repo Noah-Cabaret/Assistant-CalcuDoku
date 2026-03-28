@@ -128,8 +128,9 @@ public class MenuLibreController {
             // --- CAS B : NOUVELLE PARTIE ---
             imageA_Afficher = CacheRessources.getImage("/grilles/images/" + baseName + ".png");
             
-            int min = niveau.temps / 60;
-            int sec = niveau.temps % 60;
+            int tempsCible = niveau.temps != null ? niveau.temps.intValue() : 0;
+            int min = tempsCible / 60;
+            int sec = tempsCible % 60;
             texteTemps = String.format("Temps cible : %d:%02d", min, sec);
             
             actionClic = () -> {
