@@ -13,6 +13,7 @@ public class MainApp extends Application {
 
     private static Stage primaryStage;
     private static ProfileManager profileManager;
+    public static boolean modeSombreActif = false;
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -33,18 +34,34 @@ public class MainApp extends Application {
     }
 
     // Méthode pour changer de page
+    // Méthode pour changer de page
     public static void changerScene(String fxmlPath) {
         try {
             FXMLLoader loader = new FXMLLoader(MainApp.class.getResource(fxmlPath));
             Parent root = loader.load();
             
-            if (primaryStage.getScene() == null) {
-                primaryStage.setScene(new Scene(root, 800, 600));
+            Scene scene = primaryStage.getScene();
+            
+            // 1. On crée la scène si elle n'existe pas, sinon on remplace juste le contenu (le "root")
+            if (scene == null) {
+                scene = new Scene(root, 800, 600);
+                primaryStage.setScene(scene);
             } else {
-                primaryStage.getScene().setRoot(root);
+                scene.setRoot(root);
             }
 
-            // MAINTENIR LE PLEIN ÉCRAN
+            // 2. --- GESTION DU THÈME SOMBRE ---
+            // Maintenant qu'on est SÛR que la scène existe, on applique ou retire le CSS
+            String cssPath = MainApp.class.getResource("/styles/sombre.css").toExternalForm();
+            if (modeSombreActif) {
+                if (!scene.getStylesheets().contains(cssPath)) {
+                    scene.getStylesheets().add(cssPath);
+                }
+            } else {
+                scene.getStylesheets().remove(cssPath); // Sécurité : on l'enlève si le mode clair est actif
+            }
+
+            // 3. MAINTENIR LE PLEIN ÉCRAN
             if (primaryStage.isShowing()) {
                 primaryStage.setFullScreen(false);
                 primaryStage.setMaximized(true);

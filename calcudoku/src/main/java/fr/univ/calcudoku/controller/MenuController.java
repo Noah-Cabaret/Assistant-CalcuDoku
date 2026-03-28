@@ -1,47 +1,39 @@
 package fr.univ.calcudoku.controller;
 
+import java.io.File;
+
 import fr.univ.calcudoku.MainApp;
 import fr.univ.calcudoku.utils.CacheRessources;
-//import fr.univ.calcudoku.model.DonneesNiveau;
-//import fr.univ.calcudoku.model.Grille;
-//import fr.univ.calcudoku.service.JsonToModelAdapter;
 import fr.univ.calcudoku.utils.GestionnaireJeu;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
-
-import java.io.File;
-//import java.io.FileReader;
-import java.io.InputStream;
-
-//import com.google.gson.Gson;
+import org.kordamp.ikonli.javafx.FontIcon;
+import javafx.scene.paint.Color;
 
 public class MenuController {
 
     @FXML
     private HBox boxSousMenu;
 
-    @FXML
-    private ImageView imgAvatar;
+    @FXML private FontIcon imgAvatar;
     
     @FXML
-    private Label labelNomProfil; // Pour changer le texte "Nom"
+    private Label labelNomProfil; 
 
     @FXML
     public void initialize() {
 
-        imgAvatar.setImage(CacheRessources.getImage("/images/utilisateur.png"));
-
-        // Récupérer le nom du profil connecté via le Manager
+        imgAvatar.setIconColor(MainApp.modeSombreActif ? Color.WHITE : Color.BLACK);
         String nomActuel = MainApp.getProfileManager().getProfilActif();
         if (nomActuel != null) {
             labelNomProfil.setText(nomActuel);
         } else {
             labelNomProfil.setText("Invité");
         }
+
         GestionnaireJeu.prechargerPageJeu();
     }
 
@@ -53,30 +45,26 @@ public class MenuController {
     //Gestion du Clic sur le Profil (Retour Accueil)
     @FXML
     private void onProfilClick() {
-        // Ça va vers la page de statistiques/profil
+        // On prévient le Profil qu'il faudra revenir au menu
+        ProfilController.pagePrecedente = "/fxml/menu.fxml";
         MainApp.changerScene("/fxml/profil.fxml");
     }
 
-    //@FXML private void onLibreClick() { System.out.println("Mode Libre"); }
     @FXML 
     private void onLibreClick() { 
-        // On récupère le nom du joueur
-        String nomJoueur = MainApp.getProfileManager().getProfilActif();
-        if (nomJoueur == null) nomJoueur = "Invité";
-        
-        // On cible le fichier de sauvegarde
-        File fichier = new File("profils/" + nomJoueur + "/jeu/json/libre_9_3_1.json");
-
-        // le Gestionnaire tout faire !
-        Stage stage = (Stage) boxSousMenu.getScene().getWindow();
-        GestionnaireJeu.chargerPartieDepuisFichier(stage, fichier);
+        MainApp.changerScene("/fxml/menu_libre.fxml");
     }
 
-    @FXML private void onAventureClick() { System.out.println("Mode Aventure"); }
+    @FXML private void onAventureClick() { MainApp.changerScene("/fxml/menu_aventure.fxml"); }
     
     
     @FXML
     private void onQuitterClick() {
         System.exit(0);
+    }
+
+    @FXML 
+    private void onReglesClick() { 
+        MainApp.changerScene("/fxml/reglesTechniques.fxml"); 
     }
 }

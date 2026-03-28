@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fr.univ.calcudoku.controller.MenuLibreController">
+   <top>
+      <BorderPane style="-fx-padding: 20;">
+         <left>
+            <Button mnemonicParsing="false" onAction="#onRetourClick" style="-fx-background-color: transparent; -fx-cursor: hand;">
+               <graphic>
+                  <FontIcon iconLiteral="fas-arrow-left" iconSize="35" />
+               </graphic>
+            </Button>
+         </left>
+         <right>
+            <Button mnemonicParsing="false" onAction="#onParametresClick" style="-fx-background-color: transparent; -fx-cursor: hand;">
+               <graphic>
+                  <FontIcon fx:id="imgParametres" iconLiteral="fas-cog" iconSize="35" />
+               </graphic>
+            </Button>
+         </right>
+      </BorderPane>
+   </top>
+   
+   <center>
+      <VBox alignment="TOP_CENTER" spacing="30.0" minWidth="0" minHeight="0" BorderPane.alignment="CENTER">
+         <padding>
+            <Insets top="30.0" left="20.0" right="20.0" />
+         </padding>
+         
+         <children>
+            <HBox alignment="CENTER" spacing="30.0" minWidth="0">
+               <children>
+                  <VBox alignment="CENTER" spacing="10.0" minWidth="0">
+                     <Label style="-fx-font-weight: bold; -fx-font-size: 14px;" text="Taille de la grille" />
+                     <HBox alignment="CENTER" spacing="5.0" style="-fx-border-color: #cccccc; -fx-border-radius: 20px; -fx-padding: 5px 15px;" minWidth="0">
+                        <fx:define><ToggleGroup fx:id="groupeTaille" /></fx:define>
+                        <ToggleButton selected="true" text="5" toggleGroup="$groupeTaille" />
+                        <ToggleButton text="6" toggleGroup="$groupeTaille" />
+                        <ToggleButton text="7" toggleGroup="$groupeTaille" />
+                        <ToggleButton text="8" toggleGroup="$groupeTaille" />
+                        <ToggleButton text="9" toggleGroup="$groupeTaille" />
+                     </HBox>
+                  </VBox>
+
+                  <VBox alignment="CENTER" spacing="10.0" minWidth="0">
+                     <Label style="-fx-font-weight: bold; -fx-font-size: 14px;" text="Difficulté" />
+                     <HBox alignment="CENTER" spacing="5.0" style="-fx-border-color: #cccccc; -fx-border-radius: 20px; -fx-padding: 5px 15px;" minWidth="0">
+                        <fx:define><ToggleGroup fx:id="groupeDifficulte" /></fx:define>
+                        <ToggleButton selected="true" text="1" toggleGroup="$groupeDifficulte" />
+                        <ToggleButton text="2" toggleGroup="$groupeDifficulte" />
+                        <ToggleButton text="3" toggleGroup="$groupeDifficulte" />
+                     </HBox>
+                  </VBox>
+               </children>
+            </HBox>
+
+            <HBox fx:id="boxGrilles" alignment="CENTER" spacing="20.0" minWidth="0" minHeight="0" VBox.vgrow="ALWAYS">
+                <padding><Insets top="30.0" bottom="30.0" /></padding>
+            </HBox>
+         </children>
+      </VBox>
+   </center>
+</BorderPane>

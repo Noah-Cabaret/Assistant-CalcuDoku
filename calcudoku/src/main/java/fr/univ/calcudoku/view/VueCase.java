@@ -1,7 +1,7 @@
 package fr.univ.calcudoku.view;
 
 import fr.univ.calcudoku.model.Case;
-import javafx.beans.binding.Bindings;
+//import javafx.beans.binding.Bindings;
 import javafx.collections.SetChangeListener;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;

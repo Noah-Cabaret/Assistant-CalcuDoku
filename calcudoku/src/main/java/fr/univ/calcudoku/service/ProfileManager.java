@@ -1,97 +1,52 @@
 package fr.univ.calcudoku.service;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import fr.univ.calcudoku.save.Options;
+import fr.univ.calcudoku.save.Statistiques;
+import fr.univ.calcudoku.save.Sauvegarde;
 
-/**
- * Gestionnaire des profils utilisateur.
- * Gère la création, la sélection et la récupération des profils.
- */
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public class ProfileManager {
 
     private static final String DOSSIER_ROOT = "profils";
-
-    // Fichiers à la racine du profil
-    private static final String FICHIER_OPTIONS = "profil.ini";
-    private static final String FICHIER_STATS = "statistiques.ini";
-    
-    // Dossier et fichiers de sauvegardes
-    private static final String DOSSIER_PARTIES = "parties";
-    private static final String DOSSIER_JEU = "jeu";
-    private static final String SAVE_AVENTURE = "aventure.ini";
-    private static final String SAVE_LIBRE = "libre.ini";
-
     private String profilActif;
 
     public ProfileManager() {
-        // Initialisation du dossier racine
         File dossier = new File(DOSSIER_ROOT);
-        if (!dossier.exists()) {
-            dossier.mkdir();
-        }
+        if (!dossier.exists()) dossier.mkdir();
     }
 
-    /**
-     * Crée la structure de donnés de profil : Dossiers + 5 fichiers vides (.ini)
-     */
     public boolean creerProfil(String nom) {
         File dossierProfil = new File(DOSSIER_ROOT, nom);
-        if (dossierProfil.exists()) {
-            return false;
-        }
+        if (dossierProfil.exists()) return false;
 
         if (dossierProfil.mkdirs()) {
-            try {
-                // Fichiers généraux du profil
-                new File(dossierProfil, FICHIER_OPTIONS).createNewFile();
-                new File(dossierProfil, FICHIER_STATS).createNewFile();
+            new File(dossierProfil, "parties/aventure").mkdirs();
+            new File(dossierProfil, "jeu/images").mkdirs();
+            new File(dossierProfil, "jeu/json").mkdirs();
+            new File(dossierProfil, "jeu/ini").mkdirs();
 
-                // Dossier des parties
-                File dossierParties = new File(dossierProfil, DOSSIER_PARTIES);
-                dossierParties.mkdirs();
-
-                // Les fichiers de sauvegarde pour chaque mode
-                // Aventure : pour stocker le niveau actuel et la progression
-                new File(dossierParties, SAVE_AVENTURE).createNewFile();
-                
-                // Libre : pour reprendre une partie libre en cours
-                new File(dossierParties, SAVE_LIBRE).createNewFile();
-
-                // Dossier "jeu" (NOUVEAU - POUR LES JSON)
-                File dossierJeu = new File(dossierProfil, DOSSIER_JEU);
-                dossierJeu.mkdirs();
-
-                System.out.println(" Profil créé avec succès : " + nom);
-                return true;
-
-            } catch (IOException e) {
-                System.err.println("Erreur création fichiers : " + e.getMessage());
-                return false;
-            }
+            new Options().enreg(nom);
+            new Statistiques().enreg(nom);
+            return true;
         }
         return false;
     }
 
-    // Suppression, Listing, Chargement
-
     public boolean supprimerProfil(String nom) {
         File dossier = new File(DOSSIER_ROOT, nom);
-        if (dossier.exists()) {
-            return supprimerRecursif(dossier);
-        }
+        if (dossier.exists()) return supprimerRecursif(dossier);
         return false;
     }
 
     private boolean supprimerRecursif(File fichierOuDossier) {
         if (fichierOuDossier.isDirectory()) {
             File[] enfants = fichierOuDossier.listFiles();
-            if (enfants != null) {
-                for (File enfant : enfants) {
-                    supprimerRecursif(enfant);
-                }
-            }
+            if (enfants != null) for (File enfant : enfants) supprimerRecursif(enfant);
         }
         return fichierOuDossier.delete();
     }
@@ -101,49 +56,83 @@ public class ProfileManager {
         File dossier = new File(DOSSIER_ROOT);
         File[] sousDossiers = dossier.listFiles(File::isDirectory);
         if (sousDossiers != null) {
-            for (File f : sousDossiers) {
-                noms.add(f.getName());
-            }
+            for (File f : sousDossiers) noms.add(f.getName());
         }
         return noms;
     }
 
     public void chargerProfil(String nom) {
         this.profilActif = nom;
-        System.out.println("Profil chargé : " + nom);
     }
 
     public String getProfilActif() {
         return profilActif;
     }
-
-    /**
-     * Lit le fichier profil.ini pour les stats
-     */
-    public java.util.Map<String, String> lireStatistiques(String nomProfil) {
-        java.util.Map<String, String> stats = new java.util.HashMap<>();
+    
+    // --- NOUVEAU : CALCULE ET SAUVEGARDE LA FIN D'UNE PARTIE ---
+    public void enregistrerFinDePartie(String nomProfil, boolean victoire, double temps, long score, Sauvegarde.Difficulte diff, boolean estAventure) {
+        if(nomProfil.equals("Invité")) return; 
         
-        // On lit le fichier profil.ini (change en statistiques.ini si tu préfères)
-        java.io.File fichierIni = new java.io.File("profils/" + nomProfil + "/" + FICHIER_OPTIONS);
+        Statistiques stats = new Statistiques();
+        stats.charger(nomProfil);
 
-        if (!fichierIni.exists()) return stats;
-
-        try (java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.FileReader(fichierIni))) {
-            String ligne;
-            while ((ligne = reader.readLine()) != null) {
-                ligne = ligne.trim();
-                if (ligne.isEmpty() || ligne.startsWith(";") || ligne.startsWith("[")) continue;
-                
-                if (ligne.contains("=")) {
-                    String[] parts = ligne.split("=", 2);
-                    if (parts.length == 2) {
-                        stats.put(parts[0].trim(), parts[1].trim());
-                    }
-                }
-            }
-        } catch (java.io.IOException e) {
-            e.printStackTrace();
+        stats.setPartiesJouees(stats.getPartiesJouees() + 1);
+        
+        if (victoire) {
+            stats.setVictoires(stats.getVictoires() + 1);
+            if (score > stats.getScore()) stats.setScore(score);
+            if (diff != null && diff.ordinal() > stats.getDiffMax().ordinal()) stats.setDiffMax(diff);
+            if (estAventure) stats.setProgressionAventure(stats.getProgressionAventure() + 1);
         }
-        return stats;
+        stats.setRatioVictoires();
+
+        // Calcul de la moyenne de temps globale
+        double ancienneMoyenne = stats.getMoyenne() != null ? stats.getMoyenne() : 0.0;
+        int parties = stats.getPartiesJouees();
+        double nouvelleMoyenne = ancienneMoyenne + ((temps - ancienneMoyenne) / parties);
+        stats.setMoyenne(nouvelleMoyenne);
+
+        stats.enreg(nomProfil);
+    }
+
+    public Map<String, String> lireStatistiques(String nomProfil) {
+        Map<String, String> statsMap = new HashMap<>();
+        Statistiques stats = new Statistiques();
+        
+        File fichierStats = new File("profils/" + nomProfil + "/statistiques.ini");
+        if (fichierStats.exists()) stats.charger(nomProfil);
+
+        // --- NOUVEAU : Toutes les stats sont envoyées à l'interface ---
+        statsMap.put("parties_jouees", String.valueOf(stats.getPartiesJouees()));
+        statsMap.put("victoires", String.valueOf(stats.getVictoires()));
+        statsMap.put("temps_moyen", String.valueOf((int)(stats.getMoyenne() != null ? stats.getMoyenne() : 0.0))); 
+        statsMap.put("ratio_parties", String.valueOf(stats.getRatioVictoires() != null ? stats.getRatioVictoires() : 0.0));
+        statsMap.put("progression", String.valueOf(stats.getProgressionAventure()));
+        
+        String diff = "1";
+        if (stats.getDiffMax() == Sauvegarde.Difficulte.MOYEN) diff = "2";
+        else if (stats.getDiffMax() == Sauvegarde.Difficulte.DIFFI) diff = "3";
+        statsMap.put("difficulte_max", diff);
+        
+        statsMap.put("score_max", String.valueOf(stats.getScore()));
+        
+        Options opt = new Options();
+        if (new File("profils/" + nomProfil + "/options.ini").exists()) opt.charger(nomProfil);
+        
+        statsMap.put("mode_sombre", String.valueOf(opt.isThemeSombre()));
+        if (opt.getAide() == Options.AideAuCalcul.CALCULATRICE) statsMap.put("aide_calcul", "calculatrice");
+        else statsMap.put("aide_calcul", "combinaisons");
+
+        return statsMap;
+    }
+
+    public void mettreAJourStatistique(String nomProfil, String cle, String valeur) {
+        if (cle.equals("mode_sombre") || cle.equals("aide_calcul")) {
+            Options opt = new Options();
+            opt.charger(nomProfil);
+            if (cle.equals("mode_sombre")) opt.setThemeSombre(Boolean.parseBoolean(valeur));
+            else if (cle.equals("aide_calcul")) opt.setAide(valeur.equals("calculatrice") ? Options.AideAuCalcul.CALCULATRICE : Options.AideAuCalcul.COMBINAISONS);
+            opt.enreg(nomProfil);
+        }
     }
 }

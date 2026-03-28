@@ -35,7 +35,6 @@ public class TechniqueIntraBloc_3_5 extends TechniqueIntraBloc {
                     Map<Case, Integer> solutions = new HashMap<>();
 
                     for (Case c : bloc.getListeCases()) {
-                        solutions.put(c, c.getSolution());
                         
                         if (c.getValeur() != 0 && c.getValeur() != c.getSolution()) {
                             contientErreur = true;
