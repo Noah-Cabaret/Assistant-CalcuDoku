@@ -180,6 +180,7 @@ public class JeuController {
         if (conteneurGrille.getScene() != null) {
             JeuUtilitaires.desinstallerSecuritesFermeture(conteneurGrille.getScene());
         }
+        JeuUtilitaires.cacherCalculatrice();
         try {
             Parent root = FXMLLoader.load(getClass().getResource(fxml));
             Stage stage = (Stage) btnRetour.getScene().getWindow();

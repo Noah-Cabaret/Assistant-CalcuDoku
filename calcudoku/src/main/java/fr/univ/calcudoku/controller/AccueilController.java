@@ -2,7 +2,6 @@ package fr.univ.calcudoku.controller;
 
 import fr.univ.calcudoku.MainApp;
 import fr.univ.calcudoku.service.ProfileManager;
-import fr.univ.calcudoku.utils.CacheRessources;
 
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
@@ -10,8 +9,6 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -20,6 +17,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.FlowPane;
+import org.kordamp.ikonli.javafx.FontIcon; // <-- IMPORT IKONLI
 
 import java.util.Optional;
 
@@ -39,12 +37,9 @@ public class AccueilController {
     private void rafraichirAffichage() {
         boxProfils.getChildren().clear();
 
-        // CHARGEMENT OPTIMISÉ DE L'IMAGE UTILISATEUR
-        Image avatarParDefaut = CacheRessources.getImage("/images/utilisateur.png");
-
-        // Créer une carte pour chaque profil avec l'image chargée
+        // Créer une carte pour chaque profil
         for (String nom : manager.listerProfils()) {
-            VBox carteProfil = creerCarteProfil(nom, avatarParDefaut);
+            VBox carteProfil = creerCarteProfil(nom);
             boxProfils.getChildren().add(carteProfil);
         }
 
@@ -52,22 +47,15 @@ public class AccueilController {
         boxProfils.getChildren().add(creerCarteAjout());
     }
 
-    private VBox creerCarteProfil(String nom, Image img) {
+    private VBox creerCarteProfil(String nom) {
         VBox carte = new VBox(10);
         carte.setAlignment(Pos.CENTER);
         carte.setMaxHeight(VBox.USE_PREF_SIZE);
         carte.setStyle("-fx-cursor: hand; -fx-padding: 15; -fx-background-color: transparent; -fx-background-radius: 10;");
 
-        // CRÉATION DE L'IMAGE
-        ImageView view = new ImageView();
-        if (img != null) {
-            view.setImage(img);
-        } else {
-            view.setStyle("-fx-background-color: grey;");
-        }
-        view.setFitWidth(80);
-        view.setFitHeight(80);
-        view.setPreserveRatio(true);
+        // CRÉATION DE L'ICÔNE UTILISATEUR (Remplace ImageView)
+        FontIcon iconProfil = new FontIcon("fas-user-circle");
+        iconProfil.setIconSize(80);
 
         // CRÉATION DU BOUTON X
         Label boutonX = new Label("X");
@@ -94,7 +82,7 @@ public class AccueilController {
         StackPane conteneurImage = new StackPane();
         StackPane.setAlignment(boutonX, Pos.TOP_RIGHT);
         StackPane.setMargin(boutonX, new Insets(-5, -5, 0, 0)); 
-        conteneurImage.getChildren().addAll(view, boutonX);
+        conteneurImage.getChildren().addAll(iconProfil, boutonX);
 
         // TEXTE
         Label labelNom = new Label(nom);
@@ -128,19 +116,14 @@ public class AccueilController {
         carte.setMaxHeight(VBox.USE_PREF_SIZE);
         carte.setStyle("-fx-cursor: hand; -fx-padding: 15; -fx-background-color: transparent; -fx-background-radius: 10;");
 
-        // IMAGE "+" OPTIMISÉE
-        ImageView viewPlus = new ImageView();
-        viewPlus.setImage(CacheRessources.getImage("/images/plus-symbole-noir.png"));
-
-        viewPlus.setFitWidth(80);  
-        viewPlus.setFitHeight(80);
-        viewPlus.setPreserveRatio(true);
-        viewPlus.setOpacity(1.0); 
+        // ICÔNE "+" (Remplace ImageView)
+        FontIcon iconPlus = new FontIcon("fas-plus-circle");
+        iconPlus.setIconSize(80);
 
         Label labelAjout = new Label("Ajouter");
         labelAjout.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #333;");
 
-        carte.getChildren().addAll(viewPlus, labelAjout);
+        carte.getChildren().addAll(iconPlus, labelAjout);
 
         carte.setOnMouseEntered(e -> carte.setStyle("-fx-cursor: hand; -fx-background-color: #e6e6e6; -fx-padding: 15; -fx-background-radius: 10;"));
         carte.setOnMouseExited(e -> carte.setStyle("-fx-cursor: hand; -fx-background-color: transparent; -fx-padding: 15; -fx-background-radius: 10;"));
@@ -161,13 +144,9 @@ public class AccueilController {
         Label titre = new Label("Calcudoku");
         titre.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: black; -fx-border-color: transparent transparent transparent; -fx-border-width: 0 0 2 0;");
 
-        // IMAGE AVATAR OPTIMISÉE POUR LE POPUP 
-        ImageView iconView = new ImageView();
-        iconView.setImage(CacheRessources.getImage("/images/utilisateur.png"));
-        
-        iconView.setFitWidth(60);
-        iconView.setFitHeight(60);
-        iconView.setPreserveRatio(true);
+        // ICÔNE AVATAR POUR LE POPUP (Remplace ImageView)
+        FontIcon iconPopup = new FontIcon("fas-user-circle");
+        iconPopup.setIconSize(60);
 
         Label msgErreur = new Label("Ce nom de profil est déjà pris");
         msgErreur.setStyle("-fx-text-fill: red;"); 
@@ -212,7 +191,7 @@ public class AccueilController {
             }
         });
 
-        layout.getChildren().addAll(titre, iconView, champPseudo, msgErreur);
+        layout.getChildren().addAll(titre, iconPopup, champPseudo, msgErreur);
 
         Scene scene = new Scene(layout, 400, 300); 
         popup.setScene(scene);

@@ -8,7 +8,8 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.ImageView;
-
+import org.kordamp.ikonli.javafx.FontIcon;
+import javafx.scene.paint.Color;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,6 +24,8 @@ public class ReglesTechniquesController {
     // Les nouveaux boutons de pagination
     @FXML private Button btnPrecedent;
     @FXML private Button btnSuivant;
+    @FXML private FontIcon iconPrecedent;
+    @FXML private FontIcon iconSuivant;
 
     // --- SYSTÈME DE PAGINATION ---
     private List<PageContenu> pagesDeLaSection = new ArrayList<>();
@@ -64,12 +67,20 @@ public class ReglesTechniquesController {
             lblTitreHaut.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-border-color: white; -fx-border-radius: 10; -fx-padding: 10 30 10 30; -fx-text-fill: white;");
             lblTexte.setStyle("-fx-font-size: 16px; -fx-line-spacing: 5px; -fx-text-fill: white;");
             lblLegendeImage.setStyle("-fx-font-size: 12px; -fx-text-fill: lightgray;");
-            btnPrecedent.setStyle("-fx-background-color: transparent; -fx-font-size: 40px; -fx-cursor: hand; -fx-font-weight: bold; -fx-text-fill: white;");
-            btnSuivant.setStyle("-fx-background-color: transparent; -fx-font-size: 40px; -fx-cursor: hand; -fx-font-weight: bold; -fx-text-fill: white;");
+            btnPrecedent.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
+            btnSuivant.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
+            
+            if (iconPrecedent != null) iconPrecedent.setIconColor(Color.WHITE);
+            if (iconSuivant != null) iconSuivant.setIconColor(Color.WHITE);
         } else {
             lblTitreHaut.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-border-color: black; -fx-border-radius: 10; -fx-padding: 10 30 10 30; -fx-text-fill: black;");
             lblTexte.setStyle("-fx-font-size: 16px; -fx-line-spacing: 5px; -fx-text-fill: black;");
             lblLegendeImage.setStyle("-fx-font-size: 12px; -fx-text-fill: gray;");
+            btnPrecedent.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
+            btnSuivant.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
+            
+            if (iconPrecedent != null) iconPrecedent.setIconColor(Color.BLACK);
+            if (iconSuivant != null) iconSuivant.setIconColor(Color.BLACK);
         }
 
         // Charger la première section par défaut

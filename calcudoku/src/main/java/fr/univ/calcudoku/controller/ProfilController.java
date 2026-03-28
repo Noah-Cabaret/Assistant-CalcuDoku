@@ -3,7 +3,6 @@ package fr.univ.calcudoku.controller;
 import fr.univ.calcudoku.MainApp;
 import fr.univ.calcudoku.model.DonneesNiveau;
 import fr.univ.calcudoku.service.ProfileManager;
-import fr.univ.calcudoku.utils.CacheRessources;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -14,6 +13,9 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
+import org.kordamp.ikonli.javafx.FontIcon;
+import javafx.scene.paint.Color;
+
 import java.io.File;
 import java.util.Map;
 import java.util.Scanner;
@@ -22,7 +24,7 @@ public class ProfilController {
 
     public static String pagePrecedente = "/fxml/menu.fxml";
 
-    @FXML private ImageView imgAvatar;
+    @FXML private FontIcon imgAvatar;
     @FXML private Label lblNomProfil;
     @FXML private VBox boxCentrale;
     @FXML private Label lblTempsMoyen, lblTauxReussite, lblNiveauAventure, lblDifficulteMax, lblMeilleurScore;
@@ -40,7 +42,6 @@ public class ProfilController {
         chargerAvatar();
         chargerStatistiquesProfil(nomActuel, manager);
         
-        // On nettoie la box avant de charger
         if (boxParties != null) boxParties.getChildren().clear();
         chargerPartiesSauvegardees(nomActuel);
         
@@ -56,11 +57,9 @@ public class ProfilController {
     }
 
     private void chargerPartiesSauvegardees(String nomProfil) {
-        // 1. On cherche dans le dossier classique "parties" (mode Libre)
         File dossierParties = new File("profils/" + nomProfil + "/parties");
         chargerFichiersDossier(nomProfil, dossierParties);
 
-        // 2. On cherche dans le dossier "parties/aventure" (mode Aventure)
         File dossierAventure = new File("profils/" + nomProfil + "/parties/aventure");
         chargerFichiersDossier(nomProfil, dossierAventure);
     }
@@ -72,11 +71,9 @@ public class ProfilController {
 
         if (fichiersJson != null && boxParties != null) {
             for (File fichierJson : fichiersJson) {
-                // Récupérer la structure du niveau depuis les RESSOURCES de base
                 DonneesNiveau niveauBase = fr.univ.calcudoku.utils.GestionnaireJeu.lireDonneesNiveauRessource(fichierJson.getName());
                 
                 if (niveauBase != null) {
-                    // Le fichier .ini est dans le même dossier que le .json (dossier "parties")
                     File fichierIni = new File(dossier, fichierJson.getName().replace(".json", ".ini"));
                     int tempsSauvegarde = lireTempsDepuisIni(fichierIni);
                     
@@ -102,7 +99,6 @@ public class ProfilController {
         return 0;
     }
 
-    // --- CORRECTION : Méthode personnalisée pour forcer la taille de l'image ---
     private VBox creerCartePartie(String nomProfil, File fichierJson, int temps) {
         File fichierImage = new File("profils/" + nomProfil + "/jeu/images/" + fichierJson.getName().replace(".json", ".png"));
         
@@ -113,7 +109,6 @@ public class ProfilController {
             imgView.setStyle("-fx-background-color: lightgray;");
         }
 
-        // On FORCE la taille pour contrer le bug du ScrollPane
         imgView.setFitHeight(150);
         imgView.setFitWidth(150);
         imgView.setPreserveRatio(true);
@@ -125,7 +120,6 @@ public class ProfilController {
         Label lblTitre = new Label("Grille " + nomPropre);
         Label lblTemps = new Label(String.format("Temps : %d:%02d", min, sec));
 
-        // Application du thème sombre/clair sur la carte
         if (MainApp.modeSombreActif) {
             lblTitre.setStyle("-fx-font-family: 'Arial'; -fx-font-weight: bold; -fx-font-size: 13px; -fx-text-fill: white;");
             lblTemps.setStyle("-fx-font-family: 'Arial'; -fx-font-size: 11px; -fx-text-fill: #cccccc;");
@@ -180,12 +174,8 @@ public class ProfilController {
     }
     
     private void chargerAvatar() {
-        imgAvatar.setImage(CacheRessources.getImage("/images/utilisateur.png"));
-        if (boxCentrale != null) {
-            imgAvatar.fitHeightProperty().bind(javafx.beans.binding.Bindings.min(90, boxCentrale.heightProperty().multiply(0.2)));
-            // On garde un carré parfait
-            imgAvatar.fitWidthProperty().bind(imgAvatar.fitHeightProperty());
-        }
+        // Plus besoin de complexité ici, le FXML fixe la taille, on gère juste la couleur !
+        imgAvatar.setIconColor(MainApp.modeSombreActif ? Color.WHITE : Color.BLACK);
     }
     
     private String formatTemps(String s) {
@@ -198,7 +188,6 @@ public class ProfilController {
     private void activerModeSombre(boolean activer) {
         MainApp.modeSombreActif = activer;
         
-        // 1. Appliquer le CSS pour le fond et les textes
         javafx.scene.Scene sceneActuelle = boxParties.getScene();
         if (sceneActuelle != null) {
             String cssPath = getClass().getResource("/styles/sombre.css").toExternalForm();
@@ -211,7 +200,8 @@ public class ProfilController {
             }
         }
         
-        fr.univ.calcudoku.utils.ThemeUtil.appliquerFiltreBlancSiSombre(imgAvatar);
+        // C'est tout ce dont on a besoin pour inverser les couleurs maintenant !
+        imgAvatar.setIconColor(activer ? Color.WHITE : Color.BLACK);
     }
 
     @FXML 
