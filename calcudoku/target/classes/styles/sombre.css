@@ -2,16 +2,10 @@
     -fx-base: #2b2b2b;
     -fx-background: #1e1e1e; 
 }
-<<<<<<< HEAD
 
 /* On force le texte à devenir blanc clair */
 .label, .radio-button {
     -fx-text-fill: #ffffff;
-=======
-.label, .radio-button, .text {
-    -fx-text-fill: #cccccc;
-    -fx-fill: #cccccc;
->>>>>>> a97f1268c3eb6d54bbe1e63df4d4ec06c18561ec
 }
 
 /* Grille : force toutes les inscriptions en noir comme en mode clair */
@@ -85,5 +79,4 @@
 
 .case-erreur { 
     -fx-background-color: #b71c1c !important; /* Un rouge sombre */
-    -fx-border-color: #ff5252 !important; 
 }
