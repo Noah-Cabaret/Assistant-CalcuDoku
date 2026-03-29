@@ -70,3 +70,8 @@
     -fx-border-width: 2px; -fx-background-radius: 12px; -fx-border-radius: 12px;
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 15, 0, 0, 0); -fx-padding: 10px;
 }
+
+.case-aide-surbrillance {
+    -fx-background-color: #b9f6ca !important; 
+
+}
