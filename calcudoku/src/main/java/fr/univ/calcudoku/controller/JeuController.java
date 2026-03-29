@@ -163,7 +163,7 @@ public class JeuController {
             {
                 minutes = (int)((save.tmp.getTempsMax() - secondesEcoulees) / 60);
                 secondes = (int)((save.tmp.getTempsMax() - secondesEcoulees) % 60);
-                if(secondesEcoulees % 5 == 0 && secondes >= 0)
+                if(secondesEcoulees % 60 == 0 && secondes >= 0)
                     save.setMalus(save.getMalus() + 2);
                 if(secondes <= 0)
                 {
