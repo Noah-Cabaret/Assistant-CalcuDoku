@@ -12,8 +12,19 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+/**
+ * Technique d'aide : Candidat Unique (Cross-Hatching).
+ * Identifie une case précise qui ne peut prendre qu'un seul chiffre possible 
+ * en observant l'intersection de sa ligne et de sa colonne.
+ */
 public class TechniqueCandidatUnique implements TechniqueAide {
 
+    /**
+     * Analyse chaque case de la grille en croisant les informations de sa ligne et sa colonne.
+     * Fournit un indice progressif pour le joueur.
+     * * @param grille La grille à analyser.
+     * @return Un Indice contenant les messages d'aide progressifs, ou null.
+     */
     @Override
     public Indice analyser(Grille grille) {
         int taille = grille.getTaille();
@@ -38,6 +49,7 @@ public class TechniqueCandidatUnique implements TechniqueAide {
                     }
                 }
 
+                // Si on a vu N-1 chiffres différents dans la croix formée par la ligne et la colonne
                 if (chiffresVus.size() == taille - 1) {
                     int chiffreManquant = trouverChiffreManquant(chiffresVus, taille);
                     int valeurJoueur = c.getValeur();
@@ -51,13 +63,20 @@ public class TechniqueCandidatUnique implements TechniqueAide {
                     List<Case> casesASurbriller = new ArrayList<>();
                     casesASurbriller.add(c);
                     Map<Case, Integer> solutions = new HashMap<>(); 
+                    List<String> messages = new ArrayList<>();
 
                     if (contientErreur) {
-                        String msg = "Erreur détectée ! La case ciblée ne peut contenir qu'un seul chiffre possible à cause des autres chiffres déjà présents sur sa ligne et sa colonne.";
-                        indicesErreurs.add(new Indice("Candidat Unique", msg, casesASurbriller, solutions, true));
+                        messages.add("Une erreur de placement s'est produite. Une de vos cases contient un chiffre qui entre en conflit avec son environnement.");
+                        messages.add("Si vous regardez les chiffres déjà présents sur la ligne et la colonne de cette case, vous verrez qu'il n'y avait qu'une seule option valide.");
+                        messages.add("Erreur détectée ! La case en surbrillance ne peut contenir qu'un seul chiffre possible à cause des autres chiffres déjà présents sur sa ligne et sa colonne.");
+                        
+                        indicesErreurs.add(new Indice("Candidat Unique", messages, casesASurbriller, solutions, true));
                     } else {
-                        String msg = "Techniques à candidat unique : Selon les règles, un nombre n'apparaît qu'une fois par ligne et colonne. En croisant la ligne et la colonne de cette case, il ne reste plus qu'un seul candidat possible !";
-                        indicesNormaux.add(new Indice("Candidat Unique", msg, casesASurbriller, solutions, false));
+                        messages.add("Concentrez-vous sur une case en particulier. Son environnement immédiat limite énormément ses possibilités.");
+                        messages.add("Regardez les chiffres déjà placés en formant une croix : prenez en compte à la fois la ligne et la colonne de la case vide.");
+                        messages.add("Technique du candidat unique : En croisant la ligne et la colonne de la case en surbrillance, il ne reste plus qu'un seul candidat possible pour la remplir !");
+                        
+                        indicesNormaux.add(new Indice("Candidat Unique", messages, casesASurbriller, solutions, false));
                     }
                 }
             }
@@ -71,8 +90,16 @@ public class TechniqueCandidatUnique implements TechniqueAide {
         return null;
     }
 
+    /**
+     * Identifie le chiffre manquant dans un ensemble contenant N-1 valeurs.
+     * * @param chiffresVus L'ensemble des chiffres déjà présents.
+     * @param taille      La valeur maximale possible (taille de la grille).
+     * @return Le chiffre manquant de 1 à taille.
+     */
     private int trouverChiffreManquant(Set<Integer> chiffresVus, int taille) {
-        for (int n = 1; n <= taille; n++) if (!chiffresVus.contains(n)) return n;
+        for (int n = 1; n <= taille; n++) {
+            if (!chiffresVus.contains(n)) return n;
+        }
         return -1;
     }
 }

@@ -1,5 +1,6 @@
 package fr.univ.calcudoku.commande;
 
+import java.util.List;
 import java.util.Map;
 import fr.univ.calcudoku.model.Case;
 import fr.univ.calcudoku.model.Indice;
@@ -36,7 +37,22 @@ public class CommandeAfficherIndice implements CommandeAide {
         labelMessageAide.setText("");
 
         String niveauTexte = (indice.getNiveauAide() != null) ? "Niveau " + indice.getNiveauAide() + " | " : "";
-        Text texteBase = new Text("[" + niveauTexte + indice.getNomTechnique() + "] \n" + indice.getMessageExplicatif());
+        
+        // --- MODIFICATION ICI : On adapte le message à l'étape actuelle ---
+        List<String> messages = indice.getMessagesExplicatifs();
+        String texteExplicatif = "";
+        
+        if (messages != null && !messages.isEmpty()) {
+            // L'étape commence à 1, donc l'index de la liste est (etapeActuelle - 1).
+            // Le Math.min évite les erreurs si on a moins de messages que d'étapes.
+            int index = Math.min(etapeActuelle - 1, messages.size() - 1);
+            texteExplicatif = messages.get(index);
+        } else {
+            // Sécurité de rétrocompatibilité pour les techniques non mises à jour
+            texteExplicatif = indice.getMessageExplicatif(); 
+        }
+
+        Text texteBase = new Text("[" + niveauTexte + indice.getNomTechnique() + "] \n" + texteExplicatif);
         texteBase.setFill(Color.web("#2c3e50"));
         texteBase.setStyle("-fx-font-weight: bold; -fx-font-size: 13px;");
 
