@@ -157,7 +157,13 @@ public class TechniqueResteDeGrilleType2 implements TechniqueAide {
                 } else {
                     surbrillance.addAll(casesDeLaZone);
                     for(Case c : blocCible.getListeCases()) if(!surbrillance.contains(c)) surbrillance.add(c);
-                    String msg = "Techniques de reste de grille : Ce bloc est entièrement dans cette zone, à l'exception d'une seule case \"orpheline\".\nEn soustrayant (ou divisant) la valeur de la zone par les blocs, vous trouverez cette case externe !";
+                    
+                    // NOUVEAU MESSAGE ADAPTÉ
+                    String typeCalcul = contientFois ? "le produit global" : "la somme globale";
+                    String operation = contientFois ? "multiplications" : "additions";
+                    String msg = "Reste de grille (Extérieur) : Ce bloc est entièrement dans la zone surlignée, à l'exception d'une seule case \"orpheline\".\n"
+                               + "Puisque les blocs ne contiennent que des " + operation + ", calculez " + typeCalcul + " des blocs et soustrayez-y la valeur théorique de la zone pour trouver la valeur de cette case externe !";
+                    
                     return new Indice("Reste de Grille (Extérieur)", msg, surbrillance, solutions, false);
                 }
             }

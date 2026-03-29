@@ -164,7 +164,13 @@ public class TechniqueResteDeGrilleType1 implements TechniqueAide {
                 } else {
                     surbrillance.addAll(casesDeLaZone);
                     for(Case c : blocCible.getListeCases()) if(!surbrillance.contains(c)) surbrillance.add(c);
-                    String msg = "Techniques de reste de grille : Tous les blocs sont parfaitement contenus dans cette zone, sauf un seul qui n'y possède qu'une case.\nLa somme (ou le produit) d'une ligne est toujours le même. Utilisez la différence pour trouver la case manquante !";
+                    
+                    // NOUVEAU MESSAGE ADAPTÉ
+                    String typeCalcul = contientFois ? "le produit global" : "la somme globale";
+                    String operation = contientFois ? "multiplications" : "additions";
+                    String msg = "Reste de Grille (Intérieur) : Tous les blocs sont parfaitement contenus dans cette zone, sauf un seul qui n'y possède qu'une case.\n"
+                               + "Puisque cette zone ne contient que des " + operation + ", calculez " + typeCalcul + " théorique de la zone et utilisez la différence avec les blocs pleins pour trouver la case manquante !";
+                    
                     return new Indice("Reste de Grille (Intérieur)", msg, surbrillance, solutions, false);
                 }
             }
