@@ -7,62 +7,67 @@ import fr.univ.calcudoku.model.Indice;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 
 public class TechniqueDerniereCaseBloc implements TechniqueAide {
 
     @Override
     public Indice analyser(Grille grille) {
         int taille = grille.getTaille();
-        Indice indiceNormal = null;
+        List<Indice> indicesNormaux = new ArrayList<>();
 
-        for (GroupementCases bloc : grille.getListeGroupements()) {
-            if (bloc.getListeCases().size() <= 1) continue;
-
-            for (Case caseCible : bloc.getListeCases()) {
-                boolean autresRemplies = true;
-                for (Case c : bloc.getListeCases()) {
-                    if (c != caseCible && c.getValeur() == 0) { autresRemplies = false; break; }
-                }
-
-                if (autresRemplies) {
-                    int chiffreSolution = 0;
-                    int valeurOriginale = caseCible.getValeur();
-
-                    for (int v = 1; v <= taille; v++) {
-                        if (grille.estCoupValide(caseCible.getX(), caseCible.getY(), v)) {
-                            caseCible.setValeur(v);
-                            boolean mathOk = bloc.groupementValide();
-                            caseCible.setValeur(valeurOriginale); 
-                            if (mathOk) { chiffreSolution = v; break; }
-                        }
-                    }
-
-                    if (chiffreSolution != 0) {
-                        if (valeurOriginale == chiffreSolution) continue;
-
-                        boolean contientErreur = (valeurOriginale != 0 && valeurOriginale != caseCible.getSolution());
-                        
-                        Map<Case, Integer> solutions = new HashMap<>(); // Vide
-                        List<Case> casesASurbriller = new ArrayList<>();
-                        String message;
-
-                        if (contientErreur) {
-                            casesASurbriller.add(caseCible);
-                            message = "Erreur mathématique ! Toutes les autres cases de ce bloc sont remplies.\n" +
-                                      "Pour atteindre le résultat cible, cette case doit obligatoirement avoir une valeur précise.";
-                            return new Indice("Calcul Final du Bloc", message, casesASurbriller, solutions, true);
-                        } else if (indiceNormal == null) {
-                            casesASurbriller.addAll(bloc.getListeCases());
-                            message = "Toutes les cases d'un bloc sont remplies sauf une.\n" +
-                                      "Faites le calcul mathématique avec l'opération du bloc pour déduire ce qui manque !";
-                            indiceNormal = new Indice("Calcul Final du Bloc", message, casesASurbriller, solutions, false);
-                        }
-                    }
-                }
+        Set<GroupementCases> tousLesBlocs = new HashSet<>();
+        for (int i = 0; i < taille; i++) {
+            for (int j = 0; j < taille; j++) {
+                GroupementCases bloc = grille.getCase(i, j).getGroupement();
+                if (bloc != null) tousLesBlocs.add(bloc);
             }
         }
-        return indiceNormal;
+
+        for (GroupementCases bloc : tousLesBlocs) {
+            if (bloc.getListeCases().size() <= 1) continue;
+
+            int nbCasesVides = 0;
+            boolean contientErreur = false;
+
+            for (Case c : bloc.getListeCases()) {
+                if (c.getValeur() == 0) nbCasesVides++;
+                else if (c.getValeur() != c.getSolution()) contientErreur = true;
+            }
+
+            if (nbCasesVides == 1 && !contientErreur) {
+                List<Case> surbrillance = new ArrayList<>(bloc.getListeCases());
+                Map<Case, Integer> solutions = new HashMap<>();
+                
+                String symbole = bloc.getOperation() != null ? bloc.getOperation().getSymbole() : "";
+                int cible = bloc.getResultatCible();
+                String message = "";
+
+                // Messages adaptés en fonction du signe
+                if (symbole.equals("+")) {
+                    message = "Dernière case : Il ne reste qu'une case vide dans ce bloc d'addition.\nSoustrayez la somme des cases déjà remplies au résultat cible (" + cible + ") pour trouver la valeur manquante.";
+                } else if (symbole.equals("x") || symbole.equals("*")) {
+                    message = "Dernière case : Il ne reste qu'une case vide dans ce bloc de multiplication.\nDivisez le résultat cible (" + cible + ") par le produit des cases déjà remplies pour déduire la valeur manquante.";
+                } else if (symbole.equals("-")) {
+                    message = "Dernière case : Il ne reste qu'une case vide dans ce bloc de soustraction.\nRéfléchissez à l'écart : la case manquante doit être soit plus grande, soit plus petite que celle déjà présente pour que leur différence vaille " + cible + ".";
+                } else if (symbole.equals("/")) {
+                    message = "Dernière case : Il ne reste qu'une case vide dans ce bloc de division.\nLa case manquante doit être soit un multiple, soit un diviseur de la case déjà présente pour obtenir un quotient de " + cible + ".";
+                } else {
+                    message = "Dernière case : Il ne reste qu'une seule case vide dans ce bloc.\nDéduisez sa valeur pour atteindre la cible de " + cible + ".";
+                }
+                
+                indicesNormaux.add(new Indice("Dernière Case du Bloc", message, surbrillance, solutions, false));
+            }
+        }
+
+        if (!indicesNormaux.isEmpty()) {
+            return indicesNormaux.get(new Random().nextInt(indicesNormaux.size()));
+        }
+
+        return null;
     }
 }

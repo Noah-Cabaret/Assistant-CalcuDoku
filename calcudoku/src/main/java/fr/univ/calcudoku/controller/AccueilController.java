@@ -2,7 +2,7 @@ package fr.univ.calcudoku.controller;
 
 import fr.univ.calcudoku.MainApp;
 import fr.univ.calcudoku.service.ProfileManager;
-
+import fr.univ.calcudoku.utils.Constantes;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -17,7 +17,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.FlowPane;
-import org.kordamp.ikonli.javafx.FontIcon; // <-- IMPORT IKONLI
+import org.kordamp.ikonli.javafx.FontIcon; 
 
 import java.util.Optional;
 
@@ -37,13 +37,11 @@ public class AccueilController {
     private void rafraichirAffichage() {
         boxProfils.getChildren().clear();
 
-        // Créer une carte pour chaque profil
         for (String nom : manager.listerProfils()) {
             VBox carteProfil = creerCarteProfil(nom);
             boxProfils.getChildren().add(carteProfil);
         }
 
-        // Ajouter le bouton "+"
         boxProfils.getChildren().add(creerCarteAjout());
     }
 
@@ -53,16 +51,13 @@ public class AccueilController {
         carte.setMaxHeight(VBox.USE_PREF_SIZE);
         carte.setStyle("-fx-cursor: hand; -fx-padding: 15; -fx-background-color: transparent; -fx-background-radius: 10;");
 
-        // CRÉATION DE L'ICÔNE UTILISATEUR (Remplace ImageView)
         FontIcon iconProfil = new FontIcon("fas-user-circle");
         iconProfil.setIconSize(80);
 
-        // CRÉATION DU BOUTON X
         Label boutonX = new Label("X");
         boutonX.setStyle("-fx-background-color: red; -fx-text-fill: white; -fx-background-radius: 50%; -fx-min-width: 20px; -fx-min-height: 20px; -fx-alignment: center; -fx-font-weight: bold; -fx-font-size: 10px;");
         boutonX.setVisible(false);
 
-        // ACTION DE SUPPRESSION
         boutonX.setOnMouseClicked(e -> {
             e.consume(); 
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -78,19 +73,16 @@ public class AccueilController {
             }
         });
 
-        // SUPERPOSITION 
         StackPane conteneurImage = new StackPane();
         StackPane.setAlignment(boutonX, Pos.TOP_RIGHT);
         StackPane.setMargin(boutonX, new Insets(-5, -5, 0, 0)); 
         conteneurImage.getChildren().addAll(iconProfil, boutonX);
 
-        // TEXTE
         Label labelNom = new Label(nom);
         labelNom.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #333;");
 
         carte.getChildren().addAll(conteneurImage, labelNom);
 
-        // GESTION DU HOVER
         carte.setOnMouseEntered(e -> {
             carte.setStyle("-fx-cursor: hand; -fx-background-color: #e6e6e6; -fx-padding: 15; -fx-background-radius: 10;");
             boutonX.setVisible(true); 
@@ -101,14 +93,13 @@ public class AccueilController {
             boutonX.setVisible(false); 
         });
 
-        // Clic sur la carte
         carte.setOnMouseClicked(e -> {
             manager.chargerProfil(nom);
             
             java.util.Map<String, String> stats = manager.lireStatistiques(nom);
             MainApp.modeSombreActif = Boolean.parseBoolean(stats.getOrDefault("mode_sombre", "false"));
             
-            MainApp.changerScene("/fxml/menu.fxml");
+            MainApp.changerScene(Constantes.VUE_MENU);
         });
 
         return carte;
@@ -120,7 +111,6 @@ public class AccueilController {
         carte.setMaxHeight(VBox.USE_PREF_SIZE);
         carte.setStyle("-fx-cursor: hand; -fx-padding: 15; -fx-background-color: transparent; -fx-background-radius: 10;");
 
-        // ICÔNE "+" (Remplace ImageView)
         FontIcon iconPlus = new FontIcon("fas-plus-circle");
         iconPlus.setIconSize(80);
 
@@ -148,7 +138,6 @@ public class AccueilController {
         Label titre = new Label("Calcudoku");
         titre.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: black; -fx-border-color: transparent transparent transparent; -fx-border-width: 0 0 2 0;");
 
-        // ICÔNE AVATAR POUR LE POPUP (Remplace ImageView)
         FontIcon iconPopup = new FontIcon("fas-user-circle");
         iconPopup.setIconSize(60);
 
@@ -178,8 +167,7 @@ public class AccueilController {
                         msgErreur.setVisible(true);
                         layout.requestFocus();
                     }
-                    
-                }else{
+                } else {
                     champPseudo.setStyle("-fx-background-color: #fff0f0; -fx-border-color: red; -fx-border-radius: 5; -fx-padding: 10; -fx-font-size: 14px; -fx-alignment: CENTER;");
                     msgErreur.setText("Veuillez saisir votre pseudo");
                     msgErreur.setVisible(true);

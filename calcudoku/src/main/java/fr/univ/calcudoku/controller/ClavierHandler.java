@@ -9,16 +9,15 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+/**
+ * Gestionnaire d'événements clavier pour la grille de jeu.
+ */
 public class ClavierHandler {
     
-    /**
-     * Crée un écouteur d'événements clavier propre et indépendant du contrôleur.
-     */
     public static EventHandler<KeyEvent> creerFiltre(Grille grille, Supplier<Case> getCaseSelectionnee, BiConsumer<Integer, Integer> onDeplacement, Consumer<Integer> onChiffreClique, Runnable onEffacer) {
         return event -> {
             Case caseSel = getCaseSelectionnee.get();
             
-            // 1. Gestion des déplacements et suppressions
             if (caseSel != null) {
                 int x = caseSel.getX(); 
                 int y = caseSel.getY();
@@ -33,7 +32,6 @@ public class ClavierHandler {
                     default -> {}
                 }
                 
-                // Si la case a changé, on applique l'action
                 if (x != caseSel.getX() || y != caseSel.getY()) {
                     onDeplacement.accept(x, y);
                     event.consume(); 
@@ -41,7 +39,6 @@ public class ClavierHandler {
                 }
             }
             
-            // 2. Gestion universelle des chiffres saisis
             int val = -1;
             if (event.getCode().isDigitKey()) {
                 String s = event.getCode().getName().replaceAll("\\D", "");

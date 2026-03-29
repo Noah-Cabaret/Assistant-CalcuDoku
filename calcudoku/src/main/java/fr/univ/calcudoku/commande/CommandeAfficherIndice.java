@@ -35,7 +35,6 @@ public class CommandeAfficherIndice implements CommandeAide {
     public void afficher() {
         labelMessageAide.setText("");
 
-        // On intègre le niveau d'aide directement dans le titre
         String niveauTexte = (indice.getNiveauAide() != null) ? "Niveau " + indice.getNiveauAide() + " | " : "";
         Text texteBase = new Text("[" + niveauTexte + indice.getNomTechnique() + "] \n" + indice.getMessageExplicatif());
         texteBase.setFill(Color.web("#2c3e50"));
@@ -46,8 +45,10 @@ public class CommandeAfficherIndice implements CommandeAide {
         if (etapeActuelle >= 2 && possedeNiveau2()) {
             for (Case c : indice.getCasesASurbriller()) {
                 VueCase vueCase = vueGrille.getGrilleVueCases(c.getX(), c.getY());
-                if (!vueCase.getStyleClass().contains("case-indice-surbrillance")) {
-                    vueCase.getStyleClass().add("case-indice-surbrillance");
+                // Retire l'ancienne classe si présente
+                vueCase.getStyleClass().remove("case-indice-surbrillance");
+                if (!vueCase.getStyleClass().contains("case-aide-surbrillance")) {
+                    vueCase.getStyleClass().add("case-aide-surbrillance");
                 }
             }
             
@@ -81,7 +82,8 @@ public class CommandeAfficherIndice implements CommandeAide {
         if (possedeNiveau2()) {
             for (Case c : indice.getCasesASurbriller()) {
                 VueCase vueCase = vueGrille.getGrilleVueCases(c.getX(), c.getY());
-                vueCase.getStyleClass().remove("case-indice-surbrillance");
+                vueCase.getStyleClass().remove("case-aide-surbrillance");
+                vueCase.getStyleClass().remove("case-indice-surbrillance"); // sécurité si ancienne classe
             }
         }
     }

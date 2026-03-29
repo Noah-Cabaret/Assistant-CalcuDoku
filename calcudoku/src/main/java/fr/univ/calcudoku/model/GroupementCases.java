@@ -55,6 +55,7 @@ public class GroupementCases  implements ElementVisitable {
         this.listeCases.add(c);
         mettreAJourCaseOp();     
     }
+
     /**
      * Met à jour la case contenant l'indice (la plus haut à gauche).
      */
@@ -67,6 +68,7 @@ public class GroupementCases  implements ElementVisitable {
             .min(comparateurCoords)
             .orElse(null);    
     }
+
     /**
      * Vérifie si le groupement est valide (toutes les cases remplies et l'opération correcte).
      * @return true si le groupement est correct
@@ -93,31 +95,37 @@ public class GroupementCases  implements ElementVisitable {
      * @return l'opération mathématique
      */
     public Operation getOperation() { return operation; }
+
     /**
      * Retourne le résultat cible du groupement.
      * @return le résultat attendu
      */
     public int getResultatCible() { return resultatCible; }
+
     /**
      * Définit le résultat cible du groupement.
      * @param res le nouveau résultat
      */
     public void setResultatCible(int res) { resultatCible = res ; }
+
     /**
      * Retourne la liste des cases du groupement.
      * @return une copie de la liste des cases
      */
     public List<Case> getListeCases() { return new ArrayList<>(listeCases); }
+
     /**
      * Retourne la case contenant l'indice (résultat et opération).
      * @return la case de l'indice
      */
     public Case getCaseOp() { return caseOp; }
 
+
     @Override
     public void accepter(VisiteurGrille visiteur) {
         visiteur.visiter(this);
     }
+
     /**
      * Calcule les combinaisons possibles du groupement selon l'état actuel de la grille.
      * @param grille la grille de jeu pour vérifier les contraintes de ligne/colonne
@@ -129,6 +137,7 @@ public class GroupementCases  implements ElementVisitable {
         trouverCombinaisons(new ArrayList<>(), casesDuGroupe, setUnique,grille);
         this.combinaisonsMaths.addAll(setUnique);
     }
+
     /**
      * Recherche récursivement les combinaisons valides par backtracking.
      * @param valeursActuelles nombres en cours de test pour le groupement
@@ -166,6 +175,7 @@ public class GroupementCases  implements ElementVisitable {
              }
          }
     }
+    
     /**
      * Vérifie si une valeur respecte les règles du Calcudoku (groupement, ligne et colonne).
      * @param valeur le chiffre à tester

@@ -2,6 +2,7 @@ package fr.univ.calcudoku.controller;
 
 import fr.univ.calcudoku.MainApp;
 import fr.univ.calcudoku.utils.CacheRessources;
+import fr.univ.calcudoku.utils.Constantes;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -308,6 +309,12 @@ public class ReglesTechniquesController {
 
     @FXML
     private void onRetourClick() {
-        MainApp.changerScene(pagePrecedente);
+        if (actionRetour != null) {
+            Runnable action = actionRetour;
+            actionRetour = null;
+            action.run();
+        } else {
+            MainApp.changerScene(Constantes.VUE_MENU);
+        }
     }
 }

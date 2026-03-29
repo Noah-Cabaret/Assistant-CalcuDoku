@@ -26,7 +26,6 @@ public class TechniqueBlocUnique implements TechniqueAide {
             List<List<Integer>> combinaisonsPossibles = bloc.getCombinaisonsMaths();
             
             if (combinaisonsPossibles != null && combinaisonsPossibles.size() == 1) {
-                
                 List<Integer> combinaisonUnique = combinaisonsPossibles.get(0);
                 if (aDesChiffresIdentiques(combinaisonUnique)) continue;
 
@@ -36,20 +35,34 @@ public class TechniqueBlocUnique implements TechniqueAide {
 
                 for (Case c : casesDuBloc) {
                     if (c.getValeur() == 0) nbCasesVides++;
-                    if (c.getValeur() != 0 && c.getValeur() != c.getSolution()) {
-                        contientErreur = true;
-                        casesFausses.add(c);
-                    }
+                    else if (c.getValeur() != c.getSolution()) { contientErreur = true; casesFausses.add(c); }
                 }
 
                 if (!contientErreur && nbCasesVides <= 1) continue; 
-                if (!contientErreur && nbCasesVides == 0) continue; 
 
                 if (contientErreur) {
                     String msg = "Erreur détectée ! Ce bloc ne peut être résolu qu'avec une seule combinaison de chiffres précise.\nLes chiffres en surbrillance sont incorrects.";
                     indicesErreurs.add(new Indice("Combinaison Unique", msg, casesFausses, new HashMap<>(), true));
                 } else {
-                    String msg = "Techniques de blocs uniques : Observez ce bloc. Les règles du CalcuDoku font qu'il n'existe qu'une seule combinaison de nombres possible pour atteindre ce résultat avec cette opération ! Déduisez-la.";
+                    String comboStr = combinaisonUnique.toString().replace("[", "").replace("]", "");
+                    String symbole = bloc.getOperation() != null ? bloc.getOperation().getSymbole() : "";
+                    int cible = bloc.getResultatCible();
+                    int taille = casesDuBloc.size();
+                    String msg = "";
+
+                    // Adaptation selon le signe
+                    if (symbole.equals("+")) {
+                        msg = "Combinaison unique : Observez ce bloc d'addition.\nIl n'existe qu'une seule somme possible pour faire " + cible + " avec " + taille + " cases : c'est (" + comboStr + "). Utilisez les annotations !";
+                    } else if (symbole.equals("x") || symbole.equals("*")) {
+                        msg = "Combinaison unique : Observez ce bloc de multiplication.\nLa seule façon d'obtenir " + cible + " avec " + taille + " cases est d'utiliser les chiffres (" + comboStr + "). Annotez ces candidats.";
+                    } else if (symbole.equals("-")) {
+                        msg = "Combinaison unique : Observez ce bloc de soustraction.\nCompte tenu de la taille de la grille, la seule paire de chiffres dont la différence est exactement " + cible + " est (" + comboStr + "). Annotez-les !";
+                    } else if (symbole.equals("/")) {
+                        msg = "Combinaison unique : Observez ce bloc de division.\nLa seule paire de chiffres donnant un quotient de " + cible + " est (" + comboStr + "). Utilisez le mode annotation.";
+                    } else {
+                        msg = "Combinaison unique : Observez ce bloc. Il n'existe qu'une seule combinaison (" + comboStr + ") pour atteindre " + cible + " !\nUtilisez le mode annotation.";
+                    }
+                    
                     indicesNormaux.add(new Indice("Combinaison Unique", msg, casesDuBloc, new HashMap<>(), false));
                 }
             }
@@ -65,9 +78,7 @@ public class TechniqueBlocUnique implements TechniqueAide {
     private boolean aDesChiffresIdentiques(List<Integer> combinaison) {
         if (combinaison == null || combinaison.isEmpty()) return false;
         Set<Integer> valeursVues = new HashSet<>();
-        for (Integer valeur : combinaison) {
-            if (!valeursVues.add(valeur)) return true;
-        }
+        for (Integer valeur : combinaison) { if (!valeursVues.add(valeur)) return true; }
         return false;
     }
 }

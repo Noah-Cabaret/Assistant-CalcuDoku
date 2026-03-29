@@ -4,8 +4,11 @@ import fr.univ.calcudoku.model.Grille;
 import fr.univ.calcudoku.model.GroupementCases;
 import fr.univ.calcudoku.model.Case;
 
+/**
+ * Interface définissant les méthodes de visite pour les composants de la grille.
+ */
 public interface VisiteurGrille {
-    public void visiter(Grille g);
-    public void visiter(GroupementCases groupement);
-    public void visiter(Case c);
+    void visiter(Grille g);
+    void visiter(GroupementCases groupement);
+    void visiter(Case c);
 }

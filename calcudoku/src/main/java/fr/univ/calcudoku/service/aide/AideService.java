@@ -13,11 +13,9 @@ import java.util.List;
  * Évite de bloquer l'interface utilisateur pendant l'analyse.
  */
 public class AideService extends Service<List<Indice>> {
-    /** Moteur d'analyse pour les indices */
+    
     private final MoteurAide moteur;
-    /** Copie de la grille à analyser */
     private Grille grilleCopie;
-    /** Niveau de difficulté de l'aide demandée (peut être null pour toutes les chercher) */
     private NiveauAide niveauCible;
 
     /**
@@ -49,11 +47,11 @@ public class AideService extends Service<List<Indice>> {
         this.restart();
     }
 
-    @Override
     /**
      * Crée la tâche d'analyse exécutée en arrière-plan.
      * @return la tâche retournant la liste des indices trouvés
      */
+    @Override
     protected Task<List<Indice>> createTask() {
         return new Task<>() {
             @Override

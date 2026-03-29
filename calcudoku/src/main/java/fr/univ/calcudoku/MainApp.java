@@ -34,7 +34,6 @@ public class MainApp extends Application {
     }
 
     // Méthode pour changer de page
-    // Méthode pour changer de page
     public static void changerScene(String fxmlPath) {
         try {
             FXMLLoader loader = new FXMLLoader(MainApp.class.getResource(fxmlPath));
@@ -50,15 +49,15 @@ public class MainApp extends Application {
                 scene.setRoot(root);
             }
 
-            // 2. --- GESTION DU THÈME SOMBRE ---
-            // Maintenant qu'on est SÛR que la scène existe, on applique ou retire le CSS
-            String cssPath = MainApp.class.getResource("/styles/sombre.css").toExternalForm();
+            // 2. --- GESTION DU THÈME SOMBRE/CLAIR ---
+            // On retire tous les stylesheets pour éviter les conflits
+            scene.getStylesheets().clear();
+            String cssClair = MainApp.class.getResource("/styles/style.css").toExternalForm();
+            String cssSombre = MainApp.class.getResource("/styles/sombre.css").toExternalForm();
             if (modeSombreActif) {
-                if (!scene.getStylesheets().contains(cssPath)) {
-                    scene.getStylesheets().add(cssPath);
-                }
+                scene.getStylesheets().add(cssSombre);
             } else {
-                scene.getStylesheets().remove(cssPath); // Sécurité : on l'enlève si le mode clair est actif
+                scene.getStylesheets().add(cssClair);
             }
 
             // 3. MAINTENIR LE PLEIN ÉCRAN
