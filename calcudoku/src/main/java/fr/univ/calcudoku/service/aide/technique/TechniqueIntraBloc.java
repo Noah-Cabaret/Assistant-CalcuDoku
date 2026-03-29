@@ -12,9 +12,15 @@ import java.util.Set;
 /**
  * Classe parente abstraite pour toutes les techniques Intra-Bloc.
  * Fournit le moteur de filtrage intelligent (Backtracking) et la détection de doublons.
+ * Cette classe ne retourne pas d'Indice directement.
  */
 public abstract class TechniqueIntraBloc implements TechniqueAide {
 
+    /**
+     * Vérifie si une combinaison mathématique possède des chiffres en double.
+     * @param combinaison La combinaison à vérifier.
+     * @return vrai si la combinaison contient des doublons.
+     */
     protected boolean aDesChiffresIdentiques(List<Integer> combinaison) {
         if (combinaison == null || combinaison.isEmpty()) return false;
         Set<Integer> valeursVues = new HashSet<>();
@@ -25,8 +31,11 @@ public abstract class TechniqueIntraBloc implements TechniqueAide {
     }
 
     /**
-     * NOUVEAU : Filtre et renvoie uniquement les combinaisons qui sont encore 
-     * possibles sans entrer en conflit avec la grille actuelle.
+     * Filtre et renvoie uniquement les combinaisons qui sont encore 
+     * possibles sans entrer en conflit avec la grille actuelle (Topologie + Valeurs).
+     * @param grille La grille analysée.
+     * @param bloc   Le bloc à tester.
+     * @return La liste des combinaisons valides restantes.
      */
     protected List<List<Integer>> getCombinaisonsValides(Grille grille, GroupementCases bloc) {
         List<List<Integer>> combinaisonsPossibles = bloc.getCombinaisonsMaths();

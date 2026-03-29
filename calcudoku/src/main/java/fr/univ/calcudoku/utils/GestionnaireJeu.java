@@ -133,8 +133,6 @@ public class GestionnaireJeu {
             stage.setTitle(titre);
             stage.show();
 
-            if (!stage.isMaximized()) stage.setMaximized(true);
-
         } catch (Exception e) { e.printStackTrace(); }
     }
 

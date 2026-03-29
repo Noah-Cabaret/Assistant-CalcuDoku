@@ -12,8 +12,18 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+/**
+ * Technique d'aide permettant d'identifier les blocs de la grille
+ * qui ne peuvent être résolus qu'avec une seule combinaison de chiffres.
+ */
 public class TechniqueBlocUnique implements TechniqueAide {
 
+    /**
+     * Analyse la grille pour détecter un bloc ayant une combinaison mathématique unique.
+     * Fournit un indice progressif s'adressant directement au joueur pour le guider.
+     * * @param grille La grille actuelle à analyser
+     * @return Un Indice contenant l'aide, ou null si la technique ne trouve rien
+     */
     @Override
     public Indice analyser(Grille grille) {
         List<Indice> indicesErreurs = new ArrayList<>();
@@ -40,30 +50,39 @@ public class TechniqueBlocUnique implements TechniqueAide {
 
                 if (!contientErreur && nbCasesVides <= 1) continue; 
 
+                List<String> messages = new ArrayList<>();
+
                 if (contientErreur) {
-                    String msg = "Erreur détectée ! Ce bloc ne peut être résolu qu'avec une seule combinaison de chiffres précise.\nLes chiffres en surbrillance sont incorrects.";
-                    indicesErreurs.add(new Indice("Combinaison Unique", msg, casesFausses, new HashMap<>(), true));
+                    // Progression de l'indice en cas d'erreur
+                    messages.add("Une incohérence s'est glissée dans l'un de vos blocs. Réfléchissez aux différentes façons d'atteindre sa cible.");
+                    messages.add("Vérifiez vos calculs. Les chiffres que vous avez placés ne permettent pas d'atteindre la cible avec l'unique combinaison possible de ce bloc.");
+                    messages.add("Les cases en surbrillance sont incorrectes. En effet, ce bloc ne peut être résolu qu'avec une seule combinaison de chiffres bien précise.");
+                    indicesErreurs.add(new Indice("Combinaison Unique", messages, casesFausses, new HashMap<>(), true));
                 } else {
+                    // Progression pour un bloc à déduire
                     String comboStr = combinaisonUnique.toString().replace("[", "").replace("]", "");
                     String symbole = bloc.getOperation() != null ? bloc.getOperation().getSymbole() : "";
                     int cible = bloc.getResultatCible();
                     int taille = casesDuBloc.size();
-                    String msg = "";
-
-                    // Adaptation selon le signe
+                    
+                    messages.add("Observez bien la grille. Certains blocs sont de bons points de départ car ils ont une contrainte très forte.");
+                    
+                    // Adaptation du message intermédiaire (logique) en fonction de l'opérateur
                     if (symbole.equals("+")) {
-                        msg = "Combinaison unique : Observez ce bloc d'addition.\nIl n'existe qu'une seule somme possible pour faire " + cible + " avec " + taille + " cases : c'est (" + comboStr + "). Utilisez les annotations !";
+                        messages.add("Il n'existe qu'une seule somme mathématique possible pour faire " + cible + " avec " + taille + " cases.");
                     } else if (symbole.equals("x") || symbole.equals("*")) {
-                        msg = "Combinaison unique : Observez ce bloc de multiplication.\nLa seule façon d'obtenir " + cible + " avec " + taille + " cases est d'utiliser les chiffres (" + comboStr + "). Annotez ces candidats.";
+                        messages.add("La seule façon d'obtenir " + cible + " avec " + taille + " cases est d'utiliser une seule combinaison de multiplication.");
                     } else if (symbole.equals("-")) {
-                        msg = "Combinaison unique : Observez ce bloc de soustraction.\nCompte tenu de la taille de la grille, la seule paire de chiffres dont la différence est exactement " + cible + " est (" + comboStr + "). Annotez-les !";
+                        messages.add("Compte tenu de la taille de la grille, une seule paire de chiffres a une différence exacte de " + cible + ".");
                     } else if (symbole.equals("/")) {
-                        msg = "Combinaison unique : Observez ce bloc de division.\nLa seule paire de chiffres donnant un quotient de " + cible + " est (" + comboStr + "). Utilisez le mode annotation.";
+                        messages.add("Il n'existe qu'une seule paire de chiffres dont le quotient donne exactement " + cible + ".");
                     } else {
-                        msg = "Combinaison unique : Observez ce bloc. Il n'existe qu'une seule combinaison (" + comboStr + ") pour atteindre " + cible + " !\nUtilisez le mode annotation.";
+                        messages.add("Il n'existe qu'une seule combinaison pour atteindre la cible de " + cible + " dans ce bloc.");
                     }
                     
-                    indicesNormaux.add(new Indice("Combinaison Unique", msg, casesDuBloc, new HashMap<>(), false));
+                    messages.add("La combinaison unique est (" + comboStr + "). N'hésitez pas à utiliser le mode annotation sur les cases en surbrillance !");
+                    
+                    indicesNormaux.add(new Indice("Combinaison Unique", messages, casesDuBloc, new HashMap<>(), false));
                 }
             }
         }
@@ -75,6 +94,11 @@ public class TechniqueBlocUnique implements TechniqueAide {
         return null;
     }
 
+    /**
+     * Vérifie si une combinaison contient des chiffres en double.
+     * * @param combinaison La combinaison de chiffres à vérifier
+     * @return true si au moins un chiffre est en double, false sinon
+     */
     private boolean aDesChiffresIdentiques(List<Integer> combinaison) {
         if (combinaison == null || combinaison.isEmpty()) return false;
         Set<Integer> valeursVues = new HashSet<>();

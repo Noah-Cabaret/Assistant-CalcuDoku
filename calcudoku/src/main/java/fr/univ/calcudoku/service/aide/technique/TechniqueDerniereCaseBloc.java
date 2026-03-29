@@ -13,8 +13,18 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+/**
+ * Technique d'aide : Dernière Case d'un Bloc.
+ * Identifie un bloc mathématique où il ne manque plus qu'une seule case.
+ * Le joueur peut alors déduire la valeur en appliquant l'opération inverse.
+ */
 public class TechniqueDerniereCaseBloc implements TechniqueAide {
 
+    /**
+     * Analyse la grille pour trouver un bloc presque complet.
+     * @param grille La grille à analyser.
+     * @return Un Indice contenant les messages progressifs.
+     */
     @Override
     public Indice analyser(Grille grille) {
         int taille = grille.getTaille();
@@ -42,25 +52,31 @@ public class TechniqueDerniereCaseBloc implements TechniqueAide {
             if (nbCasesVides == 1 && !contientErreur) {
                 List<Case> surbrillance = new ArrayList<>(bloc.getListeCases());
                 Map<Case, Integer> solutions = new HashMap<>();
+                List<String> messages = new ArrayList<>();
                 
                 String symbole = bloc.getOperation() != null ? bloc.getOperation().getSymbole() : "";
                 int cible = bloc.getResultatCible();
-                String message = "";
 
-                // Messages adaptés en fonction du signe
+                messages.add("Un bloc est presque entièrement rempli. C'est le moment idéal pour utiliser les mathématiques.");
+                
                 if (symbole.equals("+")) {
-                    message = "Dernière case : Il ne reste qu'une case vide dans ce bloc d'addition.\nSoustrayez la somme des cases déjà remplies au résultat cible (" + cible + ") pour trouver la valeur manquante.";
+                    messages.add("Il ne reste qu'une case vide dans ce bloc d'addition.");
+                    messages.add("Dernière case : Soustrayez la somme des cases déjà remplies au résultat cible (" + cible + ") pour trouver la valeur manquante du bloc en surbrillance.");
                 } else if (symbole.equals("x") || symbole.equals("*")) {
-                    message = "Dernière case : Il ne reste qu'une case vide dans ce bloc de multiplication.\nDivisez le résultat cible (" + cible + ") par le produit des cases déjà remplies pour déduire la valeur manquante.";
+                    messages.add("Il ne reste qu'une case vide dans ce bloc de multiplication.");
+                    messages.add("Dernière case : Divisez le résultat cible (" + cible + ") par le produit des cases déjà remplies pour déduire la valeur du bloc en surbrillance.");
                 } else if (symbole.equals("-")) {
-                    message = "Dernière case : Il ne reste qu'une case vide dans ce bloc de soustraction.\nRéfléchissez à l'écart : la case manquante doit être soit plus grande, soit plus petite que celle déjà présente pour que leur différence vaille " + cible + ".";
+                    messages.add("Il ne reste qu'une case vide dans ce bloc de soustraction.");
+                    messages.add("Dernière case : La case en surbrillance doit être soit plus grande, soit plus petite que l'autre pour avoir une différence de " + cible + ".");
                 } else if (symbole.equals("/")) {
-                    message = "Dernière case : Il ne reste qu'une case vide dans ce bloc de division.\nLa case manquante doit être soit un multiple, soit un diviseur de la case déjà présente pour obtenir un quotient de " + cible + ".";
+                    messages.add("Il ne reste qu'une case vide dans ce bloc de division.");
+                    messages.add("Dernière case : La case manquante en surbrillance doit être un multiple ou un diviseur de l'autre pour obtenir un quotient de " + cible + ".");
                 } else {
-                    message = "Dernière case : Il ne reste qu'une seule case vide dans ce bloc.\nDéduisez sa valeur pour atteindre la cible de " + cible + ".";
+                    messages.add("Il ne reste qu'une seule case vide dans ce bloc.");
+                    messages.add("Dernière case : Déduisez la valeur de la case en surbrillance pour atteindre la cible de " + cible + ".");
                 }
                 
-                indicesNormaux.add(new Indice("Dernière Case du Bloc", message, surbrillance, solutions, false));
+                indicesNormaux.add(new Indice("Dernière Case du Bloc", messages, surbrillance, solutions, false));
             }
         }
 
