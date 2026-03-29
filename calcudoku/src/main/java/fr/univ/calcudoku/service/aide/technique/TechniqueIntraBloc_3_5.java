@@ -1,64 +1,76 @@
 package fr.univ.calcudoku.service.aide.technique;
 
+import fr.univ.calcudoku.model.Case;
 import fr.univ.calcudoku.model.Grille;
 import fr.univ.calcudoku.model.GroupementCases;
 import fr.univ.calcudoku.model.Indice;
-import fr.univ.calcudoku.model.Case;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
-/**
- * Technique : Intra Bloc (Grand L).
- * Analyse un grand bloc (>=4) en "L" qui nécessite un chiffre en double.
- * L'alignement de la ligne principale du bloc restreint les places du doublon.
- */
 public class TechniqueIntraBloc_3_5 extends TechniqueIntraBloc {
 
     @Override
     public Indice analyser(Grille grille) {
-        Indice indiceNormal = null;
+        List<Indice> indicesErreurs = new ArrayList<>();
+        List<Indice> indicesNormaux = new ArrayList<>();
 
         for (GroupementCases bloc : grille.getListeGroupements()) {
             
-            // On vérifie la topologie : >= 4 cases, formant une ligne avec un débordement
             if (bloc.getListeCases().size() >= 4 && verifierTopologieGrandL(bloc)) {
                 
-                List<Integer> combinaisonUnique = getUniqueCombinaison(bloc);
+                List<List<Integer>> combosPossibles = bloc.getCombinaisonsMaths();
+                List<List<Integer>> combosValides = getCombinaisonsValides(grille, bloc);
                 
-                if (combinaisonUnique != null && aDesChiffresIdentiques(combinaisonUnique)) {
+                // Si la grille a réduit les possibilités à UNE SEULE et qu'elle a un doublon
+                if (combosValides.size() == 1) {
+                    List<Integer> combinaisonUnique = combosValides.get(0);
                     
-                    boolean contientErreur = false;
-                    List<Case> casesFausses = new ArrayList<>();
-                    Map<Case, Integer> solutions = new HashMap<>();
-
-                    for (Case c : bloc.getListeCases()) {
+                    if (aDesChiffresIdentiques(combinaisonUnique)) {
                         
-                        if (c.getValeur() != 0 && c.getValeur() != c.getSolution()) {
-                            contientErreur = true;
-                            casesFausses.add(c);
+                        int nbCasesVides = 0;
+                        boolean contientErreur = false;
+                        List<Case> casesFausses = new ArrayList<>();
+
+                        for (Case c : bloc.getListeCases()) {
+                            if (c.getValeur() == 0) nbCasesVides++;
+                            else if (c.getValeur() != c.getSolution()) { contientErreur = true; casesFausses.add(c); }
                         }
-                    }
 
-                    boolean estParfait = true;
-                    for (Case c : bloc.getListeCases()) {
-                        if (c.getValeur() != c.getSolution()) estParfait = false;
-                    }
+                        if (!contientErreur && nbCasesVides <= 1) continue;
 
-                    if (!estParfait) {
+                        Map<Case, Integer> solutions = new HashMap<>();
+
                         if (contientErreur) {
-                            return new Indice("Technique Intra-bloc", "Erreur détectée ! Ce bloc allongé force l'utilisation d'un doublon.\nCertains de ces chiffres sont mal placés pour éviter les conflits.", casesFausses, solutions, true);
-                        } else if (indiceNormal == null) {
-                            String msg = "Techniques intra-bloc : Observez ce grand bloc en 'L' allongé. Sa seule combinaison nécessite des doublons !\nVous devez ruser pour placer ces doublons sans violer les règles sur la ligne principale du bloc.";
-                            indiceNormal = new Indice("Technique Intra-bloc", msg, bloc.getListeCases(), solutions, false);
+                            String msg = "Erreur détectée ! Ce bloc allongé force l'utilisation d'un doublon en fonction de la grille actuelle.\nCertains chiffres sont mal placés pour éviter les conflits.";
+                            indicesErreurs.add(new Indice("Technique Intra-bloc (Grand L)", msg, casesFausses, solutions, true));
+                        } else {
+                            String comboStr = combinaisonUnique.toString().replace("[", "").replace("]", "");
+                            String symbole = bloc.getOperation() != null ? bloc.getOperation().getSymbole() : "";
+                            int cible = bloc.getResultatCible();
+                            String msg;
+
+                            if (combosPossibles.size() == 1) {
+                                msg = "Technique intra-bloc : Observez ce grand bloc. Pour faire " + cible + " avec (" + symbole + "), sa seule combinaison est (" + comboStr + ") qui contient des doublons !\nVous devez ruser pour placer ces doublons sans violer les règles sur sa ligne principale.";
+                            } else {
+                                msg = "Déduction intra-bloc : Grâce aux autres chiffres de la grille, il ne reste plus qu'une seule combinaison valable pour ce grand bloc : (" + comboStr + ") !\nElle nécessite des doublons que vous devez placer astucieusement pour éviter les conflits.";
+                            }
+                            
+                            indicesNormaux.add(new Indice("Technique Intra-bloc (Grand L)", msg, bloc.getListeCases(), solutions, false));
                         }
                     }
                 }
             }
         }
-        return indiceNormal; 
+
+        Random rand = new Random();
+        if (!indicesErreurs.isEmpty()) return indicesErreurs.get(rand.nextInt(indicesErreurs.size()));
+        if (!indicesNormaux.isEmpty()) return indicesNormaux.get(rand.nextInt(indicesNormaux.size()));
+
+        return null; 
     }
 
     private boolean verifierTopologieGrandL(GroupementCases bloc) {
@@ -72,7 +84,6 @@ public class TechniqueIntraBloc_3_5 extends TechniqueIntraBloc {
             
             for (int j = 0; j < taille; j++) {
                 if (i == j) continue; 
-                
                 if (commonX == null) commonX = cases.get(j).getX();
                 else if (commonX != cases.get(j).getX()) commonX = -1; 
                 
