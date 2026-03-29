@@ -217,10 +217,26 @@ public class ProfilController {
             }
         }
 
-        // --- CORRECTION DU BOUTON DÉCONNEXION (Version Simplifiée) ---
+        // --- CORRECTION DU BOUTON DÉCONNEXION---
         if (btnDeconnexion != null) {
             if (btnDeconnexion.getGraphic() instanceof FontIcon) {
                 ((FontIcon) btnDeconnexion.getGraphic()).setIconColor(couleurC);
+            }
+        }
+
+        // --- CORRECTION DES BORDURES DES BOÎTES ---
+        String couleurBordure = activer ? "white" : "black";
+        
+        // 1. La boîte "Partie en cours" (C'est le 2ème élément de la boxCentrale)
+        if (boxCentrale.getChildren().size() > 1 && boxCentrale.getChildren().get(1) instanceof VBox) {
+            boxCentrale.getChildren().get(1).setStyle("-fx-border-color: " + couleurBordure + "; -fx-border-radius: 20; -fx-border-width: 1; -fx-padding: 10;");
+        }
+        
+        // 2. Les 3 boîtes du haut (Touches, Stats, Paramètres)
+        if (boxCentrale.getChildren().size() > 0 && boxCentrale.getChildren().get(0) instanceof HBox) {
+            HBox ligneHaut = (HBox) boxCentrale.getChildren().get(0);
+            for (javafx.scene.Node boite : ligneHaut.getChildren()) {
+                boite.setStyle("-fx-border-color: " + couleurBordure + "; -fx-border-radius: 20; -fx-border-width: 1; -fx-padding: 10;");
             }
         }
         

@@ -7,7 +7,7 @@
 
 /* On force le texte à devenir blanc clair */
 .label, .radio-button {
-    -fx-text-fill: #e0e0e0;
+    -fx-text-fill: #ffffff;
 }
 
 /* Si les cadres noirs de votre profil deviennent invisibles, on les force en gris clair */
