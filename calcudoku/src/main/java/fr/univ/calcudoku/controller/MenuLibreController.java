@@ -3,6 +3,7 @@ package fr.univ.calcudoku.controller;
 import fr.univ.calcudoku.MainApp;
 import fr.univ.calcudoku.model.DonneesNiveau;
 import fr.univ.calcudoku.utils.CacheRessources;
+import fr.univ.calcudoku.utils.Constantes;
 import fr.univ.calcudoku.utils.GestionnaireJeu;
 import javafx.fxml.FXML;
 import javafx.scene.control.Toggle;
@@ -91,7 +92,6 @@ public class MenuLibreController {
     private VBox creerCarteNiveau(DonneesNiveau niveau, String baseName, int index) {
         // 1. Récupérer le nom du profil actif
         String nomProfil = MainApp.getProfileManager().getProfilActif();
-        if (nomProfil == null) nomProfil = "Invité";
 
         // 2. Définir les chemins de sauvegarde potentiels
         File fichierJsonSave = new File("profils/" + nomProfil + "/parties/" + baseName + ".json");
@@ -171,12 +171,12 @@ public class MenuLibreController {
     @FXML 
     private void onParametresClick() { 
         // On prévient le Profil la page a revenir
-        ProfilController.pagePrecedente = "/fxml/menu_libre.fxml"; 
-        MainApp.changerScene("/fxml/profil.fxml"); 
+        ProfilController.pagePrecedente = Constantes.VUE_MENU_LIBRE; 
+        MainApp.changerScene(Constantes.VUE_PROFIL); 
     }
     
     @FXML 
     private void onRetourClick() { 
-        MainApp.changerScene("/fxml/menu.fxml"); 
+        MainApp.changerScene(Constantes.VUE_MENU); 
     }
 }

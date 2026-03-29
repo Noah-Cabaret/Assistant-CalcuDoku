@@ -28,7 +28,6 @@ public class ProfilController {
     @FXML private Label lblNomProfil;
     @FXML private VBox boxCentrale;
     
-    // --- NOUVEAU : Labels des statistiques complets ---
     @FXML private Label lblPartiesJouees, lblVictoires, lblTempsMoyen, lblTauxReussite, lblNiveauAventure, lblDifficulteMax, lblMeilleurScore;
     
     @FXML private RadioButton radioSombre, radioClair;
@@ -41,7 +40,6 @@ public class ProfilController {
     public void initialize() {
         ProfileManager manager = MainApp.getProfileManager();
         String nomActuel = manager.getProfilActif();
-        if (nomActuel == null) nomActuel = "Invité";
 
         lblNomProfil.setText(nomActuel);
         chargerAvatar();
@@ -149,7 +147,6 @@ public class ProfilController {
     private void chargerStatistiquesProfil(String nom, ProfileManager manager) {
         Map<String, String> stats = manager.lireStatistiques(nom);
 
-        // --- NOUVEAU : Affichage de toutes les statistiques ---
         if (lblPartiesJouees != null) lblPartiesJouees.setText("Parties jouées : " + stats.getOrDefault("parties_jouees", "0"));
         if (lblVictoires != null) lblVictoires.setText("Victoires : " + stats.getOrDefault("victoires", "0"));
         lblTempsMoyen.setText("Temps moyen : " + formatTemps(stats.getOrDefault("temps_moyen", "0")));
@@ -181,7 +178,6 @@ public class ProfilController {
             int totalSecondes = Integer.parseInt(s);
             int minutes = totalSecondes / 60;
             int secondes = totalSecondes % 60;
-            // %02d permet de forcer l'affichage sur 2 chiffres (ex: 05:09 au lieu de 5:9)
             return String.format("%02d:%02d", minutes, secondes);
         } catch (Exception e) { 
             return "00:00"; 

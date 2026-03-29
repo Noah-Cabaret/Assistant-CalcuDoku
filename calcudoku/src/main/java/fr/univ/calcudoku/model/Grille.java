@@ -107,7 +107,7 @@ public class Grille implements ElementVisitable {
      */
     public Case getCase(int x,int y){
         if(x < 0 || x >= taille || y < 0 || y >= taille){
-            throw new IllegalArgumentException("Coordonnées hors grille : " + x + "," + y);     //throw renvoies une erreur propre
+            throw new IllegalArgumentException("Coordonnées hors grille : " + x + "," + y);
         }
         return matriceGrille[x][y];
     }
@@ -152,33 +152,30 @@ public class Grille implements ElementVisitable {
      * @return true si le coup est valide
      */
     public boolean estCoupValide(int x, int y, int valeur) {
-    if (valeur == 0) return true; 
+        if (valeur == 0) return true; 
 
-    for (int i = 0; i < taille; i++) {
-        if (i != x && matriceGrille[i][y].getValeur() == valeur) {
-            return false; 
+        for (int i = 0; i < taille; i++) {
+            if (i != x && matriceGrille[i][y].getValeur() == valeur) {
+                return false; 
+            }
         }
-    }
 
-    for (int j = 0; j < taille; j++) {
-        if (j != y && matriceGrille[x][j].getValeur() == valeur) {
-            return false; 
+        for (int j = 0; j < taille; j++) {
+            if (j != y && matriceGrille[x][j].getValeur() == valeur) {
+                return false; 
+            }
         }
+        return true;
     }
-    return true;
-}
 
     @Override
     public void accepter(VisiteurGrille visiteur) {
-        // Le visiteur analyse la grille globale
         visiteur.visiter(this);
         
-        // On propage le visiteur à tous les groupements
         for (GroupementCases g : listeGroupements) {
             g.accepter(visiteur);
         }
         
-        // Et on le propage à toutes les cases
         for (int x = 0; x < taille; x++) {
             for (int y = 0; y < taille; y++) {
                 matriceGrille[x][y].accepter(visiteur);

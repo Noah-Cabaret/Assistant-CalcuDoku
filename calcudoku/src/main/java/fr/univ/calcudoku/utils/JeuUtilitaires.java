@@ -32,7 +32,7 @@ public class JeuUtilitaires {
         try {
             if (calcPopup != null && calcPopup.isShowing()) { calcPopup.hide(); return; }
             if (calcPopup == null) {
-                Parent root = FXMLLoader.load(JeuUtilitaires.class.getResource("/fxml/VueCalculatrice.fxml"));
+                Parent root = FXMLLoader.load(JeuUtilitaires.class.getResource(Constantes.VUE_CALCULATRICE));
                 calcPopup = new Popup();
                 calcPopup.getContent().add(root);
                 calcPopup.setAutoHide(false); 
@@ -64,11 +64,11 @@ public class JeuUtilitaires {
 
             // Nettoyage visuel temporaire
             if (masquerAide != null) masquerAide.run();
-            if (vueCaseSelectionnee != null) vueCaseSelectionnee.getStyleClass().remove("case-selectionnee");
+            if (vueCaseSelectionnee != null) vueCaseSelectionnee.getStyleClass().remove(Constantes.CSS_CASE_SELECTIONNEE);
             
             for (int y = 0; y < grilleModele.getTaille(); y++) {
                 for (int x = 0; x < grilleModele.getTaille(); x++) {
-                    vueGrille.getGrilleVueCases(x, y).getStyleClass().remove("case-erreur");
+                    vueGrille.getGrilleVueCases(x, y).getStyleClass().remove(Constantes.CSS_CASE_ERREUR);
                 }
             }
             
@@ -79,7 +79,7 @@ public class JeuUtilitaires {
             ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", fichierFinal);
             
             // Restauration de la vue
-            if (vueCaseSelectionnee != null) vueCaseSelectionnee.getStyleClass().add("case-selectionnee");
+            if (vueCaseSelectionnee != null) vueCaseSelectionnee.getStyleClass().add(Constantes.CSS_CASE_SELECTIONNEE);
         } catch (Exception e) { e.printStackTrace(); }
     }
 

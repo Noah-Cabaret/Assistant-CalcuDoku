@@ -2,6 +2,7 @@ package fr.univ.calcudoku.controller;
 
 import fr.univ.calcudoku.MainApp;
 import fr.univ.calcudoku.utils.CacheRessources;
+import fr.univ.calcudoku.utils.Constantes;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -302,7 +303,7 @@ public class ReglesTechniquesController {
             actionRetour = null;
             action.run();
         } else {
-            MainApp.changerScene("/fxml/menu.fxml");
+            MainApp.changerScene(Constantes.VUE_MENU);
         }
     }
 }
