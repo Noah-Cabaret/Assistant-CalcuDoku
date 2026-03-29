@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 /**
@@ -22,15 +23,35 @@ public class TechniqueResteDeGrilleType1 implements TechniqueAide {
     @Override
     public Indice analyser(Grille grille) {
         int taille = grille.getTaille();
-        Indice indiceNormal = null;
+        
+        // Listes pour stocker TOUS les indices trouvés sur la grille
+        List<Indice> indicesErreurs = new ArrayList<>();
+        List<Indice> indicesNormaux = new ArrayList<>();
 
+        // Parcours complet de la grille
         for (int i = 0; i < taille; i++) {
             Indice indLigne = analyserLigneOuColonne(grille, i, true);
-            if (indLigne != null) { if (indLigne.aUneErreur()) return indLigne; if (indiceNormal == null) indiceNormal = indLigne; }
+            if (indLigne != null) { 
+                if (indLigne.aUneErreur()) indicesErreurs.add(indLigne); 
+                else indicesNormaux.add(indLigne); 
+            }
+            
             Indice indCol = analyserLigneOuColonne(grille, i, false);
-            if (indCol != null) { if (indCol.aUneErreur()) return indCol; if (indiceNormal == null) indiceNormal = indCol; }
+            if (indCol != null) { 
+                if (indCol.aUneErreur()) indicesErreurs.add(indCol); 
+                else indicesNormaux.add(indCol); 
+            }
         }
-        return indiceNormal;
+        
+        // Sélection aléatoire d'un seul indice (priorité aux erreurs s'il y en a)
+        Random random = new Random();
+        if (!indicesErreurs.isEmpty()) {
+            return indicesErreurs.get(random.nextInt(indicesErreurs.size()));
+        } else if (!indicesNormaux.isEmpty()) {
+            return indicesNormaux.get(random.nextInt(indicesNormaux.size()));
+        }
+
+        return null;
     }
 
     private Indice analyserLigneOuColonne(Grille grille, int index, boolean estLigne) {
@@ -44,6 +65,30 @@ public class TechniqueResteDeGrilleType1 implements TechniqueAide {
             casesDeLaZone.add(c);
             if (c.getValeur() == 0) nbCasesVides++;
             if (c.getGroupement() != null) blocsTouches.add(c.getGroupement());
+        }
+
+        // Vérification exclusive des opérateurs (+ uniquement OU x uniquement)
+        boolean contientPlus = false;
+        boolean contientFois = false;
+        boolean operateurInvalide = false;
+
+        for (GroupementCases b : blocsTouches) {
+            if (b.getListeCases().size() > 1 && b.getOperation() != null) {
+                String sym = b.getOperation().getSymbole();
+                if (sym.equals("+")) {
+                    contientPlus = true;
+                } else if (sym.equals("x") || sym.equals("*")) {
+                    contientFois = true;
+                } else {
+                    operateurInvalide = true;
+                    break; // Présence d'une soustraction ou division
+                }
+            }
+        }
+
+        // Si on a un opérateur invalide ou un mélange de + et de x, on annule pour cette zone
+        if (operateurInvalide || (contientPlus && contientFois)) {
+            return null;
         }
 
         List<GroupementCases> blocsPartiels = new ArrayList<>();
@@ -64,22 +109,26 @@ public class TechniqueResteDeGrilleType1 implements TechniqueAide {
             // On vérifie qu'on peut faire le calcul purement mathématique (somme ou produit constant)
             if (compteurInterne == 1 && blocCible.getListeCases().size() > 1) {
                 
-                boolean calculSommeValide = true;
-                int sommeBlocsInternes = 0;
-                for (GroupementCases b : blocsTouches) {
-                    if (b != blocCible) {
-                        int s = getSommeBlocConstante(b);
-                        if (s == -1) { calculSommeValide = false; break; }
-                        sommeBlocsInternes += s;
-                    }
-                }
-
                 int reponseExacte = -1;
                 
-                if (calculSommeValide) {
-                    int sommeTheoriqueZone = taille * (taille + 1) / 2;
-                    reponseExacte = sommeTheoriqueZone - sommeBlocsInternes;
-                } else {
+                // Si la ligne est orientée Addition (ou neutre avec cases uniques)
+                if (!contientFois) {
+                    boolean calculSommeValide = true;
+                    int sommeBlocsInternes = 0;
+                    for (GroupementCases b : blocsTouches) {
+                        if (b != blocCible) {
+                            int s = getSommeBlocConstante(b);
+                            if (s == -1) { calculSommeValide = false; break; }
+                            sommeBlocsInternes += s;
+                        }
+                    }
+                    if (calculSommeValide) {
+                        int sommeTheoriqueZone = taille * (taille + 1) / 2;
+                        reponseExacte = sommeTheoriqueZone - sommeBlocsInternes;
+                    }
+                } 
+                // Si la ligne est orientée Multiplication
+                else {
                     boolean calculProdValide = true;
                     int prodBlocsInternes = 1;
                     for (GroupementCases b : blocsTouches) {
@@ -138,7 +187,7 @@ public class TechniqueResteDeGrilleType1 implements TechniqueAide {
 
     private int getProduitBlocConstant(GroupementCases b) {
         if (b.getListeCases().size() == 1) return b.getResultatCible();
-        if (b.getOperation() != null && b.getOperation().getSymbole().equals("x")) return b.getResultatCible();
+        if (b.getOperation() != null && (b.getOperation().getSymbole().equals("x") || b.getOperation().getSymbole().equals("*"))) return b.getResultatCible();
         List<List<Integer>> combos = b.getCombinaisonsMaths();
         if (combos == null || combos.isEmpty()) return -1;
         int prod = -1;
