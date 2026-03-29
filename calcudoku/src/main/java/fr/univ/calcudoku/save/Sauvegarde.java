@@ -2,13 +2,16 @@ package fr.univ.calcudoku.save;
 
 import fr.univ.calcudoku.challenge.Defi;
 import fr.univ.calcudoku.model.Grille;
+import fr.univ.calcudoku.model.Case;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Scanner;
-import java.util.Locale;
+import java.util.List;
+import java.util.ArrayList;
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 
 public class Sauvegarde {
 
@@ -25,6 +28,16 @@ public class Sauvegarde {
     private Defi.TypeDefi defi;
     private int bonus, malus;
     private int vies;
+
+    private static class CaseSauvegarde {
+        int valeur;
+        List<Integer> notes;
+        
+        public CaseSauvegarde(int valeur, List<Integer> notes) {
+            this.valeur = valeur;
+            this.notes = notes;
+        }
+    }
 
     public Sauvegarde() {
         this.idGrille = "";
@@ -50,6 +63,7 @@ public class Sauvegarde {
     public void setMalus(int newMalus) { this.malus = newMalus; }
     public int getVies() { return this.vies; }
     public void setVies(int newVies) { this.vies = newVies; }
+
     public void enreg(String compte, Grille grille) {
         String cheminSave = "profils/" + compte + "/parties/";
         if (this.mode == ModeDeJeu.AVEN) cheminSave += "aventure/";
@@ -57,6 +71,7 @@ public class Sauvegarde {
         if (!dossier.exists()) dossier.mkdirs();
         String cheminIni = cheminSave + this.idGrille + ".ini";
         boolean iniFonctionnel = true;
+        
         try (FileWriter ini = new FileWriter(cheminIni)) {
             ini.write("[Informations]\n");
             ini.write("terminee=" + this.terminee + "\n");
@@ -77,10 +92,12 @@ public class Sauvegarde {
 
         if (iniFonctionnel) {
             try (FileWriter json = new FileWriter(cheminSave + this.idGrille + ".json")) {
-                int[][] matrice = new int[grille.getTaille()][grille.getTaille()];
+                CaseSauvegarde[][] matrice = new CaseSauvegarde[grille.getTaille()][grille.getTaille()];
                 for (int i = 0; i < grille.getTaille(); i++) {
                     for (int j = 0; j < grille.getTaille(); j++) {
-                        matrice[i][j] = grille.getCase(i, j).getValeur();
+                        Case c = grille.getCase(i, j);
+                        List<Integer> notes = new ArrayList<>(c.getNotes()); 
+                        matrice[i][j] = new CaseSauvegarde(c.getValeur(), notes);
                     }
                 }
                 new Gson().toJson(matrice, json);
@@ -100,47 +117,51 @@ public class Sauvegarde {
             File fichierIni = new File(cheminIni);
             if (fichierIni.isFile()) {
                 Scanner sc = new Scanner(fichierIni);
-                sc.useLocale(Locale.US);
-                sc.useDelimiter("[=\\n]");
-
-                sc.next();
-                sc.next(); this.terminee = Boolean.parseBoolean(sc.next().trim());
-                sc.next(); this.idGrille = sc.next().trim();
-                
-                sc.next(); 
-                try { this.mode = ModeDeJeu.valueOf(sc.next().trim()); } catch (Exception e) { this.mode = ModeDeJeu.LIBR; }
-                
-                sc.next(); 
-                try { this.diff = Difficulte.valueOf(sc.next().trim()); } catch (Exception e) { this.diff = Difficulte.FACIL; }
-                
-                sc.next(); 
-                try { this.defi = Defi.TypeDefi.valueOf(sc.next().trim()); } catch (Exception e) { this.defi = Defi.TypeDefi.AUCUN; }
-                
-                sc.next(); this.tmp.setTempsPrecedent(Double.parseDouble(sc.next().trim()));
-
-                sc.useDelimiter("[,\\n\\[\\]]");
-                Etape e = new Etape();
-                while (sc.hasNext()) {
-                    String token = sc.next().trim();
-                    if (token.isEmpty()) continue;
-                    if (token.charAt(0) == '|') break; 
+                while (sc.hasNextLine()) {
+                    String line = sc.nextLine().trim();
+                    if (line.isEmpty() || line.startsWith("[")) continue;
+                    
+                    String[] parts = line.split("=", 2);
+                    if (parts.length < 2) continue;
+                    
+                    String key = parts[0].trim();
+                    String val = parts[1].trim();
+                    
                     try {
-                        e.setX(Integer.parseInt(token));
-                        e.setY(Integer.parseInt(sc.next().trim()));
-                        e.setN(Integer.parseInt(sc.next().trim()));
-                        this.hist.addEtape(e);
-                    } catch (Exception ex) {}
+                        switch (key) {
+                            case "terminee": this.terminee = Boolean.parseBoolean(val); break;
+                            case "grille": this.idGrille = val; break;
+                            case "mode": this.mode = ModeDeJeu.valueOf(val); break;
+                            case "difficulte": this.diff = Difficulte.valueOf(val); break;
+                            case "defi": this.defi = Defi.TypeDefi.valueOf(val); break;
+                            case "temps": this.tmp.setTempsPrecedent(Double.parseDouble(val)); break;
+                            case "index": this.hist.setIndex(Integer.parseInt(val)); break;
+                            case "bonus": this.bonus = Integer.parseInt(val); break;
+                            case "malus": this.malus = Integer.parseInt(val); break;
+                            case "vies": this.vies = Integer.parseInt(val); break;
+                            case "historique":
+                                Scanner histScanner = new Scanner(val);
+                                histScanner.useDelimiter("[,\\n\\[\\]]");
+                                while (histScanner.hasNext()) {
+                                    String token = histScanner.next().trim();
+                                    if (token.isEmpty()) continue;
+                                    if (token.charAt(0) == '|') break;
+                                    try {
+                                        Etape e = new Etape();
+                                        e.setX(Integer.parseInt(token));
+                                        e.setY(Integer.parseInt(histScanner.next().trim()));
+                                        e.setN(Integer.parseInt(histScanner.next().trim()));
+                                        this.hist.addEtape(e);
+                                    } catch (Exception ex) {}
+                                }
+                                histScanner.close();
+                                break;
+                        }
+                    } catch (Exception e) { }
                 }
-                sc.useDelimiter("[=\\n]");
-
-                sc.next(); this.hist.setIndex(Integer.parseInt(sc.next().trim()));
-                sc.next(); this.bonus = Integer.parseInt(sc.next().trim());
-                sc.next(); this.malus = Integer.parseInt(sc.next().trim());
-                sc.next(); this.vies = Integer.parseInt(sc.next().trim());
                 sc.close();
             }
         } catch (Exception e) {
-            System.err.println("Fichier de sauvegarde introuvable ou illisible : " + e.getMessage());
             iniFonctionnel = false;
         }
 
@@ -149,10 +170,30 @@ public class Sauvegarde {
                 File fichierJson = new File(cheminSave + this.idGrille + ".json");
                 if (fichierJson.isFile()) {
                     FileReader lecteurJson = new FileReader(fichierJson);
-                    int[][] matrice = new Gson().fromJson(lecteurJson, int[][].class);
-                    for (int j = 0; j < matrice.length; j++) {
+                    Gson gson = new Gson();
+                    try {
+                        CaseSauvegarde[][] matrice = gson.fromJson(lecteurJson, CaseSauvegarde[][].class);
                         for (int i = 0; i < matrice.length; i++) {
-                            grille.getCase(i, j).setValeur(matrice[i][j]);
+                            for (int j = 0; j < matrice[i].length; j++) {
+                                Case c = grille.getCase(i, j);
+                                c.setValeur(matrice[i][j].valeur);
+                                c.effacerNotes();
+                                if (matrice[i][j].notes != null) {
+                                    for (int note : matrice[i][j].notes) {
+                                        c.basculerNote(note);
+                                    }
+                                }
+                            }
+                        }
+                    } catch (JsonSyntaxException e) {
+                        lecteurJson.close();
+                        lecteurJson = new FileReader(fichierJson);
+                        int[][] matrice = gson.fromJson(lecteurJson, int[][].class);
+                        for (int i = 0; i < matrice.length; i++) {
+                            for (int j = 0; j < matrice[i].length; j++) {
+                                grille.getCase(i, j).setValeur(matrice[i][j]);
+                                grille.getCase(i, j).effacerNotes();
+                            }
                         }
                     }
                     lecteurJson.close();

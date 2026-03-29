@@ -220,11 +220,7 @@ public class JeuController {
                     scene.getStylesheets().remove(cssPath);
                 }
             }
-            if (vueGrille != null) {
-                vueGrille.lookupAll(".label").forEach(noeud -> noeud.setStyle("-fx-text-fill: black;"));
-            }
 
-            // 2. Définir les palettes de couleurs
             String couleurTexte = sombre ? "white" : "black";
             String couleurFond = sombre ? "#2b2b2b" : "white";
             String couleurBordure = sombre ? "#888888" : "black";
@@ -398,19 +394,23 @@ public class JeuController {
 
     private void sauvegarderPartie() {
         if (save != null && !partiePerdue && save.getIdGrille() != null && !save.getIdGrille().isEmpty()) {
-            // N'écrase pas la sauvegarde en mode aventure si la partie est perdue
             if (save.getMode() == Sauvegarde.ModeDeJeu.AVEN && partiePerdue) return;
+            
             String nomProfil = MainApp.getProfileManager().getProfilActif();
+            
             if (chronoManager != null) chronoManager.arreter();
-            if (save.tmp != null) save.tmp.setTempsPrecedent(save.tmp.tempsTotal());
+            
             save.enreg(nomProfil, grilleModele);
             JeuUtilitaires.sauvegarderImageGrille(grilleModele, vueGrille, vueCaseSelectionnee, save.getIdGrille() + ".png", () -> actionFermerBulleAide());
         }
     }
 
     private void deconnecterClavier() {
-        if (conteneurGrille != null && conteneurGrille.getScene() != null && filtreClavier != null) {
-            conteneurGrille.getScene().removeEventFilter(KeyEvent.KEY_PRESSED, filtreClavier);
+        if (conteneurGrille != null && conteneurGrille.getScene() != null) {
+            if (filtreClavier != null) {
+                conteneurGrille.getScene().removeEventFilter(KeyEvent.KEY_PRESSED, filtreClavier);
+            }
+            JeuUtilitaires.desinstallerSecuritesFermeture(conteneurGrille.getScene());
         }
     }
 
