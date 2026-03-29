@@ -26,9 +26,9 @@ public class MainApp extends Application {
         stage.setMinHeight(500);
         stage.setTitle("Calcudoku");
 
-        //PLEIN ÉCRAN AU DÉMARRAGE
+        // PLEIN ÉCRAN UNIQUEMENT AU TOUT PREMIER DÉMARRAGE
         stage.setMaximized(true);
-        stage.setFullScreenExitHint(""); // Cache le message "Appuyez sur Echap"
+        stage.setFullScreenExitHint(""); 
         
         stage.show();
     }
@@ -41,7 +41,7 @@ public class MainApp extends Application {
             
             Scene scene = primaryStage.getScene();
             
-            // 1. On crée la scène si elle n'existe pas, sinon on remplace juste le contenu (le "root")
+            // On crée la scène si elle n'existe pas, sinon on remplace juste le contenu (le "root")
             if (scene == null) {
                 scene = new Scene(root, 800, 600);
                 primaryStage.setScene(scene);
@@ -49,8 +49,7 @@ public class MainApp extends Application {
                 scene.setRoot(root);
             }
 
-            // 2. --- GESTION DU THÈME SOMBRE/CLAIR ---
-            // On retire tous les stylesheets pour éviter les conflits
+            // --- GESTION DU THÈME SOMBRE/CLAIR ---
             scene.getStylesheets().clear();
             String cssClair = MainApp.class.getResource("/styles/style.css").toExternalForm();
             String cssSombre = MainApp.class.getResource("/styles/sombre.css").toExternalForm();
@@ -58,13 +57,6 @@ public class MainApp extends Application {
                 scene.getStylesheets().add(cssSombre);
             } else {
                 scene.getStylesheets().add(cssClair);
-            }
-
-            // 3. MAINTENIR LE PLEIN ÉCRAN
-            if (primaryStage.isShowing()) {
-                primaryStage.setFullScreen(false);
-                primaryStage.setMaximized(true);
-                primaryStage.setFullScreenExitHint("");
             }
 
         } catch (IOException e) {
