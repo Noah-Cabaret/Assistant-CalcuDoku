@@ -175,6 +175,9 @@ public class ProfilController {
         String aide = stats.getOrDefault("aide_calcul", "combinaisons");
         if (aide.equals("calculatrice") && radioProfilCalculatrice != null) radioProfilCalculatrice.setSelected(true);
         else if (radioProfilCombinaisons != null) radioProfilCombinaisons.setSelected(true);
+
+        // On force le redessinage complet des icônes au chargement de la page
+        javafx.application.Platform.runLater(() -> activerModeSombre(isSombre));
     }
     
     private void chargerAvatar() { imgAvatar.setIconColor(MainApp.modeSombreActif ? Color.WHITE : Color.BLACK); }
