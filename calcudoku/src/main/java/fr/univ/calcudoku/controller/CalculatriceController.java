@@ -26,14 +26,22 @@ public class CalculatriceController {
     @FXML
     private void handleOperateur(ActionEvent event) {
         String op = ((Button)event.getSource()).getText();
+        
+        // --- CORRECTION BUG 3 : ENCHAÎNEMENT DES CALCULS ---
+        if (!debut) {
+            if (!operateur.isEmpty()) {
+                calculer(Double.parseDouble(affichage.getText()));
+            } else {
+                total = Double.parseDouble(affichage.getText());
+            }
+            afficherResultat();
+            debut = true;
+        }
+        
         if (!"=".equals(op)) {
             operateur = op;
-            total = Double.parseDouble(affichage.getText());
-            debut = true;
         } else {
-            calculer(Double.parseDouble(affichage.getText()));
             operateur = "";
-            debut = true;
         }
     }
 
@@ -44,13 +52,21 @@ public class CalculatriceController {
             case "*" -> total *= n;
             case "/" -> { if (n != 0) total /= n; }
         }
-        affichage.setText(String.valueOf(total));
+    }
+
+    private void afficherResultat() {
+        if (total == (long) total) {
+            affichage.setText(String.format("%d", (long) total));
+        } else {
+            affichage.setText(String.valueOf(total));
+        }
     }
 
     @FXML
     private void handleEffacer() {
         affichage.setText("");
         total = 0;
+        operateur = "";
         debut = true;
     }
-} 
+}

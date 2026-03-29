@@ -25,6 +25,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.input.KeyEvent;
 import javafx.fxml.FXML;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
@@ -32,12 +33,15 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.animation.PauseTransition;
 import javafx.util.Duration;
 import javafx.application.Platform;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.kordamp.ikonli.javafx.FontIcon;
 
 public class JeuController {
 
@@ -48,6 +52,7 @@ public class JeuController {
     @FXML private Label labelMessageAide;
     @FXML private Button btnAmeliorerAide, btnAidePrecedente, btnAideSuivante, btnActualiserAide, btnValider, btnAide;    
     @FXML private Button btnHypothese, btnValiderHypothese, btnAnnulerHypothese;
+    @FXML private Button btnRetour, btnMenu;
     @FXML private HBox conteneurBoutonsHypothese;
     @FXML private VBox boiteCombinaisons;
     @FXML private Label labelCombinaisons;
@@ -76,6 +81,7 @@ public class JeuController {
     
     private EventHandler<KeyEvent> filtreClavier;
 
+
     public void initialiserPartie(Grille grille, Sauvegarde save) {
         this.grilleModele = grille;
         this.save = save;
@@ -83,8 +89,14 @@ public class JeuController {
 
         conteneurGrille.setDisable(false);
         conteneurBoutonsNombres.setDisable(false);
-        btnAide.setDisable(false);
-        btnAide.setOpacity(1.0);
+        if (btnAide != null) {
+            btnAide.setDisable(false);
+            btnAide.setOpacity(1.0);
+        }
+
+        if (this.save != null && (this.save.getIdGrille() == null || this.save.getIdGrille().isEmpty())) {
+            this.save.setIdGrille("libre_" + grille.getTaille() + "_1_1"); 
+        }
 
         this.vueGrille = new VueGrille(grille);
         conteneurGrille.getChildren().clear(); 
@@ -104,14 +116,22 @@ public class JeuController {
             }
         }
         
+        initialiserClassesCSS(); // Appel de la nouvelle méthode de nettoyage
+        appliquerModeSombre(); // Appliquer le thème AVANT de générer les boutons
         genererBoutonsNombres(grille.getTaille());
-        bulleAide.setVisible(false);
+        // Force le rafraîchissement CSS pour garantir le bon style dès le premier affichage
+        conteneurBoutonsNombres.applyCss();
+        conteneurBoutonsNombres.layout();
+        
+        if (popupAbandon != null) popupAbandon.setVisible(false);
+        if (menuDeroulant != null) menuDeroulant.setVisible(false);
+        if (bulleAide != null) bulleAide.setVisible(false);
 
         aideService.setOnSucceeded(event -> { indicesEnAttente = aideService.getValue(); });
         for (GroupementCases bloc : grilleModele.getListeGroupements()) { bloc.calculerPossibilites(grilleModele); }
         aideService.lancerAnalyse(grilleModele);
 
-        if (save.getDefi() == Defi.TypeDefi.NOAID) {
+        if (save.getDefi() == Defi.TypeDefi.NOAID && btnAide != null) {
             btnAide.setDisable(true);
             btnAide.setOpacity(0.5);
         }
@@ -150,25 +170,50 @@ public class JeuController {
             () -> actionEffacer(null)
         );
 
-        if (conteneurGrille.getScene() != null) {
-            conteneurGrille.getScene().removeEventFilter(KeyEvent.KEY_PRESSED, filtreClavier);
-            conteneurGrille.getScene().addEventFilter(KeyEvent.KEY_PRESSED, filtreClavier);
-            JeuUtilitaires.installerSecuritesFermeture(conteneurGrille.getScene(), () -> sauvegarderPartie(), () -> sauvegarderPartie());
-        } else {
-            conteneurGrille.sceneProperty().addListener((obs, oldScene, newScene) -> {
-                if (newScene != null) {
-                    newScene.removeEventFilter(KeyEvent.KEY_PRESSED, filtreClavier);
-                    newScene.addEventFilter(KeyEvent.KEY_PRESSED, filtreClavier);
-                    JeuUtilitaires.installerSecuritesFermeture(newScene, () -> sauvegarderPartie(), () -> sauvegarderPartie());
-                }
-            });
-        }
+        Platform.runLater(() -> {
+            Scene scene = conteneurGrille.getScene();
+            if (scene != null) {
+                scene.removeEventFilter(KeyEvent.KEY_PRESSED, filtreClavier);
+                scene.addEventFilter(KeyEvent.KEY_PRESSED, filtreClavier);
+                JeuUtilitaires.installerSecuritesFermeture(scene, () -> sauvegarderPartie(), () -> sauvegarderPartie());
+            }
+        });
 
         mettreAJourLabelDefi();
         
-        // --- ⏱️ INITIALISATION DU CHRONOMÈTRE ---
         this.chronoManager = new ChronoManager(labelChrono, save.tmp, save.getDefi(), () -> declencherDefaite("Le temps est écoulé !"));
         this.chronoManager.demarrer();
+    }
+
+    private void initialiserClassesCSS() {
+        // On détruit les styles inline de SceneBuilder (.setStyle("")) et on applique nos classes
+        if (btnValider != null) { btnValider.setStyle(""); btnValider.getStyleClass().add("bouton-rond"); }
+        if (btnAide != null) { btnAide.setStyle(""); btnAide.getStyleClass().add("bouton-rond"); }
+        if (btnHypothese != null) { btnHypothese.setStyle(""); btnHypothese.getStyleClass().addAll("bouton-rond", "bouton-hypothese"); }
+        if (btnValiderHypothese != null) { btnValiderHypothese.setStyle(""); btnValiderHypothese.getStyleClass().add("bouton-rond-petit"); }
+        if (btnAnnulerHypothese != null) { btnAnnulerHypothese.setStyle(""); btnAnnulerHypothese.getStyleClass().add("bouton-rond-petit"); }
+        
+        if (menuDeroulant != null) { 
+            menuDeroulant.setStyle(""); 
+            menuDeroulant.getStyleClass().add("menu-deroulant"); 
+            // On nettoie aussi tous les boutons à l'intérieur du menu !
+            for (javafx.scene.Node n : menuDeroulant.getChildren()) {
+                n.setStyle(""); 
+            }
+        }
+        if (boiteCombinaisons != null) { boiteCombinaisons.setStyle(""); boiteCombinaisons.getStyleClass().add("boite-combinaisons"); }
+    }
+
+    private void appliquerModeSombre() {
+        // Met à jour la couleur des icônes
+        boolean sombre = MainApp.modeSombreActif;
+        Color iconColor = sombre ? Color.WHITE : Color.BLACK;
+        Button[] boutonsAvecIcones = {btnValider, btnAide, btnValiderHypothese, btnAnnulerHypothese, btnUndo, btnRedo, btnAnnoter, btnEffacer, btnCalculatrice, btnActualiserAide, btnRetour, btnMenu, btnHypothese};
+        for (Button btn : boutonsAvecIcones) {
+            if (btn != null && btn.getGraphic() instanceof FontIcon) {
+                ((FontIcon) btn.getGraphic()).setIconColor(iconColor);
+            }
+        }
     }
 
     private void mettreAJourLabelDefi() {
@@ -194,30 +239,93 @@ public class JeuController {
         }
     }
 
-    private void sauvegarderPartie() {
-        if (save != null && !partiePerdue && save.getIdGrille() != null && !save.getIdGrille().isEmpty()) {
-            String nomProfil = MainApp.getProfileManager().getProfilActif();
-            
-            save.enreg(nomProfil, grilleModele);
-            JeuUtilitaires.sauvegarderImageGrille(grilleModele, vueGrille, vueCaseSelectionnee, save.getIdGrille() + ".png", () -> actionFermerBulleAide());
-        }
-    }
-    
-    private void deconnecterClavier() {
-        if (conteneurGrille.getScene() != null && filtreClavier != null) {
-            conteneurGrille.getScene().removeEventFilter(KeyEvent.KEY_PRESSED, filtreClavier);
+
+    private void appliquerModeAide(String mode) {
+        if (mode.equals(Constantes.VALEUR_AIDE_CALCULATRICE)) {
+            if (boiteCombinaisons != null) {
+                boiteCombinaisons.setVisible(false);
+                boiteCombinaisons.setManaged(false); 
+            }
+            if (btnCalculatrice != null) {
+                btnCalculatrice.setVisible(true);
+                btnCalculatrice.setManaged(true);
+            }
+        } else {
+            if (boiteCombinaisons != null) {
+                boiteCombinaisons.setVisible(true);
+                boiteCombinaisons.setManaged(true);
+            }
+            if (btnCalculatrice != null) {
+                btnCalculatrice.setVisible(false);
+                btnCalculatrice.setManaged(false);
+            }
+            JeuUtilitaires.cacherCalculatrice();
         }
     }
 
     private void genererBoutonsNombres(int taille) {
-        conteneurBoutonsNombres.getChildren().clear(); 
-        for (int i = 1; i <= taille; i++) {
-            Button btnChiffre = new Button(String.valueOf(i));
-            btnChiffre.setMinSize(55, 55); 
-            btnChiffre.setStyle("-fx-font-size: 22px; -fx-font-weight: bold;");
-            final int valeur = i; 
-            btnChiffre.setOnAction(e -> actionChiffreClique(valeur));
-            conteneurBoutonsNombres.getChildren().add(btnChiffre);
+        if (conteneurBoutonsNombres != null) {
+            conteneurBoutonsNombres.getChildren().clear(); 
+            for (int i = 1; i <= taille; i++) {
+                Button btnChiffre = new Button(String.valueOf(i));
+                btnChiffre.setMinSize(55, 55); 
+                // On délègue tout le design au CSS !
+                btnChiffre.getStyleClass().add("bouton-chiffre"); 
+                
+                final int valeur = i; 
+                btnChiffre.setOnAction(e -> actionChiffreClique(valeur));
+                conteneurBoutonsNombres.getChildren().add(btnChiffre);
+            }
+        }
+    }
+
+    private void rafraichirZoneCombinaisons(Case modeleCase) {
+        if (labelCombinaisons == null) return;
+        
+        if (modeleCase == null || modeleCase.getGroupement() == null) { 
+            labelCombinaisons.setText("Selectionnez une case"); 
+            return; 
+        }
+        GroupementCases group = modeleCase.getGroupement();    
+        group.calculerPossibilites(this.grilleModele); 
+        List<List<Integer>> combis = group.getCombinaisonsMaths();
+
+        if (combis.isEmpty()) {
+            labelCombinaisons.setText("Aucune combinaison possible !");
+            labelCombinaisons.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
+        } else {
+            StringBuilder sb = new StringBuilder();
+            sb.append(group.getResultatCible()).append(" ").append(group.getOperation().getSymbole()).append(" :\n");
+            for (int i = 0; i < combis.size(); i++){
+                sb.append(combis.get(i).toString());
+                if(i < combis.size() - 1) sb.append(" | ");
+            }
+            labelCombinaisons.setText(sb.toString());
+            // On laisse le CSS gérer la couleur du texte
+            labelCombinaisons.setStyle("");
+            labelCombinaisons.setWrapText(true);
+        }
+    }
+
+    // ========================================================
+    // LOGIQUE DE JEU, VICTOIRE, DEFAITE ET CLAVIER
+    // ========================================================
+
+    private void sauvegarderPartie() {
+        if (save != null && !partiePerdue && save.getIdGrille() != null && !save.getIdGrille().isEmpty()) {
+            // N'écrase pas la sauvegarde en mode aventure si la partie est perdue
+            if (save.getMode() == Sauvegarde.ModeDeJeu.AVEN && partiePerdue) return;
+            String nomProfil = MainApp.getProfileManager().getProfilActif();
+            if (chronoManager != null) chronoManager.arreter();
+            if (save.tmp != null) save.tmp.setTempsPrecedent(save.tmp.tempsTotal());
+            save.enreg(nomProfil, grilleModele);
+            JeuUtilitaires.sauvegarderImageGrille(grilleModele, vueGrille, vueCaseSelectionnee, save.getIdGrille() + ".png", () -> actionFermerBulleAide());
+        }
+    }
+
+    private void deconnecterClavier() {
+        if (conteneurGrille != null && conteneurGrille.getScene() != null && filtreClavier != null) {
+            conteneurGrille.getScene().removeEventFilter(KeyEvent.KEY_PRESSED, filtreClavier);
         }
     }
 
@@ -231,17 +339,17 @@ public class JeuController {
         deconnecterClavier(); 
         
         String nomProfil = MainApp.getProfileManager().getProfilActif();
-
         int secEcoulees = (chronoManager != null) ? chronoManager.getSecondesEcoulees() : 0;
         MainApp.getProfileManager().enregistrerFinDePartie(nomProfil, false, secEcoulees, 0, save.getDiff(), false);
-        if (save != null) save.effacer(nomProfil);
+        // Ne supprime plus la sauvegarde en cas de défaite en mode aventure
+        if (save != null && save.getMode() != Sauvegarde.ModeDeJeu.AVEN) {
+            save.effacer(nomProfil);
+        }
 
-        // --- 🖼️ CRÉATION DE LA POPUP DE DÉFAITE VIA LA FACTORY ---
         PopupFactory.afficherPopupFinPartie("Défi échoué !", message, Constantes.ICONE_DEFAITE, Constantes.COULEUR_DEFAITE, false, () -> actionRecommencer(null), () -> actionRetourMenu(null));
     }
     
     private void verifierVictoire() {
-        // --- ⚖️ VÉRIFICATION DE LA VICTOIRE VIA L'ARBITRE ---
         if (ValidateurJeu.estVictoire(grilleModele) && !partiePerdue) {
             partiePerdue = true; 
             if (chronoManager != null) chronoManager.arreter();
@@ -250,17 +358,15 @@ public class JeuController {
             deconnecterClavier();
 
             String nomProfil = MainApp.getProfileManager().getProfilActif();
-
             int secEcoulees = chronoManager.getSecondesEcoulees();
             long scoreCalcul = Math.max(0, (grilleModele.getTaille() * 1000) - (secEcoulees * 10));
             boolean estAventure = (save.getMode() == Sauvegarde.ModeDeJeu.AVEN);
 
             MainApp.getProfileManager().enregistrerFinDePartie(nomProfil, true, secEcoulees, scoreCalcul, save.getDiff(), estAventure);
+            // Supprime la sauvegarde seulement en cas de victoire
             if (save != null) save.effacer(nomProfil);
 
             String msg = "Temps : " + (secEcoulees / 60) + " min " + (secEcoulees % 60) + " s.\nScore obtenu : " + scoreCalcul;
-            
-            // --- 🖼️ CRÉATION DE LA POPUP DE VICTOIRE VIA LA FACTORY ---
             PopupFactory.afficherPopupFinPartie("Victoire !", msg, Constantes.ICONE_VICTOIRE, Constantes.COULEUR_VICTOIRE, true, () -> actionRecommencer(null), () -> actionRetourMenu(null));
         }
     }
@@ -284,12 +390,13 @@ public class JeuController {
                 caseModeleSelectionnee.setValeur(valeur);   
                 vueCaseSelectionnee.setEstHypothese(modeHypotheseActif);
                 rafraichirZoneCombinaisons(caseModeleSelectionnee);
-                if (bulleAide.isVisible()) {
-                    btnActualiserAide.setVisible(true);
-                    btnActualiserAide.setManaged(true);
+                if (bulleAide != null && bulleAide.isVisible()) {
+                    if (btnActualiserAide != null) {
+                        btnActualiserAide.setVisible(true);
+                        btnActualiserAide.setManaged(true);
+                    }
                 }
                 aideService.lancerAnalyse(grilleModele);
-                
                 verifierVictoire();
             }
         }
@@ -297,68 +404,21 @@ public class JeuController {
 
     @FXML void actionBasculeAnnotation(ActionEvent event) {
         modeAnnotationActif = !modeAnnotationActif;
-        btnAnnoter.setStyle(modeAnnotationActif ? "-fx-background-color: #bbdefb;" : "");
+        if (btnAnnoter != null) btnAnnoter.setStyle(modeAnnotationActif ? "-fx-background-color: #bbdefb;" : "");
     }
 
     @FXML void actionEffacer(ActionEvent event) {
         if (caseModeleSelectionnee != null) {
             caseModeleSelectionnee.setValeur(0);
             caseModeleSelectionnee.effacerNotes();
-            if (bulleAide.isVisible()) {
-                btnActualiserAide.setVisible(true);
-                btnActualiserAide.setManaged(true);
+            if (bulleAide != null && bulleAide.isVisible()) {
+                if (btnActualiserAide != null) {
+                    btnActualiserAide.setVisible(true);
+                    btnActualiserAide.setManaged(true);
+                }
             }
             aideService.lancerAnalyse(grilleModele);
             save.hist.addEtape(caseModeleSelectionnee.getX(), caseModeleSelectionnee.getY(), (modeHypotheseActif ? 20 : 0));
-        }
-    }
-
-    @FXML void actionBoutonAidePointInterrogation() {
-        if (!listeAides.isEmpty() && indexAideActuelle < listeAides.size()) listeAides.get(indexAideActuelle).masquer();
-        listeAides.clear();
-        indexAideActuelle = 0;
-
-        if (indicesEnAttente != null) {
-            for (Indice ind : indicesEnAttente) {
-                listeAides.add(new CommandeAfficherIndice(ind, labelMessageAide, vueGrille));
-            }
-        }
-        if (listeAides.isEmpty()) return;
-
-        btnActualiserAide.setVisible(false);
-        btnActualiserAide.setManaged(false);
-        bulleAide.setVisible(true);
-        listeAides.get(indexAideActuelle).afficher();
-        mettreAJourBoutonsNavigation();
-    }
-
-    @FXML void actionFermerBulleAide() {
-        if (!listeAides.isEmpty()) listeAides.get(indexAideActuelle).masquer();
-        bulleAide.setVisible(false);
-    }
-
-    @FXML void actionAmeliorerAide() {
-        if (!listeAides.isEmpty()) {
-            listeAides.get(indexAideActuelle).ameliorerNiveau();
-            mettreAJourBoutonsNavigation();
-        }
-    }
-
-    @FXML void actionAideSuivante() {
-        if (indexAideActuelle < listeAides.size() - 1) {
-            listeAides.get(indexAideActuelle).masquer();
-            indexAideActuelle++;
-            listeAides.get(indexAideActuelle).afficher();
-            mettreAJourBoutonsNavigation();
-        }
-    }
-
-    @FXML void actionAidePrecedente() {
-        if (indexAideActuelle > 0) {
-            listeAides.get(indexAideActuelle).masquer();
-            indexAideActuelle--;
-            listeAides.get(indexAideActuelle).afficher();
-            mettreAJourBoutonsNavigation();
         }
     }
 
@@ -390,17 +450,24 @@ public class JeuController {
         }
     }
 
-    private void mettreAJourBoutonsNavigation() {
-        if (listeAides.isEmpty()) return;
-        btnAidePrecedente.setDisable(indexAideActuelle == 0);
-        btnAideSuivante.setDisable(indexAideActuelle == listeAides.size() - 1);
-        btnAmeliorerAide.setDisable(!listeAides.get(indexAideActuelle).peutEtreAmeliore());
+    // ========================================================
+    // UNDO / REDO / HYPOTHESES
+    // ========================================================
+
+    @FXML void actionUndo(ActionEvent event) {
+        save.hist.appliquerUndo(grilleModele, modeHypotheseActif);
+        if (caseModeleSelectionnee != null) rafraichirZoneCombinaisons(caseModeleSelectionnee);
+    }
+
+    @FXML void actionRedo(ActionEvent event) {
+        save.hist.appliquerRedo(grilleModele);
+        if (caseModeleSelectionnee != null) rafraichirZoneCombinaisons(caseModeleSelectionnee);
     }
 
     @FXML void actionHypothese(ActionEvent event) {
         modeHypotheseActif = true;
-        btnHypothese.setDisable(true); 
-        conteneurBoutonsHypothese.setVisible(true);
+        if (btnHypothese != null) btnHypothese.setDisable(true); 
+        if (conteneurBoutonsHypothese != null) conteneurBoutonsHypothese.setVisible(true);
     }
 
     @FXML void actionValiderHypothese(ActionEvent event) {
@@ -415,22 +482,21 @@ public class JeuController {
 
     private void quitterModeHypotheseVisuel() {
         modeHypotheseActif = false;
-        btnHypothese.setDisable(false);
-        conteneurBoutonsHypothese.setVisible(false);
+        if (btnHypothese != null) btnHypothese.setDisable(false); 
+        if (conteneurBoutonsHypothese != null) conteneurBoutonsHypothese.setVisible(false);
         for (int y = 0; y < grilleModele.getTaille(); y++) {
-            for (int x = 0; x < grilleModele.getTaille(); x++) {
-                vueGrille.getGrilleVueCases(x, y).setEstHypothese(false);
-            }
+            for (int x = 0; x < grilleModele.getTaille(); x++) vueGrille.getGrilleVueCases(x, y).setEstHypothese(false);
         }
     }
 
-    @FXML void actionUndo(ActionEvent event) { save.hist.appliquerUndo(grilleModele, modeHypotheseActif); }
-    @FXML void actionRedo(ActionEvent event) { save.hist.appliquerRedo(grilleModele); }
+    // ========================================================
+    // NAVIGATION & MENUS
+    // ========================================================
 
-    @FXML void actionCalculatrice(ActionEvent event) { 
-        JeuUtilitaires.afficherCalculatrice(event);
+    @FXML void actionBasculerMenu(ActionEvent event) {
+        if (menuDeroulant != null) menuDeroulant.setVisible(!menuDeroulant.isVisible());
     }
-    
+
     @FXML void actionRetourMenu(ActionEvent event) {
         sauvegarderPartie();
         deconnecterClavier(); 
@@ -439,58 +505,18 @@ public class JeuController {
         MainApp.changerScene(Constantes.VUE_MENU);
     }
 
-    private void rafraichirZoneCombinaisons(Case modeleCase) {
-        if (modeleCase == null || modeleCase.getGroupement() == null) {
-            labelCombinaisons.setText("Selectionnez une case");
-            return;
-        }
-
-        GroupementCases group = modeleCase.getGroupement();    
-        group.calculerPossibilites(this.grilleModele); 
-        List<List<Integer>> combis = group.getCombinaisonsMaths();
-
-        if (combis.isEmpty()) {
-            labelCombinaisons.setText("Aucune combinaison possible !");
-            labelCombinaisons.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
-        } else {
-            StringBuilder sb = new StringBuilder();
-            sb.append(group.getResultatCible()).append(" ").append(group.getOperation().getSymbole()).append(" :\n");
-            
-            for (int i = 0; i < combis.size(); i++){
-                sb.append(combis.get(i).toString());
-                if(i < combis.size() - 1) sb.append(" | ");
-            }
-            
-            labelCombinaisons.setText(sb.toString());
-            labelCombinaisons.setStyle("-fx-text-fill: black; -fx-font-weight: normal;");
-            labelCombinaisons.setWrapText(true);
-        }
-    }
-    
-    @FXML 
-    void actionBasculerMenu(ActionEvent event) {
-        if (menuDeroulant != null) {
-            menuDeroulant.setVisible(!menuDeroulant.isVisible());
-        }
-    }
-
-    @FXML 
-    void actionAbandonner(ActionEvent event) {
-        menuDeroulant.setVisible(false);
+    @FXML void actionAbandonner(ActionEvent event) {
+        if (menuDeroulant != null) menuDeroulant.setVisible(false);
         if (popupAbandon != null) popupAbandon.setVisible(true);
     }
 
-    @FXML 
-    void actionAnnulerAbandon(ActionEvent event) {
+    @FXML void actionAnnulerAbandon(ActionEvent event) {
         if (popupAbandon != null) popupAbandon.setVisible(false);
     }
 
-    @FXML 
-    void actionConfirmerAbandon(ActionEvent event) {
+    @FXML void actionConfirmerAbandon(ActionEvent event) {
         if (popupAbandon != null) popupAbandon.setVisible(false);
-        
         String nomProfil = MainApp.getProfileManager().getProfilActif();
-        
         int secEcoulees = (chronoManager != null) ? chronoManager.getSecondesEcoulees() : 0;
         MainApp.getProfileManager().enregistrerFinDePartie(nomProfil, false, secEcoulees, 0, save.getDiff(), false);
         
@@ -499,8 +525,7 @@ public class JeuController {
         actionRetourMenu(event);
     }
 
-    @FXML 
-    void actionRecommencer(ActionEvent event) {
+    @FXML void actionRecommencer(ActionEvent event) {
         if (menuDeroulant != null) menuDeroulant.setVisible(false);
         
         partiePerdue = false; 
@@ -527,24 +552,25 @@ public class JeuController {
         save.tmp.setTempsPrecedent(0.0);
         
         fr.univ.calcudoku.model.DonneesNiveau dataBase = fr.univ.calcudoku.utils.GestionnaireJeu.lireDonneesNiveauRessource(save.getIdGrille() + ".json");
-        if (dataBase != null) {
-            save.setVies(dataBase.vies);
-        }
+        if (dataBase != null) save.setVies(dataBase.vies);
         
+        quitterModeHypotheseVisuel();
         mettreAJourLabelDefi(); 
         if (chronoManager != null) chronoManager.demarrer();
         aideService.lancerAnalyse(grilleModele);
+        if (caseModeleSelectionnee != null) rafraichirZoneCombinaisons(caseModeleSelectionnee);
     }
 
-    @FXML 
-    void actionReglesTechniques(ActionEvent event) {
+    @FXML void actionReglesTechniques(ActionEvent event) {
         sauvegarderPartie();
         deconnecterClavier(); 
-        menuDeroulant.setVisible(false);
+        if (menuDeroulant != null) menuDeroulant.setVisible(false);
         if (chronoManager != null) chronoManager.arreter(); 
         
-        String nomProfil = MainApp.getProfileManager().getProfilActif();
+        // --- CORRECTION BUG : On cache la calculatrice avant de changer de page ! ---
+        JeuUtilitaires.cacherCalculatrice();
         
+        String nomProfil = MainApp.getProfileManager().getProfilActif();
         String sousDossier = (save.getMode() == Sauvegarde.ModeDeJeu.AVEN) ? Constantes.SOUS_DOSSIER_AVENTURE : "";
         java.io.File fichierSave = new java.io.File(Constantes.DOSSIER_PROFILS + nomProfil + Constantes.SOUS_DOSSIER_PARTIES + sousDossier + save.getIdGrille() + ".json");
         
@@ -556,18 +582,57 @@ public class JeuController {
 
         MainApp.changerScene(Constantes.VUE_REGLES);
     }
+
+    // ========================================================
+    // AIDE & CALCULATRICE
+    // ========================================================
+
+    @FXML void actionCalculatrice(ActionEvent event) { JeuUtilitaires.afficherCalculatrice(event); }
     
-    private void appliquerModeAide(String mode) {
-        if (mode.equals(Constantes.VALEUR_AIDE_CALCULATRICE)) {
-            boiteCombinaisons.setVisible(false);
-            boiteCombinaisons.setManaged(false); 
-            btnCalculatrice.setVisible(true);
-            btnCalculatrice.setManaged(true);
-        } else {
-            boiteCombinaisons.setVisible(true);
-            boiteCombinaisons.setManaged(true);
-            btnCalculatrice.setVisible(false);
-            btnCalculatrice.setManaged(false);
+    @FXML public void actionBoutonAidePointInterrogation() {
+        if (!listeAides.isEmpty() && indexAideActuelle < listeAides.size()) listeAides.get(indexAideActuelle).masquer();
+        listeAides.clear(); indexAideActuelle = 0;
+        if (indicesEnAttente != null) {
+            for (Indice ind : indicesEnAttente) listeAides.add(new CommandeAfficherIndice(ind, labelMessageAide, vueGrille));
         }
+        if (listeAides.isEmpty()) return;
+        
+        if (btnActualiserAide != null) {
+            btnActualiserAide.setVisible(false); 
+            btnActualiserAide.setManaged(false);
+        }
+        if (bulleAide != null) bulleAide.setVisible(true); 
+        listeAides.get(indexAideActuelle).afficher();
+        mettreAJourBoutonsNavigation();
+    }
+
+    @FXML public void actionFermerBulleAide() {
+        if (!listeAides.isEmpty()) listeAides.get(indexAideActuelle).masquer();
+        if (bulleAide != null) bulleAide.setVisible(false);
+    }
+
+    @FXML public void actionAmeliorerAide() {
+        if (!listeAides.isEmpty()) { listeAides.get(indexAideActuelle).ameliorerNiveau(); mettreAJourBoutonsNavigation(); }
+    }
+
+    @FXML public void actionAideSuivante() {
+        if (indexAideActuelle < listeAides.size() - 1) {
+            listeAides.get(indexAideActuelle).masquer(); indexAideActuelle++;
+            listeAides.get(indexAideActuelle).afficher(); mettreAJourBoutonsNavigation();
+        }
+    }
+
+    @FXML public void actionAidePrecedente() {
+        if (indexAideActuelle > 0) {
+            listeAides.get(indexAideActuelle).masquer(); indexAideActuelle--;
+            listeAides.get(indexAideActuelle).afficher(); mettreAJourBoutonsNavigation();
+        }
+    }
+
+    private void mettreAJourBoutonsNavigation() {
+        if (listeAides.isEmpty()) return;
+        btnAidePrecedente.setDisable(indexAideActuelle == 0);
+        btnAideSuivante.setDisable(indexAideActuelle == listeAides.size() - 1);
+        btnAmeliorerAide.setDisable(!listeAides.get(indexAideActuelle).peutEtreAmeliore());
     }
 }

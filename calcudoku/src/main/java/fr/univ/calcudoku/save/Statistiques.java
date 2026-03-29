@@ -42,7 +42,7 @@ public class Statistiques extends Donnees {
 			ini.write("victoires=" + this.victoires + "\n");
 			ini.write("ratio_victoires=" + this.ratioVictoires + "\n");
 			ini.write("temps_moyen=" + this.moyenne + "\n");
-			ini.write("progression_aventure=" + this.progressionAventure + "\n");
+			ini.write("progression=" + this.progressionAventure + "\n"); // Harmonized key
 			ini.write("difficulte_max=" + this.diffMax + "\n");
 			ini.write("score=" + this.score + "\n");
 		} catch(Exception e) { e.printStackTrace(); }

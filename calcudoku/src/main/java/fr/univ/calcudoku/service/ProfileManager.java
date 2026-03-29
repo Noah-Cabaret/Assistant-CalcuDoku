@@ -142,6 +142,27 @@ public class ProfileManager {
                 opt.setAide(valeur.equals(Constantes.VALEUR_AIDE_CALCULATRICE) ? Options.AideAuCalcul.CALCULATRICE : Options.AideAuCalcul.COMBINAISONS);
             }
             opt.enreg(nomProfil);
-        }
+        } else if (cle.equals(Constantes.STAT_PROGRESSION)) {
+            Statistiques stats = new Statistiques();
+            stats.charger(nomProfil);
+            try {
+                stats.setProgressionAventure(Integer.parseInt(valeur));
+            } catch (Exception e) {}
+            stats.enreg(nomProfil);
+        } else if (cle.equals(Constantes.STAT_PARTIES_JOUEES)) {
+            Statistiques stats = new Statistiques();
+            stats.charger(nomProfil);
+            try {
+                stats.setPartiesJouees(Integer.parseInt(valeur));
+            } catch (Exception e) {}
+            stats.enreg(nomProfil);
+        } else if (cle.equals(Constantes.STAT_VICTOIRES)) {
+            Statistiques stats = new Statistiques();
+            stats.charger(nomProfil);
+            try {
+                stats.setVictoires(Integer.parseInt(valeur));
+            } catch (Exception e) {}
+            stats.enreg(nomProfil);
+        } // Ajoutez d'autres statistiques si besoin
     }
 }

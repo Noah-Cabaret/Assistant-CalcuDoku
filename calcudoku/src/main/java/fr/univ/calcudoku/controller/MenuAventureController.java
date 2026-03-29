@@ -14,6 +14,8 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.Cursor;
 import org.kordamp.ikonli.javafx.FontIcon;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Color;
+import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.io.File;
 import java.util.Optional;
@@ -24,6 +26,7 @@ public class MenuAventureController {
     @FXML private StackPane ligneFond; 
     @FXML private FontIcon imgParametres;
     @FXML private FontIcon imgReset;
+    @FXML private Button btnRetour;
     
     private final int NB_NIVEAUX_TOTAL = 5;
 
@@ -35,6 +38,16 @@ public class MenuAventureController {
 
         if (ligneFond != null) {
             ligneFond.setVisible(false); 
+        }
+
+        boolean sombre = MainApp.modeSombreActif;
+        Color couleurC = sombre ? Color.WHITE : Color.BLACK;
+        String couleurT = sombre ? "white" : "black";
+        if (btnRetour != null) {
+            btnRetour.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-text-fill: " + couleurT + ";");
+            if (btnRetour.getGraphic() instanceof FontIcon) {
+                ((FontIcon) btnRetour.getGraphic()).setIconColor(couleurC);
+            }
         }
 
         chargerProgression();
@@ -142,9 +155,17 @@ public class MenuAventureController {
 
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
-            
             ProfileManager manager = MainApp.getProfileManager();
             String nomActuel = manager.getProfilActif();
+
+            // Supprimer toutes les sauvegardes aventure (niveaux 1 à NB_NIVEAUX_TOTAL)
+            for (int i = 1; i <= NB_NIVEAUX_TOTAL; i++) {
+                String base = "profils/" + nomActuel + "/parties/aventure/aventure_" + i;
+                java.io.File fJson = new java.io.File(base + ".json");
+                java.io.File fIni = new java.io.File(base + ".ini");
+                if (fJson.exists()) fJson.delete();
+                if (fIni.exists()) fIni.delete();
+            }
 
             manager.mettreAJourStatistique(nomActuel, Constantes.STAT_PROGRESSION, "1");
             genererChemin(1);

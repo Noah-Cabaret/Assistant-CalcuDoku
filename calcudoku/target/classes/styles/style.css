@@ -1,57 +1,72 @@
-/* Style de base d'une case */
-.case-grille {
-    -fx-background-color: white; 
-    -fx-border-color: #d0d0d0;
-    -fx-border-width: 0.5px;
+/* Navigation Icon (Back Arrow) */
+.icon-retour {
+    -fx-icon-size: 35px;
+    -fx-icon-color: black;
+    -fx-translate-y: 2px;
+}
+/* Grille */
+.case-grille { -fx-background-color: white; -fx-border-color: #d0d0d0; -fx-border-width: 0.5px; }
+.case-selectionnee { -fx-background-color: #bbdefb; }
+.label-valeur { -fx-font-family: 'Arial'; -fx-font-weight: bold; -fx-text-fill: black; -fx-alignment: center; }
+.label-hypothese { -fx-font-family: 'Times New Roman'; -fx-font-style: italic; -fx-text-fill: #9e9e9e; -fx-font-weight: normal; }
+.label-indice { -fx-font-family: 'Arial'; -fx-font-weight: bold; -fx-text-fill: #333333; -fx-padding: 2px 0 0 4px; }
+.label-note { -fx-font-family: 'Arial'; -fx-text-fill: #666666; -fx-alignment: center; -fx-font-size: 10px; }
+.case-erreur { -fx-background-color: #ffcdd2; -fx-border-color: #e57373; -fx-border-width: 2px; }
+
+/* Boutons Chiffres */
+.bouton-chiffre {
+    -fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: black;
+    -fx-background-color: #ffffff; -fx-border-color: #cccccc; -fx-border-width: 2px;
+    -fx-border-radius: 10px; -fx-background-radius: 10px; -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2);
+}
+.bouton-chiffre:hover { -fx-background-color: #f0f0f0; }
+
+/* Boutons Ronds (Valider, Aide, etc.) */
+.bouton-rond {
+    -fx-background-color: white; -fx-border-color: black;
+    -fx-border-width: 3px; -fx-border-radius: 50%; -fx-background-radius: 50%;
+    -fx-cursor: hand; -fx-min-width: 60px; -fx-min-height: 60px;
+}
+.bouton-rond-petit {
+    -fx-background-color: white; -fx-border-color: black;
+    -fx-border-width: 3px; -fx-border-radius: 50%; -fx-background-radius: 50%;
+    -fx-cursor: hand; -fx-min-width: 45px; -fx-min-height: 45px;
+}
+.bouton-rond:hover, .bouton-rond-petit:hover { -fx-background-color: #f0f0f0; }
+
+.bouton-hypothese {
+    -fx-font-size: 38px; -fx-font-family: 'Times New Roman';
+    -fx-font-style: italic; -fx-text-fill: black; -fx-padding: 0;
 }
 
-/* Case actuellement sélectionnée par le joueur */
-.case-selectionnee {
-    -fx-background-color: #bbdefb; 
-}
-
-/* Chiffre principal rempli par le joueur */
-.label-valeur {
-    -fx-font-family: 'Arial', sans-serif;
+/* Menus & Popups */
+.menu-deroulant .button {
+    -fx-background-color: #f4f4f4;
+    -fx-text-fill: black !important;
+    -fx-border-color: #cccccc;
+    -fx-border-width: 1px;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-padding: 8px 15px;
     -fx-font-weight: bold;
-    -fx-text-fill: black;
-    -fx-alignment: center;
+    -fx-cursor: hand;
 }
 
-/* Style pour le mode HYPOTHÈSE (Grisé et Italique) */
-.label-hypothese {
-    -fx-font-family: 'Times New Roman', serif;
-    -fx-font-style: italic;
-    -fx-font-weight: bold;
-    -fx-text-fill: #9e9e9e; /* Gris clair */
-    -fx-font-weight: normal;
+.menu-deroulant .button:hover {
+    -fx-background-color: #e0e0e0;
 }
 
-/* Petit chiffre de l'opération en haut à gauche (ex: 16+) */
-.label-indice {
-    -fx-font-family: 'Arial', sans-serif;
-    -fx-font-weight: bold;
-    -fx-text-fill: #333333; 
-    -fx-padding: 2px 0 0 4px; 
+/* Force les textes (Aide au calcul) en noir en mode clair */
+.menu-deroulant .label, .menu-deroulant .radio-button {
+    -fx-text-fill: black !important;
 }
-
-/* Petits chiffres des notes (Mode Crayon) */
-.label-note {
-    -fx-font-family: 'Arial', sans-serif;
-    -fx-font-weight: normal;
-    -fx-text-fill: #666666; 
-    -fx-alignment: center;
-    -fx-font-size: 10px; /* Taille réduite pour tenir à plusieurs */
+.boite-combinaisons {
+    -fx-background-color: white; -fx-border-color: black;
+    -fx-border-width: 1px; -fx-padding: 10px;
 }
-
-/* Surbrillance lors de l'utilisation du système d'aide */
-.case-indice-surbrillance {
-    -fx-background-color: #7dec91; /* Vert clair pour l'indice */
-}
-
-/* Style d'erreur lors du clic sur le bouton Vérifier (✔) */
-.case-erreur {
-    -fx-background-color: #ffcdd2; /* Rouge très clair */
-    -fx-border-color: #e57373;
-    -fx-border-width: 2px;
+.calculatrice-popup {
+    -fx-background-color: #ffffff; -fx-border-color: #cccccc;
+    -fx-border-width: 2px; -fx-background-radius: 12px; -fx-border-radius: 12px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 15, 0, 0, 0); -fx-padding: 10px;
 }

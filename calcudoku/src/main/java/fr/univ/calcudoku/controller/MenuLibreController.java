@@ -6,6 +6,7 @@ import fr.univ.calcudoku.utils.CacheRessources;
 import fr.univ.calcudoku.utils.Constantes;
 import fr.univ.calcudoku.utils.GestionnaireJeu;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
@@ -15,6 +16,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import org.kordamp.ikonli.javafx.FontIcon;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Color;
+import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.io.File;
 import java.util.Scanner;
@@ -25,6 +28,7 @@ public class MenuLibreController {
     @FXML private ToggleGroup groupeDifficulte;
     @FXML private HBox boxGrilles;
     @FXML private FontIcon imgParametres;
+    @FXML private Button btnRetour;
 
     // LES STYLES VISUELS DES BOUTONS
     private final String STYLE_NORMAL = "-fx-background-color: transparent; -fx-text-fill: #555555; -fx-cursor: hand; -fx-background-radius: 50em; -fx-pref-width: 40px; -fx-pref-height: 40px; -fx-font-size: 14px;";
@@ -32,10 +36,19 @@ public class MenuLibreController {
 
     @FXML
     public void initialize() {
+
         imgParametres.setIconColor(MainApp.modeSombreActif ? Color.WHITE : Color.BLACK);
         configurerToggleGroup(groupeTaille);
         configurerToggleGroup(groupeDifficulte);
-       
+
+        if (btnRetour != null) {
+            btnRetour.setStyle("-fx-background-color: transparent; -fx-cursor: hand;"); 
+            
+            if (btnRetour.getGraphic() instanceof FontIcon) {
+                ((FontIcon) btnRetour.getGraphic()).setIconColor(MainApp.modeSombreActif ? Color.WHITE : Color.BLACK);
+            }
+        }
+
         rafraichirGrilles();
     }
 
