@@ -1,64 +1,79 @@
 package fr.univ.calcudoku.service.aide.technique;
 
+import fr.univ.calcudoku.model.Case;
 import fr.univ.calcudoku.model.Grille;
 import fr.univ.calcudoku.model.GroupementCases;
 import fr.univ.calcudoku.model.Indice;
-import fr.univ.calcudoku.model.Case;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
-/**
- * Technique : Intra Bloc (Petit L).
- * Analyse un bloc de 3 cases en forme de L qui nécessite obligatoirement un chiffre en double.
- * Le doublon doit être aux extrémités pour ne pas violer les règles du carré latin.
- */
 public class TechniqueIntraBloc_1_3 extends TechniqueIntraBloc {
 
     @Override
     public Indice analyser(Grille grille) {
-        Indice indiceNormal = null;
+        List<Indice> indicesErreurs = new ArrayList<>();
+        List<Indice> indicesNormaux = new ArrayList<>();
 
         for (GroupementCases bloc : grille.getListeGroupements()) {
             
-            // On vérifie la topologie : 3 cases, formant un "L" (pas une ligne)
             if (bloc.getListeCases().size() == 3 && verifierTopologiePetitL(bloc)) {
                 
-                List<Integer> combinaisonUnique = getUniqueCombinaison(bloc);
+                List<List<Integer>> combosPossibles = bloc.getCombinaisonsMaths();
+                List<List<Integer>> combosValides = getCombinaisonsValides(grille, bloc);
                 
-                if (combinaisonUnique != null && aDesChiffresIdentiques(combinaisonUnique)) {
+                // Si la grille a réduit les possibilités à UNE SEULE et qu'elle a un doublon
+                if (combosValides.size() == 1) {
+                    List<Integer> combinaisonUnique = combosValides.get(0);
                     
-                    boolean contientErreur = false;
-                    List<Case> casesFausses = new ArrayList<>();
-                    Map<Case, Integer> solutions = new HashMap<>();
+                    if (aDesChiffresIdentiques(combinaisonUnique)) {
+                        
+                        int nbCasesVides = 0;
+                        boolean contientErreur = false;
+                        List<Case> casesFausses = new ArrayList<>();
 
-                    for (Case c : bloc.getListeCases()) {
-                                                
-                        if (c.getValeur() != 0 && c.getValeur() != c.getSolution()) {
-                            contientErreur = true;
-                            casesFausses.add(c);
+                        for (Case c : bloc.getListeCases()) {
+                            if (c.getValeur() == 0) nbCasesVides++;
+                            else if (c.getValeur() != c.getSolution()) { contientErreur = true; casesFausses.add(c); }
                         }
-                    }
 
-                    boolean estParfait = true;
-                    for (Case c : bloc.getListeCases()) {
-                        if (c.getValeur() != c.getSolution()) estParfait = false;
-                    }
+                        // On laisse la technique "Dernière case" s'en occuper s'il reste 0 ou 1 case vide sans erreur
+                        if (!contientErreur && nbCasesVides <= 1) continue;
 
-                    if (!estParfait) {
+                        Map<Case, Integer> solutions = new HashMap<>();
+
                         if (contientErreur) {
-                            return new Indice("Technique Intra-bloc", "Erreur détectée ! Ce bloc force le placement d'un doublon mathématique.\nLes chiffres en surbrillance sont mal placés.", casesFausses, solutions, true);
-                        } else if (indiceNormal == null) {
-                            String msg = "Techniques intra-bloc : Ce bloc en forme de 'L' n'a qu'une seule combinaison possible qui contient un chiffre en double.\nPour ne pas violer les règles, ces doublons doivent obligatoirement être placés aux deux extrémités du 'L' !";
-                            indiceNormal = new Indice("Technique Intra-bloc", msg, bloc.getListeCases(), solutions, false);
+                            String msg = "Erreur détectée ! Au vu de la grille, ce bloc force le placement d'un doublon mathématique.\nLes chiffres en surbrillance créent un conflit ou sont mal placés.";
+                            indicesErreurs.add(new Indice("Technique Intra-bloc (Petit L)", msg, casesFausses, solutions, true));
+                        } else {
+                            String comboStr = combinaisonUnique.toString().replace("[", "").replace("]", "");
+                            String symbole = bloc.getOperation() != null ? bloc.getOperation().getSymbole() : "";
+                            int cible = bloc.getResultatCible();
+                            String msg;
+
+                            // Message adapté selon la situation (unique depuis le début OU par élimination)
+                            if (combosPossibles.size() == 1) {
+                                msg = "Technique intra-bloc : Observez ce bloc en forme de 'L'. Pour atteindre " + cible + " en utilisant (" + symbole + "), la seule combinaison possible est (" + comboStr + ") !\nPour ne pas violer les règles du jeu, le chiffre en double doit obligatoirement être placé aux deux extrémités du 'L'.";
+                            } else {
+                                msg = "Déduction intra-bloc : Au départ, ce bloc en 'L' avait plusieurs combinaisons.\nMais grâce aux chiffres déjà placés dans la grille, il n'en reste plus qu'une de valable : (" + comboStr + ") !\nElle contient un doublon qui doit obligatoirement être placé aux extrémités du 'L'.";
+                            }
+                            
+                            indicesNormaux.add(new Indice("Technique Intra-bloc (Petit L)", msg, bloc.getListeCases(), solutions, false));
                         }
                     }
                 }
             }
         }
-        return indiceNormal; 
+
+        // L'aléatoire est maintenant parfait grâce au stockage dans des listes
+        Random rand = new Random();
+        if (!indicesErreurs.isEmpty()) return indicesErreurs.get(rand.nextInt(indicesErreurs.size()));
+        if (!indicesNormaux.isEmpty()) return indicesNormaux.get(rand.nextInt(indicesNormaux.size()));
+
+        return null; 
     }
 
     private boolean verifierTopologiePetitL(GroupementCases bloc) {
