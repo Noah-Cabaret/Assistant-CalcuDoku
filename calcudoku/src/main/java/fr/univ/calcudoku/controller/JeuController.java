@@ -205,15 +205,100 @@ public class JeuController {
     }
 
     private void appliquerModeSombre() {
-        // Met à jour la couleur des icônes
         boolean sombre = MainApp.modeSombreActif;
-        Color iconColor = sombre ? Color.WHITE : Color.BLACK;
-        Button[] boutonsAvecIcones = {btnValider, btnAide, btnValiderHypothese, btnAnnulerHypothese, btnUndo, btnRedo, btnAnnoter, btnEffacer, btnCalculatrice, btnActualiserAide, btnRetour, btnMenu, btnHypothese};
-        for (Button btn : boutonsAvecIcones) {
-            if (btn != null && btn.getGraphic() instanceof FontIcon) {
-                ((FontIcon) btn.getGraphic()).setIconColor(iconColor);
+        
+        // On place TOUT le code dans Platform.runLater pour s'assurer que JavaFX a fini de charger
+        Platform.runLater(() -> {
+            
+            // 1. Appliquer le CSS global
+            javafx.scene.Scene scene = conteneurGrille.getScene();
+            if (scene != null) {
+                String cssPath = getClass().getResource("/styles/sombre.css").toExternalForm();
+                if (sombre && !scene.getStylesheets().contains(cssPath)) {
+                    scene.getStylesheets().add(cssPath);
+                } else if (!sombre) {
+                    scene.getStylesheets().remove(cssPath);
+                }
             }
-        }
+            if (vueGrille != null) {
+                vueGrille.lookupAll(".label").forEach(noeud -> noeud.setStyle("-fx-text-fill: black;"));
+            }
+
+            // 2. Définir les palettes de couleurs
+            String couleurTexte = sombre ? "white" : "black";
+            String couleurFond = sombre ? "#2b2b2b" : "white";
+            String couleurBordure = sombre ? "#888888" : "black";
+            // Des couleurs un peu plus claires pour faire ressortir les menus :
+            String couleurMenuFond = sombre ? "#3b3b3b" : "white"; 
+            String couleurBtnMenu = sombre ? "#4a4a4a" : "#f4f4f4";
+            
+            if (labelChrono != null) labelChrono.setStyle("-fx-text-fill: " + couleurTexte + ";");
+            if (labelCombinaisons != null) labelCombinaisons.setStyle("-fx-text-fill: " + couleurTexte + ";");
+            if (boiteCombinaisons != null) boiteCombinaisons.setStyle("-fx-background-color: " + couleurFond + "; -fx-border-color: " + couleurBordure + "; -fx-border-width: 1px; -fx-padding: 10px;");
+            
+            //Correction du Menu Déroulant
+            String couleurMenu = "-fx-background-color: " + couleurMenuFond + "; -fx-border-color: " + couleurBordure + "; -fx-border-width: 1px; -fx-background-radius: 8px; -fx-border-radius: 8px; -fx-padding: 15px; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 5);";
+            if (menuDeroulant != null) {
+                menuDeroulant.setStyle(couleurMenu);
+                for (javafx.scene.Node node : menuDeroulant.getChildren()) {
+                    if (node instanceof Button) {
+                        node.setStyle("-fx-background-color: " + couleurBtnMenu + "; -fx-text-fill: " + couleurTexte + "; -fx-border-color: " + couleurBordure + "; -fx-cursor: hand; -fx-padding: 8px; -fx-font-weight: bold;");
+                    } else if (node instanceof VBox) {
+                        node.setStyle("-fx-border-color: " + couleurBordure + "; -fx-border-width: 1 0 0 0; -fx-padding: 10 0 0 0;");
+                        for (javafx.scene.Node subNode : ((VBox) node).getChildren()) {
+                            if (subNode instanceof Label) {
+                                subNode.setStyle("-fx-font-weight: bold; -fx-font-size: 13px; -fx-text-fill: " + couleurTexte + ";");
+                            } else if (subNode instanceof RadioButton) {
+                                subNode.setStyle("-fx-text-fill: " + couleurTexte + "; -fx-cursor: hand;");
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Correction des boutons ronds
+            String styleRondBase = " -fx-border-width: 3px; -fx-border-radius: 50%; -fx-background-radius: 50%; -fx-cursor: hand; ";
+            String couleurBoutonRond = sombre ? "-fx-background-color: #444444; -fx-border-color: #888888;" : "-fx-background-color: white; -fx-border-color: black;";
+            
+            if (btnValider != null) btnValider.setStyle(couleurBoutonRond + styleRondBase + "-fx-min-width: 60px; -fx-min-height: 60px;");
+            if (btnAide != null) btnAide.setStyle(couleurBoutonRond + styleRondBase + "-fx-min-width: 60px; -fx-min-height: 60px;");
+            if (btnHypothese != null) btnHypothese.setStyle(couleurBoutonRond + styleRondBase + "-fx-min-width: 60px; -fx-min-height: 60px; -fx-font-size: 38px; -fx-font-family: 'Times New Roman', serif; -fx-font-style: italic; -fx-text-fill: " + couleurTexte + "; -fx-padding: 0;");
+            if (btnValiderHypothese != null) btnValiderHypothese.setStyle(couleurBoutonRond + styleRondBase + "-fx-min-width: 45px; -fx-min-height: 45px;");
+            if (btnAnnulerHypothese != null) btnAnnulerHypothese.setStyle(couleurBoutonRond + styleRondBase + "-fx-min-width: 45px; -fx-min-height: 45px;");
+
+            Color iconColor = sombre ? Color.WHITE : Color.BLACK;
+            Button[] boutonsAvecIcones = {btnRetour, btnMenu, btnValider, btnAide, btnValiderHypothese, btnAnnulerHypothese, btnUndo, btnRedo, btnAnnoter, btnEffacer, btnCalculatrice, btnActualiserAide};
+            
+            for (Button btn : boutonsAvecIcones) {
+                if (btn != null && btn.getGraphic() instanceof FontIcon) {
+                    ((FontIcon) btn.getGraphic()).setIconColor(iconColor);
+                }
+            }
+
+            //--->LA POPUP D'ABANDON <---
+            if (popupAbandon != null && !popupAbandon.getChildren().isEmpty()) {
+                VBox boitePopup = (VBox) popupAbandon.getChildren().get(0);
+                boitePopup.setStyle("-fx-background-color: " + couleurMenuFond + "; -fx-background-radius: 12px; -fx-padding: 20px; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 15, 0, 0, 0);");
+                
+                for (javafx.scene.Node n : boitePopup.getChildren()) {
+                    if (n instanceof Label) {
+                        Label lbl = (Label) n;
+                        if (lbl.getText().contains("Abandonner")) {
+                            lbl.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: " + couleurTexte + ";");
+                        } else if (lbl.getText().contains("progression")) {
+                            lbl.setStyle("-fx-font-size: 13px; -fx-text-fill: #ff6b6b;");
+                        }
+                    } else if (n instanceof javafx.scene.layout.HBox) {
+                        javafx.scene.layout.HBox boxBoutons = (javafx.scene.layout.HBox) n;
+                        if (!boxBoutons.getChildren().isEmpty() && boxBoutons.getChildren().get(0) instanceof Button) {
+                            Button btnAnnuler = (Button) boxBoutons.getChildren().get(0);
+                            String couleurBtnAnnuler = sombre ? "#555555" : "#f5f5f5";
+                            btnAnnuler.setStyle("-fx-background-color: " + couleurBtnAnnuler + "; -fx-border-color: " + couleurBordure + "; -fx-text-fill: " + couleurTexte + "; -fx-cursor: hand; -fx-min-width: 90px;");
+                        }
+                    }
+                }
+            }
+        });
     }
 
     private void mettreAJourLabelDefi() {

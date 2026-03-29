@@ -44,7 +44,7 @@ public class MenuController {
                 scene.getRoot().lookupAll(".button").forEach(noeud -> {
                     Button btn = (Button) noeud;
                     if (btn.getText() != null && !btn.getText().isEmpty()) {
-                        String couleurT = MainApp.modeSombreActif ? "white" : "black";
+                        String couleurT = MainApp.modeSombreActif ? "white" : "white";
                         // On ajoute !important virtuellement en forçant le style
                         btn.setStyle(btn.getStyle() + " -fx-text-fill: " + couleurT + ";");
                     }
