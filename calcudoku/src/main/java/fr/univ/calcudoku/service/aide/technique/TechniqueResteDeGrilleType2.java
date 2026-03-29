@@ -14,17 +14,21 @@ import java.util.Random;
 import java.util.Set;
 
 /**
- * Technique : Reste de Grille 2 (Exclusion).
- * Identifie un bloc qui déborde de la zone ciblée par une seule case.
- * Utilise l'algèbre pour trouver cette case "orpheline".
+ * Technique d'aide : Reste de Grille Type 2 (Outie / Extérieur).
+ * Identifie un bloc qui déborde d'une ligne ou colonne complète par une seule case.
+ * Soustrait la valeur théorique de la zone au total des blocs touchés.
  */
 public class TechniqueResteDeGrilleType2 implements TechniqueAide {
 
+    /**
+     * Analyse chaque ligne et colonne pour y chercher un débordement logique d'une case.
+     * @param grille La grille à analyser.
+     * @return Un Indice avec des messages progressifs.
+     */
     @Override
     public Indice analyser(Grille grille) {
         int taille = grille.getTaille();
         
-        // Listes pour stocker TOUS les indices trouvés
         List<Indice> indicesErreurs = new ArrayList<>();
         List<Indice> indicesNormaux = new ArrayList<>();
 
@@ -42,13 +46,9 @@ public class TechniqueResteDeGrilleType2 implements TechniqueAide {
             }
         }
         
-        // Sélection aléatoire d'un seul indice
         Random random = new Random();
-        if (!indicesErreurs.isEmpty()) {
-            return indicesErreurs.get(random.nextInt(indicesErreurs.size()));
-        } else if (!indicesNormaux.isEmpty()) {
-            return indicesNormaux.get(random.nextInt(indicesNormaux.size()));
-        }
+        if (!indicesErreurs.isEmpty()) return indicesErreurs.get(random.nextInt(indicesErreurs.size()));
+        else if (!indicesNormaux.isEmpty()) return indicesNormaux.get(random.nextInt(indicesNormaux.size()));
 
         return null;
     }
@@ -66,7 +66,6 @@ public class TechniqueResteDeGrilleType2 implements TechniqueAide {
             if (c.getGroupement() != null) blocsTouches.add(c.getGroupement());
         }
 
-        // Vérification exclusive des opérateurs (+ uniquement OU x uniquement)
         boolean contientPlus = false;
         boolean contientFois = false;
         boolean operateurInvalide = false;
@@ -74,27 +73,19 @@ public class TechniqueResteDeGrilleType2 implements TechniqueAide {
         for (GroupementCases b : blocsTouches) {
             if (b.getListeCases().size() > 1 && b.getOperation() != null) {
                 String sym = b.getOperation().getSymbole();
-                if (sym.equals("+")) {
-                    contientPlus = true;
-                } else if (sym.equals("x") || sym.equals("*")) {
-                    contientFois = true;
-                } else {
-                    operateurInvalide = true;
-                    break;
-                }
+                if (sym.equals("+")) contientPlus = true;
+                else if (sym.equals("x") || sym.equals("*")) contientFois = true;
+                else { operateurInvalide = true; break; }
             }
         }
 
-        if (operateurInvalide || (contientPlus && contientFois)) {
-            return null; // On abandonne cette zone car elle mélange ou a des signes interdits
-        }
+        if (operateurInvalide || (contientPlus && contientFois)) return null;
 
         List<GroupementCases> blocsPartiels = new ArrayList<>();
         for (GroupementCases bloc : blocsTouches) {
             if (!casesDeLaZone.containsAll(bloc.getListeCases())) blocsPartiels.add(bloc);
         }
 
-        // Forme "Outie" : Un seul bloc partiel possède la case orpheline
         if (blocsPartiels.size() == 1) {
             GroupementCases blocCible = blocsPartiels.get(0);
             int compteurExterne = 0;
@@ -108,7 +99,6 @@ public class TechniqueResteDeGrilleType2 implements TechniqueAide {
                 
                 int reponseExacte = -1;
                 
-                // Si tout est en Addition
                 if (!contientFois) {
                     boolean calculSommeValide = true;
                     int sommeTousBlocs = 0;
@@ -122,7 +112,6 @@ public class TechniqueResteDeGrilleType2 implements TechniqueAide {
                         reponseExacte = sommeTousBlocs - sommeTheoriqueZone;
                     }
                 } 
-                // Si tout est en Multiplication
                 else {
                     boolean calculProdValide = true;
                     int prodTousBlocs = 1;
@@ -150,21 +139,23 @@ public class TechniqueResteDeGrilleType2 implements TechniqueAide {
 
                 List<Case> surbrillance = new ArrayList<>();
                 Map<Case, Integer> solutions = new HashMap<>();
+                List<String> messages = new ArrayList<>();
 
                 if (contientErreur) {
                     surbrillance.add(caseExterne); 
-                    return new Indice("Reste de Grille (Extérieur)", "Erreur détectée !\nEn soustrayant la zone aux blocs, la case externe orpheline doit valoir " + reponseExacte + ".", surbrillance, solutions, true);
+                    messages.add("Une anomalie globale a été détectée en utilisant la technique du 'Reste de Grille'.");
+                    messages.add("La valeur d'une case orpheline, déduite par soustraction globale des blocs avec la ligne entière, ne correspond pas à votre saisie.");
+                    messages.add("Erreur détectée ! En soustrayant la zone aux blocs, la case en surbrillance doit valoir " + reponseExacte + ".");
+                    return new Indice("Reste de Grille (Extérieur)", messages, surbrillance, solutions, true);
                 } else {
                     surbrillance.addAll(casesDeLaZone);
                     for(Case c : blocCible.getListeCases()) if(!surbrillance.contains(c)) surbrillance.add(c);
                     
-                    // NOUVEAU MESSAGE ADAPTÉ
-                    String typeCalcul = contientFois ? "le produit global" : "la somme globale";
-                    String operation = contientFois ? "multiplications" : "additions";
-                    String msg = "Reste de grille (Extérieur) : Ce bloc est entièrement dans la zone surlignée, à l'exception d'une seule case \"orpheline\".\n"
-                               + "Puisque les blocs ne contiennent que des " + operation + ", calculez " + typeCalcul + " des blocs et soustrayez-y la valeur théorique de la zone pour trouver la valeur de cette case externe !";
+                    messages.add("Regardez les lignes et les colonnes globalement. Parfois, un bloc 'déborde' d'une seule case d'une zone complète.");
+                    messages.add("Additionnez les blocs qui touchent cette zone et soustrayez le total théorique connu de la zone pour isoler la case qui déborde.");
+                    messages.add("Reste de grille (Extérieur) : Regardez la zone en surbrillance. Soustrayez la valeur théorique de la zone au total des blocs impliqués pour trouver la case orpheline !");
                     
-                    return new Indice("Reste de Grille (Extérieur)", msg, surbrillance, solutions, false);
+                    return new Indice("Reste de Grille (Extérieur)", messages, surbrillance, solutions, false);
                 }
             }
         }

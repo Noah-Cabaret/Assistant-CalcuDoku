@@ -11,8 +11,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+/**
+ * Technique d'aide : Intra-bloc pour les formes en "Grand L" (4+ cases).
+ * Aide à déduire le placement astucieux de doublons obligatoires dans des blocs asymétriques.
+ */
 public class TechniqueIntraBloc_3_5 extends TechniqueIntraBloc {
 
+    /**
+     * Analyse les grands blocs nécessitant des doublons.
+     * @param grille La grille à analyser.
+     * @return Un Indice avec des messages progressifs.
+     */
     @Override
     public Indice analyser(Grille grille) {
         List<Indice> indicesErreurs = new ArrayList<>();
@@ -25,7 +34,6 @@ public class TechniqueIntraBloc_3_5 extends TechniqueIntraBloc {
                 List<List<Integer>> combosPossibles = bloc.getCombinaisonsMaths();
                 List<List<Integer>> combosValides = getCombinaisonsValides(grille, bloc);
                 
-                // Si la grille a réduit les possibilités à UNE SEULE et qu'elle a un doublon
                 if (combosValides.size() == 1) {
                     List<Integer> combinaisonUnique = combosValides.get(0);
                     
@@ -43,23 +51,21 @@ public class TechniqueIntraBloc_3_5 extends TechniqueIntraBloc {
                         if (!contientErreur && nbCasesVides <= 1) continue;
 
                         Map<Case, Integer> solutions = new HashMap<>();
+                        List<String> messages = new ArrayList<>();
 
                         if (contientErreur) {
-                            String msg = "Erreur détectée ! Ce bloc allongé force l'utilisation d'un doublon en fonction de la grille actuelle.\nCertains chiffres sont mal placés pour éviter les conflits.";
-                            indicesErreurs.add(new Indice("Technique Intra-bloc (Grand L)", msg, casesFausses, solutions, true));
+                            messages.add("Un conflit a été détecté dans un grand bloc complexe.");
+                            messages.add("Ce bloc nécessite obligatoirement des doublons, mais le placement actuel brise la règle d'unicité.");
+                            messages.add("Erreur détectée ! Ce bloc allongé force l'utilisation d'un doublon. Les cases en surbrillance sont mal placées.");
+                            indicesErreurs.add(new Indice("Technique Intra-bloc (Grand L)", messages, casesFausses, solutions, true));
                         } else {
                             String comboStr = combinaisonUnique.toString().replace("[", "").replace("]", "");
-                            String symbole = bloc.getOperation() != null ? bloc.getOperation().getSymbole() : "";
-                            int cible = bloc.getResultatCible();
-                            String msg;
-
-                            if (combosPossibles.size() == 1) {
-                                msg = "Technique intra-bloc : Observez ce grand bloc. Pour faire " + cible + " avec (" + symbole + "), sa seule combinaison est (" + comboStr + ") qui contient des doublons !\nVous devez ruser pour placer ces doublons sans violer les règles sur sa ligne principale.";
-                            } else {
-                                msg = "Déduction intra-bloc : Grâce aux autres chiffres de la grille, il ne reste plus qu'une seule combinaison valable pour ce grand bloc : (" + comboStr + ") !\nElle nécessite des doublons que vous devez placer astucieusement pour éviter les conflits.";
-                            }
                             
-                            indicesNormaux.add(new Indice("Technique Intra-bloc (Grand L)", msg, bloc.getListeCases(), solutions, false));
+                            messages.add("Les grands blocs allongés ou coudés cachent souvent des déductions intéressantes basées sur les doublons.");
+                            messages.add("Il ne reste qu'une seule combinaison valable pour ce grand bloc, et elle nécessite d'utiliser des chiffres en double.");
+                            messages.add("Technique intra-bloc : La combinaison de ce grand bloc en surbrillance est (" + comboStr + "). Placez astucieusement les doublons pour éviter les conflits !");
+                            
+                            indicesNormaux.add(new Indice("Technique Intra-bloc (Grand L)", messages, bloc.getListeCases(), solutions, false));
                         }
                     }
                 }
