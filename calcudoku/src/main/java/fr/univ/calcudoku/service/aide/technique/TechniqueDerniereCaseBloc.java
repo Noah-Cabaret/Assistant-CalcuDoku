@@ -7,62 +7,78 @@ import fr.univ.calcudoku.model.Indice;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 
+/**
+ * Technique : Dernière Case du Bloc.
+ * Identifie un bloc où toutes les cases sont remplies correctement, sauf une seule qui est vide.
+ */
 public class TechniqueDerniereCaseBloc implements TechniqueAide {
 
     @Override
     public Indice analyser(Grille grille) {
         int taille = grille.getTaille();
-        Indice indiceNormal = null;
+        
+        // Liste pour stocker TOUS les indices normaux trouvés sur l'ensemble de la grille
+        List<Indice> indicesNormaux = new ArrayList<>();
 
-        for (GroupementCases bloc : grille.getListeGroupements()) {
-            if (bloc.getListeCases().size() <= 1) continue;
-
-            for (Case caseCible : bloc.getListeCases()) {
-                boolean autresRemplies = true;
-                for (Case c : bloc.getListeCases()) {
-                    if (c != caseCible && c.getValeur() == 0) { autresRemplies = false; break; }
-                }
-
-                if (autresRemplies) {
-                    int chiffreSolution = 0;
-                    int valeurOriginale = caseCible.getValeur();
-
-                    for (int v = 1; v <= taille; v++) {
-                        if (grille.estCoupValide(caseCible.getX(), caseCible.getY(), v)) {
-                            caseCible.setValeur(v);
-                            boolean mathOk = bloc.groupementValide();
-                            caseCible.setValeur(valeurOriginale); 
-                            if (mathOk) { chiffreSolution = v; break; }
-                        }
-                    }
-
-                    if (chiffreSolution != 0) {
-                        if (valeurOriginale == chiffreSolution) continue;
-
-                        boolean contientErreur = (valeurOriginale != 0 && valeurOriginale != caseCible.getSolution());
-                        
-                        Map<Case, Integer> solutions = new HashMap<>(); // Vide
-                        List<Case> casesASurbriller = new ArrayList<>();
-                        String message;
-
-                        if (contientErreur) {
-                            casesASurbriller.add(caseCible);
-                            message = "Erreur mathématique ! Toutes les autres cases de ce bloc sont remplies.\n" +
-                                      "Pour atteindre le résultat cible, cette case doit obligatoirement avoir une valeur précise.";
-                            return new Indice("Calcul Final du Bloc", message, casesASurbriller, solutions, true);
-                        } else if (indiceNormal == null) {
-                            casesASurbriller.addAll(bloc.getListeCases());
-                            message = "Toutes les cases d'un bloc sont remplies sauf une.\n" +
-                                      "Faites le calcul mathématique avec l'opération du bloc pour déduire ce qui manque !";
-                            indiceNormal = new Indice("Calcul Final du Bloc", message, casesASurbriller, solutions, false);
-                        }
-                    }
+        // 1. Récupérer tous les blocs uniques de la grille pour éviter les doublons
+        Set<GroupementCases> tousLesBlocs = new HashSet<>();
+        for (int i = 0; i < taille; i++) {
+            for (int j = 0; j < taille; j++) {
+                GroupementCases bloc = grille.getCase(i, j).getGroupement();
+                if (bloc != null) {
+                    tousLesBlocs.add(bloc);
                 }
             }
         }
-        return indiceNormal;
+
+        // 2. Parcourir et analyser chaque bloc de la grille
+        for (GroupementCases bloc : tousLesBlocs) {
+            
+            // On ignore les blocs de 1 seule case (une autre technique comme TechniqueBlocUnique s'en charge)
+            if (bloc.getListeCases().size() <= 1) continue;
+
+            int nbCasesVides = 0;
+            boolean contientErreur = false;
+
+            // On inspecte les cases du bloc
+            for (Case c : bloc.getListeCases()) {
+                if (c.getValeur() == 0) {
+                    nbCasesVides++;
+                } else if (c.getValeur() != c.getSolution()) {
+                    contientErreur = true; // Une case déjà remplie est fausse
+                }
+            }
+
+            // CORRECTION DU BUG : 
+            // On ne déclenche l'indice QUE s'il reste EXACTEMENT 1 case vide (nbCasesVides == 1).
+            // On s'assure aussi que les autres cases sont justes pour ne pas donner un calcul faussé.
+            if (nbCasesVides == 1 && !contientErreur) {
+                
+                List<Case> surbrillance = new ArrayList<>(bloc.getListeCases());
+                Map<Case, Integer> solutions = new HashMap<>();
+                
+                String symbole = bloc.getOperation() != null ? bloc.getOperation().getSymbole() : "";
+                String message = "Technique de la dernière case : Il ne reste qu'une seule case vide dans ce bloc.\n"
+                               + "Vous pouvez facilement déduire sa valeur en utilisant l'opération (" 
+                               + symbole + ") et le résultat cible (" + bloc.getResultatCible() + ").";
+                
+                // On ajoute l'indice trouvé à notre liste
+                indicesNormaux.add(new Indice("Dernière Case du Bloc", message, surbrillance, solutions, false));
+            }
+        }
+
+        // 3. Sélection aléatoire d'un indice parmi tous ceux détectés sur la grille
+        if (!indicesNormaux.isEmpty()) {
+            Random random = new Random();
+            return indicesNormaux.get(random.nextInt(indicesNormaux.size()));
+        }
+
+        return null;
     }
 }
