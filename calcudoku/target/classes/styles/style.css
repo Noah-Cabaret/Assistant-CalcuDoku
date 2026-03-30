@@ -7,8 +7,8 @@
 /* Grille */
 .case-grille { -fx-background-color: white; -fx-border-color: #d0d0d0; -fx-border-width: 0.5px; }
 .case-selectionnee { -fx-background-color: #bbdefb !important; } 
-.label-valeur { -fx-font-family: 'Arial'; -fx-font-weight: bold; -fx-text-fill: black; -fx-alignment: center; }
-.label-hypothese { -fx-font-family: 'Times New Roman'; -fx-font-style: italic; -fx-text-fill: #9e9e9e; -fx-font-weight: normal; }
+.label-valeur { -fx-font-family: 'Arial'; -fx-font-weight: bold; -fx-text-fill: black; -fx-alignment: center; -fx-font-size: 36px;}
+.label-hypothese { -fx-font-family: 'Times New Roman'; -fx-font-style: italic; -fx-text-fill: #737373 !important; -fx-font-weight: normal; -fx-font-size: 36px;}
 .label-indice { -fx-font-family: 'Arial'; -fx-font-weight: bold; -fx-text-fill: #333333; -fx-padding: 2px 0 0 4px; }
 .label-note { -fx-font-family: 'Arial'; -fx-text-fill: #666666; -fx-alignment: center; -fx-font-size: 10px; }
 .case-erreur { -fx-background-color: #ffcdd2 !important; -fx-border-color: #e57373 !important; -fx-border-width: 2px !important; }

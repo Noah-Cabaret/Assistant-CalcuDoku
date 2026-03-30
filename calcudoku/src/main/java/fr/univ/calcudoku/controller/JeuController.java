@@ -220,9 +220,9 @@ public class JeuController {
                     scene.getStylesheets().remove(cssPath);
                 }
             }
-            if (vueGrille != null) {
-                vueGrille.lookupAll(".label").forEach(noeud -> noeud.setStyle("-fx-text-fill: black;"));
-            }
+            // if (vueGrille != null) {
+            //     vueGrille.lookupAll(".label").forEach(noeud -> noeud.setStyle("-fx-text-fill: black;"));
+            // }
 
             // 2. Définir les palettes de couleurs
             String couleurTexte = sombre ? "white" : "black";
