@@ -312,6 +312,7 @@ public class JeuController {
                 save.hist.addEtape(caseModeleSelectionnee.getX(), caseModeleSelectionnee.getY(), valeur + (modeHypotheseActif ? 20 : 0));
                 caseModeleSelectionnee.setValeur(valeur);   
                 vueCaseSelectionnee.setEstHypothese(modeHypotheseActif);
+                rafraichirAnnotations(caseModeleSelectionnee.getX(), caseModeleSelectionnee.getY(), valeur);
                 rafraichirZoneCombinaisons(caseModeleSelectionnee);
                 if (bulleAide.isVisible()) {
                     btnActualiserAide.setVisible(true);
@@ -498,6 +499,21 @@ public class JeuController {
             labelCombinaisons.setText(sb.toString());
             labelCombinaisons.setStyle("-fx-text-fill: black; -fx-font-weight: normal;");
             labelCombinaisons.setWrapText(true);
+        }
+    }
+
+    private void rafraichirAnnotations(int targetX, int targetY, int valeurJouee) {
+        int taille = grilleModele.getTaille();
+
+        for (int i = 0; i < taille; i++) {
+            if (i != targetY) {
+                Case c = grilleModele.getCase(targetX, i);
+                c.supprimerUneNote(valeurJouee);
+            }
+                        if (i != targetX) {
+                Case c = grilleModele.getCase(i, targetY);
+                c.supprimerUneNote(valeurJouee); 
+            }
         }
     }
     

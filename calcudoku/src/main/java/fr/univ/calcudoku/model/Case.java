@@ -128,6 +128,17 @@ public class Case implements ElementVisitable {
     }
 
     /**
+    * Supprime une annotation de la case.
+    * @param valeur le numéro de l'annotation à supprimer
+    */
+    public void supprimerUneNote(int valeur) {
+        if (this.annotations != null) 
+        {
+            this.annotations.remove(Integer.valueOf(valeur)); 
+        }
+    }
+
+    /**
      * Retourne l'ensemble observable des annotations de la case.
      * @return l'ensemble des numéros notés
      */
