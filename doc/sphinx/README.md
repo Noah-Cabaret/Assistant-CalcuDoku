@@ -4,7 +4,7 @@ Bienvenue dans ce guide à la génération du manuel utilisateur de l'*Assistant
 
 Ce répertoire contient le projet [Sphinx](https://sphinx-doc.org) pour le manuel. Afin d'alléger ce dépôt et le rendre plus portable, il ne contient donc que ses sources en [*reStructuredText*](https://docutils.sourceforge.io/rst.html) et les fichiers utilitaires permettant à Sphinx de mettre en forme le manuel.
 
-Ce guide part du principe que vous utilisez un système d'exploitation de type [Linux](https://kernel.org), car le développement y est bien plus facile, notamment concernant l'installation des dépendances de Sphinx.
+Ce guide part du principe que vous utilisez un système d'exploitation de type [Linux](https://kernel.org), car le développement y est bien plus facile, notamment concernant l'installation des dépendances de Sphinx. Si vous êtes sous [macOS/OS X](https://www.apple.com/os/macos/), les commandes demanderont possiblement de légère adaptations, mais devraient rester similairement fonctionnelles.
 
 ## Générer le manuel
 
