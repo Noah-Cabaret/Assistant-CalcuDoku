@@ -17,8 +17,8 @@
     <top>
         <BorderPane style="-fx-padding: 0 0 20 0;">
             <left>
-                <Button onAction="#onRetourClick" style="-fx-background-color: transparent; -fx-cursor: hand;">
-                     <graphic><FontIcon iconLiteral="fas-arrow-left" iconSize="35" /></graphic>
+                <Button fx:id="btnRetour" onAction="#onRetourClick" style="-fx-background-color: transparent; -fx-cursor: hand;">
+                     <graphic><FontIcon styleClass="icon-retour" iconLiteral="fas-arrow-left" iconSize="35" /></graphic>
                 </Button>
             </left>
             <center>

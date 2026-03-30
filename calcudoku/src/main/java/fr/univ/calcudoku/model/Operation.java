@@ -21,7 +21,6 @@ public enum Operation {
         @Override
         public int calculer(List<Integer> valeurs) {
             if (valeurs.isEmpty()) return 0;
-            // CORRECTION : On cherche juste le min et le max sans modifier la liste !
             int max = Collections.max(valeurs);
             int min = Collections.min(valeurs);
             return max - min;
@@ -44,7 +43,6 @@ public enum Operation {
         @Override
         public int calculer(List<Integer> valeurs) {
             if (valeurs.isEmpty()) return 0;
-            // CORRECTION : On cherche juste le min et le max sans modifier la liste !
             int max = Collections.max(valeurs);
             int min = Collections.min(valeurs);
             

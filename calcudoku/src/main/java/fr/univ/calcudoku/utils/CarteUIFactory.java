@@ -12,19 +12,14 @@ import javafx.scene.layout.VBox;
  */
 public class CarteUIFactory {
 
-    /**
-     * Crée une VBox représentant une grille (image, titre, temps) prête à l'emploi.
-     */
     public static VBox creerCarteGrille(String titreText, String tempsText, Image imageGrille, Region conteneurParent, Runnable actionClic) {
         VBox vBox = new VBox(10);
         vBox.setMinSize(0, 0);
         vBox.setAlignment(Pos.CENTER);
 
-        // Les effets de survol de la souris
         String styleNormal = "-fx-cursor: hand; -fx-padding: 10; -fx-background-color: transparent; -fx-border-color: transparent; -fx-border-radius: 10; -fx-background-radius: 10;";
         String styleHover = "-fx-cursor: hand; -fx-padding: 10; -fx-background-color: #f5f5f5; -fx-border-color: #cccccc; -fx-border-radius: 10; -fx-background-radius: 10;";
 
-        // Si le mode sombre est activé, on met un fond de survol plus foncé !
         if (fr.univ.calcudoku.MainApp.modeSombreActif) {
             styleHover = "-fx-cursor: hand; -fx-padding: 10; -fx-background-color: #444444; -fx-border-color: #777777; -fx-border-radius: 10; -fx-background-radius: 10;";
         }
@@ -34,7 +29,6 @@ public class CarteUIFactory {
         vBox.setOnMouseEntered(e -> vBox.setStyle(finalStyleHover));
         vBox.setOnMouseExited(e -> vBox.setStyle(styleNormal));
 
-        // L'image de la grille
         ImageView vueMiniature = new ImageView();
         if (imageGrille != null) {
             vueMiniature.setImage(imageGrille);
@@ -42,7 +36,6 @@ public class CarteUIFactory {
             vueMiniature.setStyle("-fx-background-color: lightgray;");
         }
 
-        // Le rendu Elastique/Responsive
         javafx.beans.binding.NumberBinding tailleHauteur = conteneurParent.heightProperty().multiply(0.60);
         javafx.beans.binding.NumberBinding tailleLargeur = conteneurParent.widthProperty().divide(3.5);
         javafx.beans.binding.NumberBinding tailleMax = javafx.beans.binding.Bindings.min(tailleHauteur, tailleLargeur);
@@ -51,11 +44,9 @@ public class CarteUIFactory {
         vueMiniature.fitWidthProperty().bind(tailleMax);
         vueMiniature.setPreserveRatio(true);
 
-        // Les textes
         Label titre = new Label(titreText);
         Label lblTemps = new Label(tempsText);
 
-        // --- ADAPTATION AU MODE SOMBRE ---
         if (fr.univ.calcudoku.MainApp.modeSombreActif) {
             titre.setStyle("-fx-font-family: 'Arial'; -fx-font-weight: bold; -fx-font-size: 13px; -fx-text-fill: white;");
             lblTemps.setStyle("-fx-font-family: 'Arial'; -fx-font-size: 11px; -fx-text-fill: #cccccc;");
@@ -66,7 +57,6 @@ public class CarteUIFactory {
 
         vBox.getChildren().addAll(vueMiniature, titre, lblTemps);
 
-        // L'action quand on clique sur la carte
         vBox.setOnMouseClicked(e -> {
             if (actionClic != null) actionClic.run();
         });
@@ -74,9 +64,6 @@ public class CarteUIFactory {
         return vBox;
     }
 
-    /**
-     * Crée une carte grisée pour les niveaux non disponibles (Menu Libre)
-     */
     public static VBox creerCarteVide(String titreText, Region conteneurParent) {
         VBox carteVide = new VBox(10);
         carteVide.setAlignment(Pos.CENTER);

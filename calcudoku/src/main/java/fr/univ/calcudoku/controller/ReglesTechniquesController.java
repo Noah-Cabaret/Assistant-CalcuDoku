@@ -2,6 +2,7 @@ package fr.univ.calcudoku.controller;
 
 import fr.univ.calcudoku.MainApp;
 import fr.univ.calcudoku.utils.CacheRessources;
+import fr.univ.calcudoku.utils.Constantes;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -16,6 +17,7 @@ import java.util.List;
 public class ReglesTechniquesController {
 
     @FXML private ToggleGroup groupeOnglets;
+    @FXML private Button btnRetour;
     @FXML private Label lblTitreHaut;
     @FXML private Label lblTexte;
     @FXML private ImageView imgExemple;
@@ -31,6 +33,8 @@ public class ReglesTechniquesController {
     // --- SYSTÈME DE PAGINATION ---
     private List<PageContenu> pagesDeLaSection = new ArrayList<>();
     private int indexPageActuelle = 0;
+
+    public static String pagePrecedente = "/fxml/menu.fxml";
 
     // Petite classe interne pour stocker les infos d'une page
     private class PageContenu {
@@ -73,6 +77,10 @@ public class ReglesTechniquesController {
             
             if (iconPrecedent != null) iconPrecedent.setIconColor(Color.WHITE);
             if (iconSuivant != null) iconSuivant.setIconColor(Color.WHITE);
+            // --> ON AJOUTE LA FLÈCHE DE RETOUR EN BLANC
+            if (btnRetour != null && btnRetour.getGraphic() instanceof FontIcon) {
+                ((FontIcon) btnRetour.getGraphic()).setIconColor(Color.WHITE);
+            }
         } else {
             lblTitreHaut.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-border-color: black; -fx-border-radius: 10; -fx-padding: 10 30 10 30; -fx-text-fill: black;");
             lblTexte.setStyle("-fx-font-size: 16px; -fx-line-spacing: 5px; -fx-text-fill: black;");
@@ -82,6 +90,10 @@ public class ReglesTechniquesController {
             
             if (iconPrecedent != null) iconPrecedent.setIconColor(Color.BLACK);
             if (iconSuivant != null) iconSuivant.setIconColor(Color.BLACK);
+            // --> ON AJOUTE LA FLÈCHE DE RETOUR EN NOIR
+            if (btnRetour != null && btnRetour.getGraphic() instanceof FontIcon) {
+                ((FontIcon) btnRetour.getGraphic()).setIconColor(Color.BLACK);
+            }
         }
 
         // Charger la première section par défaut
@@ -302,7 +314,7 @@ public class ReglesTechniquesController {
             actionRetour = null;
             action.run();
         } else {
-            MainApp.changerScene("/fxml/menu.fxml");
+            MainApp.changerScene(Constantes.VUE_MENU);
         }
     }
 }

@@ -1,8 +1,7 @@
 {
-  "id": 34,
+  "id": "libre_9_2_2",
   "dim": 9,
   "temps": 0,
-  "difficulte": "Expert",
   "blocs": [
     { "result": 4, "op": "/", "nums": { "0,0": 2, "1,0": 8 } },
     { "result": 3, "op": "/", "nums": { "2,0": 1, "3,0": 3 } },

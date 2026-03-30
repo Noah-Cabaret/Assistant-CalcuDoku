@@ -1,64 +1,89 @@
 package fr.univ.calcudoku.service.aide.technique;
 
+import fr.univ.calcudoku.model.Case;
 import fr.univ.calcudoku.model.Grille;
 import fr.univ.calcudoku.model.GroupementCases;
 import fr.univ.calcudoku.model.Indice;
-import fr.univ.calcudoku.model.Case;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 /**
- * Technique : Intra Bloc (Petit L).
- * Analyse un bloc de 3 cases en forme de L qui nécessite obligatoirement un chiffre en double.
- * Le doublon doit être aux extrémités pour ne pas violer les règles du carré latin.
+ * Technique d'aide : Intra-bloc pour les formes en "Petit L" (3 cases).
+ * Permet de forcer le placement de doublons aux extrémités du "L".
  */
 public class TechniqueIntraBloc_1_3 extends TechniqueIntraBloc {
 
+    /**
+     * Analyse les blocs de 3 cases en forme de "L".
+     * @param grille La grille à analyser.
+     * @return Un Indice avec des messages progressifs.
+     */
     @Override
     public Indice analyser(Grille grille) {
-        Indice indiceNormal = null;
+        List<Indice> indicesErreurs = new ArrayList<>();
+        List<Indice> indicesNormaux = new ArrayList<>();
 
         for (GroupementCases bloc : grille.getListeGroupements()) {
             
-            // On vérifie la topologie : 3 cases, formant un "L" (pas une ligne)
             if (bloc.getListeCases().size() == 3 && verifierTopologiePetitL(bloc)) {
                 
-                List<Integer> combinaisonUnique = getUniqueCombinaison(bloc);
+                List<List<Integer>> combosPossibles = bloc.getCombinaisonsMaths();
+                List<List<Integer>> combosValides = getCombinaisonsValides(grille, bloc);
                 
-                if (combinaisonUnique != null && aDesChiffresIdentiques(combinaisonUnique)) {
+                if (combosValides.size() == 1) {
+                    List<Integer> combinaisonUnique = combosValides.get(0);
                     
-                    boolean contientErreur = false;
-                    List<Case> casesFausses = new ArrayList<>();
-                    Map<Case, Integer> solutions = new HashMap<>();
+                    if (aDesChiffresIdentiques(combinaisonUnique)) {
+                        
+                        int nbCasesVides = 0;
+                        boolean contientErreur = false;
+                        List<Case> casesFausses = new ArrayList<>();
 
-                    for (Case c : bloc.getListeCases()) {
-                                                
-                        if (c.getValeur() != 0 && c.getValeur() != c.getSolution()) {
-                            contientErreur = true;
-                            casesFausses.add(c);
+                        for (Case c : bloc.getListeCases()) {
+                            if (c.getValeur() == 0) nbCasesVides++;
+                            else if (c.getValeur() != c.getSolution()) { contientErreur = true; casesFausses.add(c); }
                         }
-                    }
 
-                    boolean estParfait = true;
-                    for (Case c : bloc.getListeCases()) {
-                        if (c.getValeur() != c.getSolution()) estParfait = false;
-                    }
+                        if (!contientErreur && nbCasesVides <= 1) continue;
 
-                    if (!estParfait) {
+                        Map<Case, Integer> solutions = new HashMap<>();
+                        List<String> messages = new ArrayList<>();
+
                         if (contientErreur) {
-                            return new Indice("Technique Intra-bloc", "Erreur détectée ! Ce bloc force le placement d'un doublon mathématique.\nLes chiffres en surbrillance sont mal placés.", casesFausses, solutions, true);
-                        } else if (indiceNormal == null) {
-                            String msg = "Techniques intra-bloc : Ce bloc en forme de 'L' n'a qu'une seule combinaison possible qui contient un chiffre en double.\nPour ne pas violer les règles, ces doublons doivent obligatoirement être placés aux deux extrémités du 'L' !";
-                            indiceNormal = new Indice("Technique Intra-bloc", msg, bloc.getListeCases(), solutions, false);
+                            messages.add("Il y a un problème de placement dans un bloc en forme de 'L'.");
+                            messages.add("Ce bloc force l'utilisation d'un doublon, mais vos chiffres actuels créent un conflit.");
+                            messages.add("Erreur détectée ! Au vu de la grille, le bloc en surbrillance force un doublon mathématique, mais les chiffres placés sont faux.");
+                            indicesErreurs.add(new Indice("Technique Intra-bloc (Petit L)", messages, casesFausses, solutions, true));
+                        } else {
+                            String comboStr = combinaisonUnique.toString().replace("[", "").replace("]", "");
+                            String symbole = bloc.getOperation() != null ? bloc.getOperation().getSymbole() : "";
+                            int cible = bloc.getResultatCible();
+                            
+                            messages.add("Observez la forme des blocs. Certains blocs coudés (en 'L') ont des propriétés particulières.");
+                            messages.add("La seule combinaison valable pour ce bloc nécessite un chiffre en double. Réfléchissez à comment placer un doublon sans violer les règles.");
+                            
+                            if (combosPossibles.size() == 1) {
+                                messages.add("Déduction intra-bloc : Pour atteindre " + cible + " (" + symbole + "), la seule combinaison du bloc en surbrillance est (" + comboStr + "). Le chiffre en double doit obligatoirement être placé aux deux extrémités du 'L' !");
+                            } else {
+                                messages.add("Déduction intra-bloc : Par élimination avec la grille, la seule combinaison du bloc en surbrillance est (" + comboStr + "). Le chiffre en double doit être placé aux deux extrémités du 'L' !");
+                            }
+                            
+                            indicesNormaux.add(new Indice("Technique Intra-bloc (Petit L)", messages, bloc.getListeCases(), solutions, false));
                         }
                     }
                 }
             }
         }
-        return indiceNormal; 
+
+        Random rand = new Random();
+        if (!indicesErreurs.isEmpty()) return indicesErreurs.get(rand.nextInt(indicesErreurs.size()));
+        if (!indicesNormaux.isEmpty()) return indicesNormaux.get(rand.nextInt(indicesNormaux.size()));
+
+        return null; 
     }
 
     private boolean verifierTopologiePetitL(GroupementCases bloc) {

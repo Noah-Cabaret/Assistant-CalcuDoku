@@ -5,6 +5,7 @@ import fr.univ.calcudoku.model.DonneesNiveau;
 import fr.univ.calcudoku.service.ProfileManager;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.image.Image;
@@ -28,7 +29,6 @@ public class ProfilController {
     @FXML private Label lblNomProfil;
     @FXML private VBox boxCentrale;
     
-    // --- NOUVEAU : Labels des statistiques complets ---
     @FXML private Label lblPartiesJouees, lblVictoires, lblTempsMoyen, lblTauxReussite, lblNiveauAventure, lblDifficulteMax, lblMeilleurScore;
     
     @FXML private RadioButton radioSombre, radioClair;
@@ -36,12 +36,13 @@ public class ProfilController {
     @FXML private javafx.scene.control.ToggleGroup groupeAide;
     @FXML private HBox boxParties;
     @FXML private javafx.scene.control.ToggleGroup groupeTheme;
+    @FXML private Button btnRetour;
+    @FXML private Button btnDeconnexion;
 
     @FXML
     public void initialize() {
         ProfileManager manager = MainApp.getProfileManager();
         String nomActuel = manager.getProfilActif();
-        if (nomActuel == null) nomActuel = "Invité";
 
         lblNomProfil.setText(nomActuel);
         chargerAvatar();
@@ -149,7 +150,6 @@ public class ProfilController {
     private void chargerStatistiquesProfil(String nom, ProfileManager manager) {
         Map<String, String> stats = manager.lireStatistiques(nom);
 
-        // --- NOUVEAU : Affichage de toutes les statistiques ---
         if (lblPartiesJouees != null) lblPartiesJouees.setText("Parties jouées : " + stats.getOrDefault("parties_jouees", "0"));
         if (lblVictoires != null) lblVictoires.setText("Victoires : " + stats.getOrDefault("victoires", "0"));
         lblTempsMoyen.setText("Temps moyen : " + formatTemps(stats.getOrDefault("temps_moyen", "0")));
@@ -172,6 +172,9 @@ public class ProfilController {
         String aide = stats.getOrDefault("aide_calcul", "combinaisons");
         if (aide.equals("calculatrice") && radioProfilCalculatrice != null) radioProfilCalculatrice.setSelected(true);
         else if (radioProfilCombinaisons != null) radioProfilCombinaisons.setSelected(true);
+
+        // On force le redessinage complet des icônes au chargement de la page
+        javafx.application.Platform.runLater(() -> activerModeSombre(isSombre));
     }
     
     private void chargerAvatar() { imgAvatar.setIconColor(MainApp.modeSombreActif ? Color.WHITE : Color.BLACK); }
@@ -181,7 +184,6 @@ public class ProfilController {
             int totalSecondes = Integer.parseInt(s);
             int minutes = totalSecondes / 60;
             int secondes = totalSecondes % 60;
-            // %02d permet de forcer l'affichage sur 2 chiffres (ex: 05:09 au lieu de 5:9)
             return String.format("%02d:%02d", minutes, secondes);
         } catch (Exception e) { 
             return "00:00"; 
@@ -199,7 +201,45 @@ public class ProfilController {
                 sceneActuelle.getStylesheets().remove(cssPath);
             }
         }
-        imgAvatar.setIconColor(activer ? Color.WHITE : Color.BLACK);
+
+        Color couleurC = activer ? Color.WHITE : Color.BLACK;
+        String couleurT = activer ? "white" : "black";
+
+        // --- CORRECTION DE LA FLÈCHE DE RETOUR ---
+        if (btnRetour != null) {
+            btnRetour.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-text-fill: " + couleurT + ";");
+            if (btnRetour.getGraphic() instanceof FontIcon) {
+                ((FontIcon) btnRetour.getGraphic()).setIconColor(couleurC);
+            }
+        }
+
+        // --- CORRECTION DU BOUTON DÉCONNEXION---
+        if (btnDeconnexion != null) {
+            if (btnDeconnexion.getGraphic() instanceof FontIcon) {
+                ((FontIcon) btnDeconnexion.getGraphic()).setIconColor(couleurC);
+            }
+        }
+
+        // --- CORRECTION DES BORDURES DES BOÎTES ---
+        String couleurBordure = activer ? "white" : "black";
+        
+        // 1. La boîte "Partie en cours" (C'est le 2ème élément de la boxCentrale)
+        if (boxCentrale.getChildren().size() > 1 && boxCentrale.getChildren().get(1) instanceof VBox) {
+            boxCentrale.getChildren().get(1).setStyle("-fx-border-color: " + couleurBordure + "; -fx-border-radius: 20; -fx-border-width: 1; -fx-padding: 10;");
+        }
+        
+        // 2. Les 3 boîtes du haut (Touches, Stats, Paramètres)
+        if (boxCentrale.getChildren().size() > 0 && boxCentrale.getChildren().get(0) instanceof HBox) {
+            HBox ligneHaut = (HBox) boxCentrale.getChildren().get(0);
+            for (javafx.scene.Node boite : ligneHaut.getChildren()) {
+                boite.setStyle("-fx-border-color: " + couleurBordure + "; -fx-border-radius: 20; -fx-border-width: 1; -fx-padding: 10;");
+            }
+        }
+        
+        // --- CORRECTION DE L'AVATAR ---
+        if (imgAvatar != null) {
+            imgAvatar.setIconColor(couleurC);
+        }
     }
 
     @FXML private void onRetourClick() { MainApp.changerScene(pagePrecedente); }

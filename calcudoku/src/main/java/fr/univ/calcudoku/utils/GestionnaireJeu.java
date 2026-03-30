@@ -13,7 +13,6 @@ import com.google.gson.Gson;
 import fr.univ.calcudoku.MainApp;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
@@ -30,7 +29,7 @@ public class GestionnaireJeu {
         javafx.application.Platform.runLater(() -> {
             try {
                 if (vueJeuCachee == null) {
-                    FXMLLoader loader = new FXMLLoader(GestionnaireJeu.class.getResource("/fxml/partie.fxml")); 
+                    FXMLLoader loader = new FXMLLoader(GestionnaireJeu.class.getResource(Constantes.VUE_PARTIE)); 
                     vueJeuCachee = loader.load();
                     controleurJeuCache = loader.getController();
                 }
@@ -47,7 +46,6 @@ public class GestionnaireJeu {
             DonneesNiveau data = GSON.fromJson(new InputStreamReader(is), DonneesNiveau.class);
             Grille grille = JsonToModelAdapter.convertir(data);
             
-            // --- CORRECTION : On extrait l'ID de la grille pour la sauvegarde ---
             String idGrille = fichierJsonRessource.replace(".json", "");
             
             lancerPartie(stage, grille, "Partie", data, idGrille, false);
@@ -57,10 +55,8 @@ public class GestionnaireJeu {
     public static void chargerPartieDepuisFichier(Stage stage, File fichier) {
         if (fichier == null || !fichier.exists()) return;
         try {
-            // 1. On récupère l'ID du niveau grâce au nom du fichier de sauvegarde
             String idGrille = fichier.getName().replace(".json", "");
 
-            // 2. On charge la grille DE BASE (les cages, le temps cible) depuis les ressources du jeu !
             InputStream is = GestionnaireJeu.class.getResourceAsStream("/grilles/json/" + idGrille + ".json");
             if (is == null) {
                 System.err.println("Erreur: Grille de base introuvable pour " + idGrille);
@@ -69,7 +65,6 @@ public class GestionnaireJeu {
             DonneesNiveau data = GSON.fromJson(new InputStreamReader(is), DonneesNiveau.class);
             Grille grille = JsonToModelAdapter.convertir(data);
             
-            // 3. On lance la partie en mode "reprise" (c'est Sauvegarde.java qui lira le tableau du joueur)
             lancerPartie(stage, grille, "Reprise Partie", data, idGrille, true);
             
         } catch (Exception e) { 
@@ -85,7 +80,7 @@ public class GestionnaireJeu {
                 root = vueJeuCachee;
                 controller = controleurJeuCache;
             } else {
-                FXMLLoader loader = new FXMLLoader(GestionnaireJeu.class.getResource("/fxml/partie.fxml"));
+                FXMLLoader loader = new FXMLLoader(GestionnaireJeu.class.getResource(Constantes.VUE_PARTIE));
                 root = loader.load();
                 controller = loader.getController();
             }
@@ -93,14 +88,11 @@ public class GestionnaireJeu {
             save = new Sauvegarde();
             save.setIdGrille(idGrille);
             
-            // --- CORRECTION : SÉPARATION CLAIRE AVENTURE / LIBRE ---
             if (idGrille.startsWith("aventure")) {
                 save.setMode(Sauvegarde.ModeDeJeu.AVEN);
-                // On fixe une valeur par défaut silencieuse pour l'aventure
                 save.setDiff(Sauvegarde.Difficulte.FACIL); 
             } else if (idGrille.startsWith("libre")) {
                 save.setMode(Sauvegarde.ModeDeJeu.LIBR);
-                // En libre, on lit la vraie difficulté dans le nom (ex: libre_5_2_1 -> 2 = MOYEN)
                 String[] parts = idGrille.split("_");
                 if (parts.length >= 3) {
                     if (parts[2].equals("2")) save.setDiff(Sauvegarde.Difficulte.MOYEN);
@@ -113,11 +105,14 @@ public class GestionnaireJeu {
                 String nomActuel = MainApp.getProfileManager().getProfilActif();
                 if (nomActuel == null) nomActuel = "Invité";
                 save.charger(nomActuel, grille);
+                
+                if (data.temps != null) save.tmp.setTempsMax(data.temps);
+                
             } else {
                 if (data.defi != null) save.setDefi(data.defi);
                 else save.setDefi(Defi.TypeDefi.AUCUN);
                 save.setVies(data.vies);
-                save.tmp.setTempsMax(data.temps);
+                if (data.temps != null) save.tmp.setTempsMax(data.temps);
             }
             
             controller.initialiserPartie(grille, save);
@@ -137,8 +132,6 @@ public class GestionnaireJeu {
 
             stage.setTitle(titre);
             stage.show();
-
-            if (!stage.isMaximized()) stage.setMaximized(true);
 
         } catch (Exception e) { e.printStackTrace(); }
     }
