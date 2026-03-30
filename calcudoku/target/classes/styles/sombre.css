@@ -81,10 +81,3 @@
     -fx-border-color: #888888 !important;
 }
 
-.case-selectionnee { 
-    -fx-background-color: #1565c0 !important; /* Un bleu plus sombre */
-}
-
-.case-erreur { 
-    -fx-background-color: #b71c1c !important; /* Un rouge sombre */
-}
