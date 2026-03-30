@@ -61,6 +61,9 @@ public class ChronoManager {
         if (timeline != null) {
             timeline.stop();
         }
+        if (tempsSave != null) {
+            tempsSave.arreter(); 
+        }
     }
 
     private void actualiserAffichage() {

@@ -11,7 +11,7 @@
 .label-hypothese { -fx-font-family: 'Times New Roman'; -fx-font-style: italic; -fx-text-fill: #737373 !important; -fx-font-weight: normal; -fx-font-size: 36px;}
 .label-indice { -fx-font-family: 'Arial'; -fx-font-weight: bold; -fx-text-fill: #333333; -fx-padding: 2px 0 0 4px; }
 .label-note { -fx-font-family: 'Arial'; -fx-text-fill: #666666; -fx-alignment: center; -fx-font-size: 10px; }
-.case-erreur { -fx-background-color: #ffcdd2 !important; -fx-border-color: #e57373 !important; -fx-border-width: 2px !important; }
+.case-erreur { -fx-background-color: #ffcdd2 !important; }
 
 /* Boutons Chiffres */
 .bouton-chiffre {
