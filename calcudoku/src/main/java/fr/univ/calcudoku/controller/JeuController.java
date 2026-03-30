@@ -459,6 +459,7 @@ public class JeuController {
                 caseModeleSelectionnee.setEstHypothese(modeHypotheseActif);
                 caseModeleSelectionnee.setValeur(valeur);   
                 vueCaseSelectionnee.setEstHypothese(modeHypotheseActif);
+                rafraichirAnnotations(caseModeleSelectionnee.getX(), caseModeleSelectionnee.getY(), valeur);
                 rafraichirZoneCombinaisons(caseModeleSelectionnee);
                 if (bulleAide != null && bulleAide.isVisible()) {
                     if (btnActualiserAide != null) {
@@ -579,6 +580,22 @@ public class JeuController {
             MainApp.changerScene(Constantes.VUE_MENU);
         }
     }
+
+    private void rafraichirAnnotations(int targetX, int targetY, int valeurJouee) {
+        int taille = grilleModele.getTaille();
+
+        for (int i = 0; i < taille; i++) {
+            if (i != targetY) {
+                Case c = grilleModele.getCase(targetX, i);
+                c.supprimerUneNote(valeurJouee);
+            }
+                        if (i != targetX) {
+                Case c = grilleModele.getCase(i, targetY);
+                c.supprimerUneNote(valeurJouee); 
+            }
+        }
+    }
+    
 
     @FXML void actionAbandonner(ActionEvent event) {
         if (menuDeroulant != null) menuDeroulant.setVisible(false);
