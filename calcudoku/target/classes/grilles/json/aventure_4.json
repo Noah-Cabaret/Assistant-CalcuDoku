@@ -2,7 +2,7 @@
   "id": "aventure_4",
   "dim": 7,
   "defi": "CHRON",
-  "temps": 300,
+  "temps": 600,
 "blocs": [
     { "result": 13, "op": "+", "nums": { "0,0": 6, "1,0": 7 } },
     { "result": 11, "op": "+", "nums": { "2,0": 2, "3,0": 4, "4,0": 5 } },

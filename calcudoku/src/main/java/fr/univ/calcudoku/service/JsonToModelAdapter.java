@@ -45,7 +45,8 @@ public class JsonToModelAdapter {
             case "-": return Operation.SOUSTRACTION;
             case "x": 
             case "*": return Operation.MULTIPLICATION; 
-            case "/": 
+            case "/":
+            case "∕": 
             case "÷": return Operation.DIVISION;       
             default: return Operation.RIEN;
         }

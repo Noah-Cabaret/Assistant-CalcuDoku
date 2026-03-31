@@ -68,57 +68,15 @@ public class Historique {
 
     public void appliquerUndo(Grille grilleModele, boolean modeHypotheseActif) {
         if (this.getIndex() > 0) {
-            Etape etapeAnnulee = this.getEtapeCourante();
-            int targetX = etapeAnnulee.getX();
-            int targetY = etapeAnnulee.getY();
             this.index--;
-            Case caseCible = grilleModele.getCase(targetX, targetY);
-            caseCible.setValeur(0);
-            caseCible.effacerNotes();
-
-            for (int k = 1; k <= this.index; k++) {
-                Etape e = this.hist.get(k);
-                if (e.getX() == targetX && e.getY() == targetY) {
-                    if (e.normale()) {
-                        caseCible.effacerNotes();
-                        caseCible.setValeur(e.getN());
-                    } else if (e.annotation()) {
-                        caseCible.basculerNote(e.getN() - 10);
-                    } else if (e.hypotheseNormale()) {
-                        caseCible.effacerNotes();
-                        caseCible.setValeur(e.getN() - 20);
-                    } else if (e.hypotheseAnnotation()) {
-                        caseCible.basculerNote(e.getN() - 30);
-                    }
-
-                    if (e.getN() == 0 || e.getN() == 20) {
-                        caseCible.setValeur(0);
-                        caseCible.effacerNotes();
-                    }
-                }
-            }
+            reconstruireGrilleComplete(grilleModele);
         }
     }
 
     public void appliquerRedo(Grille grilleModele) {
         if (this.getIndex() < this.taille() - 1) {
-            Etape etapeSuivante = this.suivant();
-            Case caseCible = grilleModele.getCase(etapeSuivante.getX(), etapeSuivante.getY());
-
-            if (etapeSuivante.getN() == 0 || etapeSuivante.getN() == 20) {
-                caseCible.setValeur(0);
-                caseCible.effacerNotes();
-            } else if (etapeSuivante.normale()) {
-                caseCible.effacerNotes();
-                caseCible.setValeur(etapeSuivante.getN());
-            } else if (etapeSuivante.annotation()) {
-                caseCible.basculerNote(etapeSuivante.getN() - 10);
-            } else if (etapeSuivante.hypotheseNormale()) {
-                caseCible.effacerNotes();
-                caseCible.setValeur(etapeSuivante.getN() - 20);
-            } else if (etapeSuivante.hypotheseAnnotation()) {
-                caseCible.basculerNote(etapeSuivante.getN() - 30);
-            }
+            this.index++;
+            reconstruireGrilleComplete(grilleModele);
         }
     }
 
@@ -137,15 +95,64 @@ public class Historique {
     }
 
     public void rollbackHypotheses(Grille grilleModele, boolean modeHypotheseActif) {
+        boolean changed = false;
         while (this.getIndex() > 0) {
             Etape e = this.hist.get(this.index);
             if (e.hypotheseNormale() || e.hypotheseAnnotation()) {
-                appliquerUndo(grilleModele, modeHypotheseActif);
+                this.index--;
+                changed = true;
             } else {
                 break;
             }
         }
+        if (changed) {
+            reconstruireGrilleComplete(grilleModele);
+        }
         this.viderQueue();
+    }
+
+    private void reconstruireGrilleComplete(Grille grilleModele) {
+        for (int y = 0; y < grilleModele.getTaille(); y++) {
+            for (int x = 0; x < grilleModele.getTaille(); x++) {
+                Case c = grilleModele.getCase(x, y);
+                c.setValeur(0);
+                c.effacerNotes();
+                c.setEstHypothese(false);
+            }
+        }
+
+        for (int k = 1; k <= this.index; k++) {
+            Etape e = this.hist.get(k);
+            Case c = grilleModele.getCase(e.getX(), e.getY());
+            
+            if (e.getN() == 0 || e.getN() == 20) {
+                c.setValeur(0);
+                c.effacerNotes();
+                c.setEstHypothese(false);
+            } else if (e.normale()) {
+                c.effacerNotes();
+                c.setValeur(e.getN());
+                c.setEstHypothese(false);
+                supprimerNotesLigneColonne(grilleModele, e.getX(), e.getY(), e.getN());
+            } else if (e.annotation()) {
+                c.basculerNote(e.getN() - 10);
+            } else if (e.hypotheseNormale()) {
+                c.effacerNotes();
+                c.setValeur(e.getN() - 20);
+                c.setEstHypothese(true);
+                supprimerNotesLigneColonne(grilleModele, e.getX(), e.getY(), e.getN() - 20);
+            } else if (e.hypotheseAnnotation()) {
+                c.basculerNote(e.getN() - 30);
+            }
+        }
+    }
+
+    private void supprimerNotesLigneColonne(Grille grille, int targetX, int targetY, int valeur) {
+        int taille = grille.getTaille();
+        for (int i = 0; i < taille; i++) {
+            if (i != targetY) grille.getCase(targetX, i).supprimerUneNote(valeur);
+            if (i != targetX) grille.getCase(i, targetY).supprimerUneNote(valeur);
+        }
     }
 
     @Override
