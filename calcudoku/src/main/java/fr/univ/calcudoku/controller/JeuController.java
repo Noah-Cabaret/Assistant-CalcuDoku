@@ -411,8 +411,7 @@ public class JeuController {
         
         String nomProfil = MainApp.getProfileManager().getProfilActif();
         int secEcoulees = (chronoManager != null) ? chronoManager.getSecondesEcoulees() : 0;
-        MainApp.getProfileManager().enregistrerFinDePartie(nomProfil, false, secEcoulees, 0, save.getDiff(), false);
-        if (save != null && save.getMode() != Sauvegarde.ModeDeJeu.AVEN) {
+        MainApp.getProfileManager().enregistrerFinDePartie(nomProfil, false, secEcoulees, 0, save.getDiff(), save.getIdGrille());        if (save != null && save.getMode() != Sauvegarde.ModeDeJeu.AVEN) {
             save.effacer(nomProfil);
         }
 
@@ -432,8 +431,7 @@ public class JeuController {
             long scoreCalcul = Math.max(0, (grilleModele.getTaille() * 1000) - (secEcoulees * 10));
             boolean estAventure = (save.getMode() == Sauvegarde.ModeDeJeu.AVEN);
 
-            MainApp.getProfileManager().enregistrerFinDePartie(nomProfil, true, secEcoulees, scoreCalcul, save.getDiff(), estAventure);
-            if (save != null) save.effacer(nomProfil);
+            MainApp.getProfileManager().enregistrerFinDePartie(nomProfil, true, secEcoulees, scoreCalcul, save.getDiff(), save.getIdGrille());            if (save != null) save.effacer(nomProfil);
 
             String msg = "Temps : " + (secEcoulees / 60) + " min " + (secEcoulees % 60) + " s.\nScore obtenu : " + scoreCalcul;
             PopupFactory.afficherPopupFinPartie("Victoire !", msg, Constantes.ICONE_VICTOIRE, Constantes.COULEUR_VICTOIRE, true, () -> actionRecommencer(null), () -> actionRetourMenu(null));
@@ -524,12 +522,22 @@ public class JeuController {
 
     @FXML void actionUndo(ActionEvent event) {
         save.hist.appliquerUndo(grilleModele, modeHypotheseActif);
-        if (caseModeleSelectionnee != null) rafraichirZoneCombinaisons(caseModeleSelectionnee);
+        synchroniserVuesApresHistorique();
     }
 
     @FXML void actionRedo(ActionEvent event) {
         save.hist.appliquerRedo(grilleModele);
+        synchroniserVuesApresHistorique();
+    }
+
+    private void synchroniserVuesApresHistorique() {
         if (caseModeleSelectionnee != null) rafraichirZoneCombinaisons(caseModeleSelectionnee);
+        for (int y = 0; y < grilleModele.getTaille(); y++) {
+            for (int x = 0; x < grilleModele.getTaille(); x++) {
+                Case c = grilleModele.getCase(x, y);
+                vueGrille.getGrilleVueCases(x, y).setEstHypothese(c.isEstHypothese());
+            }
+        }
     }
 
     @FXML void actionHypothese(ActionEvent event) {
@@ -610,8 +618,7 @@ public class JeuController {
         if (popupAbandon != null) popupAbandon.setVisible(false);
         String nomProfil = MainApp.getProfileManager().getProfilActif();
         int secEcoulees = (chronoManager != null) ? chronoManager.getSecondesEcoulees() : 0;
-        MainApp.getProfileManager().enregistrerFinDePartie(nomProfil, false, secEcoulees, 0, save.getDiff(), false);
-        
+        MainApp.getProfileManager().enregistrerFinDePartie(nomProfil, false, secEcoulees, 0, save.getDiff(), save.getIdGrille());        
         partiePerdue = true; 
         if (save != null) save.effacer(nomProfil);
         actionRetourMenu(event);
