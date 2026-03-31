@@ -97,7 +97,8 @@ public class Sauvegarde {
                     for (int j = 0; j < grille.getTaille(); j++) {
                         Case c = grille.getCase(i, j);
                         List<Integer> notes = new ArrayList<>(c.getNotes()); 
-                        matrice[i][j] = new CaseSauvegarde(c.getValeur(), notes);
+                        int valeurASauvegarder = c.getValeur() + (c.isEstHypothese() ? 20 : 0);
+                        matrice[i][j] = new CaseSauvegarde(valeurASauvegarder, notes);
                     }
                 }
                 new Gson().toJson(matrice, json);
@@ -176,7 +177,14 @@ public class Sauvegarde {
                         for (int i = 0; i < matrice.length; i++) {
                             for (int j = 0; j < matrice[i].length; j++) {
                                 Case c = grille.getCase(i, j);
-                                c.setValeur(matrice[i][j].valeur);
+                                int valLue = matrice[i][j].valeur;
+                                if (valLue >= 20) {
+                                    c.setValeur(valLue - 20);
+                                    c.setEstHypothese(true);
+                                } else {
+                                    c.setValeur(valLue);
+                                    c.setEstHypothese(false);
+                                }
                                 c.effacerNotes();
                                 if (matrice[i][j].notes != null) {
                                     for (int note : matrice[i][j].notes) {
@@ -191,8 +199,16 @@ public class Sauvegarde {
                         int[][] matrice = gson.fromJson(lecteurJson, int[][].class);
                         for (int i = 0; i < matrice.length; i++) {
                             for (int j = 0; j < matrice[i].length; j++) {
-                                grille.getCase(i, j).setValeur(matrice[i][j]);
-                                grille.getCase(i, j).effacerNotes();
+                                Case c = grille.getCase(i, j);
+                                int valLue = matrice[i][j];
+                                if (valLue >= 20) {
+                                    c.setValeur(valLue - 20);
+                                    c.setEstHypothese(true);
+                                } else {
+                                    c.setValeur(valLue);
+                                    c.setEstHypothese(false);
+                                }
+                                c.effacerNotes();
                             }
                         }
                     }

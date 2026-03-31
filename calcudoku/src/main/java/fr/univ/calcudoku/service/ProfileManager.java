@@ -71,7 +71,7 @@ public class ProfileManager {
         return profilActif;
     }
     
-    public void enregistrerFinDePartie(String nomProfil, boolean victoire, double temps, long score, Sauvegarde.Difficulte diff, boolean estAventure) {
+    public void enregistrerFinDePartie(String nomProfil, boolean victoire, double temps, long score, Sauvegarde.Difficulte diff, String idGrille) {
         Statistiques stats = new Statistiques();
         stats.charger(nomProfil);
 
@@ -81,7 +81,15 @@ public class ProfileManager {
             stats.setVictoires(stats.getVictoires() + 1);
             if (score > stats.getScore()) stats.setScore(score);
             if (diff != null && diff.ordinal() > stats.getDiffMax().ordinal()) stats.setDiffMax(diff);
-            if (estAventure) stats.setProgressionAventure(stats.getProgressionAventure() + 1);
+            
+            if (idGrille != null && idGrille.startsWith("aventure_")) {
+                try {
+                    int niveauGagne = Integer.parseInt(idGrille.replace("aventure_", ""));
+                    if (niveauGagne >= stats.getProgressionAventure()) {
+                        stats.setProgressionAventure(niveauGagne + 1);
+                    }
+                } catch (Exception e) {}
+            }
             
             double ancienneMoyenne = stats.getMoyenne() != null ? stats.getMoyenne() : 0.0;
             int nbVictoires = stats.getVictoires(); 

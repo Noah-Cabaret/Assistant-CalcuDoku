@@ -113,13 +113,13 @@ public class JeuController {
                 VueCase vc = vueGrille.getGrilleVueCases(x, y);
                 final Case modeleCase = grille.getCase(x, y);
                 vc.setOnMouseClicked(event -> selectionnerCase(vc, modeleCase));
+                vc.setEstHypothese(modeleCase.isEstHypothese());
             }
         }
         
-        initialiserClassesCSS(); // Appel de la nouvelle méthode de nettoyage
-        appliquerModeSombre(); // Appliquer le thème AVANT de générer les boutons
+        initialiserClassesCSS(); 
+        appliquerModeSombre(); 
         genererBoutonsNombres(grille.getTaille());
-        // Force le rafraîchissement CSS pour garantir le bon style dès le premier affichage
         conteneurBoutonsNombres.applyCss();
         conteneurBoutonsNombres.layout();
         
@@ -186,7 +186,6 @@ public class JeuController {
     }
 
     private void initialiserClassesCSS() {
-        // On détruit les styles inline de SceneBuilder (.setStyle("")) et on applique nos classes
         if (btnValider != null) { btnValider.setStyle(""); btnValider.getStyleClass().add("bouton-rond"); }
         if (btnAide != null) { btnAide.setStyle(""); btnAide.getStyleClass().add("bouton-rond"); }
         if (btnHypothese != null) { btnHypothese.setStyle(""); btnHypothese.getStyleClass().addAll("bouton-rond", "bouton-hypothese"); }
@@ -196,7 +195,6 @@ public class JeuController {
         if (menuDeroulant != null) { 
             menuDeroulant.setStyle(""); 
             menuDeroulant.getStyleClass().add("menu-deroulant"); 
-            // On nettoie aussi tous les boutons à l'intérieur du menu !
             for (javafx.scene.Node n : menuDeroulant.getChildren()) {
                 n.setStyle(""); 
             }
@@ -207,10 +205,8 @@ public class JeuController {
     private void appliquerModeSombre() {
         boolean sombre = MainApp.modeSombreActif;
         
-        // On place TOUT le code dans Platform.runLater pour s'assurer que JavaFX a fini de charger
         Platform.runLater(() -> {
             
-            // 1. Appliquer le CSS global
             javafx.scene.Scene scene = conteneurGrille.getScene();
             if (scene != null) {
                 String cssPath = getClass().getResource("/styles/sombre.css").toExternalForm();
@@ -220,14 +216,10 @@ public class JeuController {
                     scene.getStylesheets().remove(cssPath);
                 }
             }
-            // if (vueGrille != null) {
-            //     vueGrille.lookupAll(".label").forEach(noeud -> noeud.setStyle("-fx-text-fill: black;"));
-            // }
 
             String couleurTexte = sombre ? "white" : "black";
             String couleurFond = sombre ? "#2b2b2b" : "white";
             String couleurBordure = sombre ? "#888888" : "black";
-            // Des couleurs un peu plus claires pour faire ressortir les menus :
             String couleurMenuFond = sombre ? "#3b3b3b" : "white"; 
             String couleurBtnMenu = sombre ? "#4a4a4a" : "#f4f4f4";
             
@@ -235,7 +227,6 @@ public class JeuController {
             if (labelCombinaisons != null) labelCombinaisons.setStyle("-fx-text-fill: " + couleurTexte + ";");
             if (boiteCombinaisons != null) boiteCombinaisons.setStyle("-fx-background-color: " + couleurFond + "; -fx-border-color: " + couleurBordure + "; -fx-border-width: 1px; -fx-padding: 10px;");
             
-            //Correction du Menu Déroulant
             String couleurMenu = "-fx-background-color: " + couleurMenuFond + "; -fx-border-color: " + couleurBordure + "; -fx-border-width: 1px; -fx-background-radius: 8px; -fx-border-radius: 8px; -fx-padding: 15px; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 5);";
             if (menuDeroulant != null) {
                 menuDeroulant.setStyle(couleurMenu);
@@ -255,7 +246,6 @@ public class JeuController {
                 }
             }
 
-            // Correction des boutons ronds
             String styleRondBase = " -fx-border-width: 3px; -fx-border-radius: 50%; -fx-background-radius: 50%; -fx-cursor: hand; ";
             String couleurBoutonRond = sombre ? "-fx-background-color: #444444; -fx-border-color: #888888;" : "-fx-background-color: white; -fx-border-color: black;";
             
@@ -266,7 +256,7 @@ public class JeuController {
             if (btnAnnulerHypothese != null) btnAnnulerHypothese.setStyle(couleurBoutonRond + styleRondBase + "-fx-min-width: 45px; -fx-min-height: 45px;");
 
             Color iconColor = sombre ? Color.WHITE : Color.BLACK;
-            Button[] boutonsAvecIcones = {btnRetour, btnMenu, btnValider, btnAide, btnValiderHypothese, btnAnnulerHypothese, btnUndo, btnRedo, btnAnnoter, btnEffacer, btnCalculatrice, btnActualiserAide};
+            Button[] boutonsAvecIcones = {btnRetour, btnMenu, btnValider, btnAide, btnValiderHypothese, btnAnnulerHypothese, btnUndo, btnRedo, btnAnnoter, btnEffacer, btnCalculatrice};
             
             for (Button btn : boutonsAvecIcones) {
                 if (btn != null && btn.getGraphic() instanceof FontIcon) {
@@ -274,7 +264,6 @@ public class JeuController {
                 }
             }
 
-            //--->LA POPUP D'ABANDON <---
             if (popupAbandon != null && !popupAbandon.getChildren().isEmpty()) {
                 VBox boitePopup = (VBox) popupAbandon.getChildren().get(0);
                 boitePopup.setStyle("-fx-background-color: " + couleurMenuFond + "; -fx-background-radius: 12px; -fx-padding: 20px; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 15, 0, 0, 0);");
@@ -353,7 +342,6 @@ public class JeuController {
             for (int i = 1; i <= taille; i++) {
                 Button btnChiffre = new Button(String.valueOf(i));
                 btnChiffre.setMinSize(55, 55); 
-                // On délègue tout le design au CSS !
                 btnChiffre.getStyleClass().add("bouton-chiffre"); 
                 
                 final int valeur = i; 
@@ -385,15 +373,10 @@ public class JeuController {
                 if(i < combis.size() - 1) sb.append(" | ");
             }
             labelCombinaisons.setText(sb.toString());
-            // On laisse le CSS gérer la couleur du texte
             labelCombinaisons.setStyle("");
             labelCombinaisons.setWrapText(true);
         }
     }
-
-    // ========================================================
-    // LOGIQUE DE JEU, VICTOIRE, DEFAITE ET CLAVIER
-    // ========================================================
 
     private void sauvegarderPartie() {
         if (save != null && !partiePerdue && save.getIdGrille() != null && !save.getIdGrille().isEmpty()) {
@@ -428,9 +411,7 @@ public class JeuController {
         
         String nomProfil = MainApp.getProfileManager().getProfilActif();
         int secEcoulees = (chronoManager != null) ? chronoManager.getSecondesEcoulees() : 0;
-        MainApp.getProfileManager().enregistrerFinDePartie(nomProfil, false, secEcoulees, 0, save.getDiff(), false);
-        // Ne supprime plus la sauvegarde en cas de défaite en mode aventure
-        if (save != null && save.getMode() != Sauvegarde.ModeDeJeu.AVEN) {
+        MainApp.getProfileManager().enregistrerFinDePartie(nomProfil, false, secEcoulees, 0, save.getDiff(), save.getIdGrille());        if (save != null && save.getMode() != Sauvegarde.ModeDeJeu.AVEN) {
             save.effacer(nomProfil);
         }
 
@@ -450,9 +431,7 @@ public class JeuController {
             long scoreCalcul = Math.max(0, (grilleModele.getTaille() * 1000) - (secEcoulees * 10));
             boolean estAventure = (save.getMode() == Sauvegarde.ModeDeJeu.AVEN);
 
-            MainApp.getProfileManager().enregistrerFinDePartie(nomProfil, true, secEcoulees, scoreCalcul, save.getDiff(), estAventure);
-            // Supprime la sauvegarde seulement en cas de victoire
-            if (save != null) save.effacer(nomProfil);
+            MainApp.getProfileManager().enregistrerFinDePartie(nomProfil, true, secEcoulees, scoreCalcul, save.getDiff(), save.getIdGrille());            if (save != null) save.effacer(nomProfil);
 
             String msg = "Temps : " + (secEcoulees / 60) + " min " + (secEcoulees % 60) + " s.\nScore obtenu : " + scoreCalcul;
             PopupFactory.afficherPopupFinPartie("Victoire !", msg, Constantes.ICONE_VICTOIRE, Constantes.COULEUR_VICTOIRE, true, () -> actionRecommencer(null), () -> actionRetourMenu(null));
@@ -475,8 +454,10 @@ public class JeuController {
                     save.hist.addEtape(caseModeleSelectionnee.getX(), caseModeleSelectionnee.getY(), valeur + 10 + (modeHypotheseActif ? 20 : 0));
             } else {
                 save.hist.addEtape(caseModeleSelectionnee.getX(), caseModeleSelectionnee.getY(), valeur + (modeHypotheseActif ? 20 : 0));
+                caseModeleSelectionnee.setEstHypothese(modeHypotheseActif);
                 caseModeleSelectionnee.setValeur(valeur);   
                 vueCaseSelectionnee.setEstHypothese(modeHypotheseActif);
+                rafraichirAnnotations(caseModeleSelectionnee.getX(), caseModeleSelectionnee.getY(), valeur);
                 rafraichirZoneCombinaisons(caseModeleSelectionnee);
                 if (bulleAide != null && bulleAide.isVisible()) {
                     if (btnActualiserAide != null) {
@@ -497,6 +478,7 @@ public class JeuController {
 
     @FXML void actionEffacer(ActionEvent event) {
         if (caseModeleSelectionnee != null) {
+            caseModeleSelectionnee.setEstHypothese(false);
             caseModeleSelectionnee.setValeur(0);
             caseModeleSelectionnee.effacerNotes();
             if (bulleAide != null && bulleAide.isVisible()) {
@@ -538,18 +520,24 @@ public class JeuController {
         }
     }
 
-    // ========================================================
-    // UNDO / REDO / HYPOTHESES
-    // ========================================================
-
     @FXML void actionUndo(ActionEvent event) {
         save.hist.appliquerUndo(grilleModele, modeHypotheseActif);
-        if (caseModeleSelectionnee != null) rafraichirZoneCombinaisons(caseModeleSelectionnee);
+        synchroniserVuesApresHistorique();
     }
 
     @FXML void actionRedo(ActionEvent event) {
         save.hist.appliquerRedo(grilleModele);
+        synchroniserVuesApresHistorique();
+    }
+
+    private void synchroniserVuesApresHistorique() {
         if (caseModeleSelectionnee != null) rafraichirZoneCombinaisons(caseModeleSelectionnee);
+        for (int y = 0; y < grilleModele.getTaille(); y++) {
+            for (int x = 0; x < grilleModele.getTaille(); x++) {
+                Case c = grilleModele.getCase(x, y);
+                vueGrille.getGrilleVueCases(x, y).setEstHypothese(c.isEstHypothese());
+            }
+        }
     }
 
     @FXML void actionHypothese(ActionEvent event) {
@@ -573,13 +561,12 @@ public class JeuController {
         if (btnHypothese != null) btnHypothese.setDisable(false); 
         if (conteneurBoutonsHypothese != null) conteneurBoutonsHypothese.setVisible(false);
         for (int y = 0; y < grilleModele.getTaille(); y++) {
-            for (int x = 0; x < grilleModele.getTaille(); x++) vueGrille.getGrilleVueCases(x, y).setEstHypothese(false);
+            for (int x = 0; x < grilleModele.getTaille(); x++) {
+                grilleModele.getCase(x, y).setEstHypothese(false); // <-- LA CORRECTION EST LÀ !
+                vueGrille.getGrilleVueCases(x, y).setEstHypothese(false);
+            }
         }
     }
-
-    // ========================================================
-    // NAVIGATION & MENUS
-    // ========================================================
 
     @FXML void actionBasculerMenu(ActionEvent event) {
         if (menuDeroulant != null) menuDeroulant.setVisible(!menuDeroulant.isVisible());
@@ -590,8 +577,33 @@ public class JeuController {
         deconnecterClavier(); 
         if (chronoManager != null) chronoManager.arreter();
         JeuUtilitaires.cacherCalculatrice();
-        MainApp.changerScene(Constantes.VUE_MENU);
+        
+        if (save != null) {
+            if (save.getMode() == Sauvegarde.ModeDeJeu.AVEN) {
+                MainApp.changerScene(Constantes.VUE_MENU_AVENTURE);
+            } else {
+                MainApp.changerScene(Constantes.VUE_MENU_LIBRE);
+            }
+        } else {
+            MainApp.changerScene(Constantes.VUE_MENU);
+        }
     }
+
+    private void rafraichirAnnotations(int targetX, int targetY, int valeurJouee) {
+        int taille = grilleModele.getTaille();
+
+        for (int i = 0; i < taille; i++) {
+            if (i != targetY) {
+                Case c = grilleModele.getCase(targetX, i);
+                c.supprimerUneNote(valeurJouee);
+            }
+                        if (i != targetX) {
+                Case c = grilleModele.getCase(i, targetY);
+                c.supprimerUneNote(valeurJouee); 
+            }
+        }
+    }
+    
 
     @FXML void actionAbandonner(ActionEvent event) {
         if (menuDeroulant != null) menuDeroulant.setVisible(false);
@@ -606,8 +618,7 @@ public class JeuController {
         if (popupAbandon != null) popupAbandon.setVisible(false);
         String nomProfil = MainApp.getProfileManager().getProfilActif();
         int secEcoulees = (chronoManager != null) ? chronoManager.getSecondesEcoulees() : 0;
-        MainApp.getProfileManager().enregistrerFinDePartie(nomProfil, false, secEcoulees, 0, save.getDiff(), false);
-        
+        MainApp.getProfileManager().enregistrerFinDePartie(nomProfil, false, secEcoulees, 0, save.getDiff(), save.getIdGrille());        
         partiePerdue = true; 
         if (save != null) save.effacer(nomProfil);
         actionRetourMenu(event);
@@ -628,6 +639,7 @@ public class JeuController {
         for (int y = 0; y < grilleModele.getTaille(); y++) {
             for (int x = 0; x < grilleModele.getTaille(); x++) {
                 Case c = grilleModele.getCase(x, y);
+                c.setEstHypothese(false);
                 c.setValeur(0);
                 c.effacerNotes();
                 vueGrille.getGrilleVueCases(x, y).getStyleClass().remove(Constantes.CSS_CASE_ERREUR);
@@ -654,8 +666,6 @@ public class JeuController {
         deconnecterClavier(); 
         if (menuDeroulant != null) menuDeroulant.setVisible(false);
         if (chronoManager != null) chronoManager.arreter(); 
-        
-        // --- CORRECTION BUG : On cache la calculatrice avant de changer de page ! ---
         JeuUtilitaires.cacherCalculatrice();
         
         String nomProfil = MainApp.getProfileManager().getProfilActif();
@@ -663,17 +673,11 @@ public class JeuController {
         java.io.File fichierSave = new java.io.File(Constantes.DOSSIER_PROFILS + nomProfil + Constantes.SOUS_DOSSIER_PARTIES + sousDossier + save.getIdGrille() + ".json");
         
         javafx.stage.Stage stage = (javafx.stage.Stage) conteneurGrille.getScene().getWindow();
-        
         ReglesTechniquesController.actionRetour = () -> {
             fr.univ.calcudoku.utils.GestionnaireJeu.chargerPartieDepuisFichier(stage, fichierSave);
         };
-
         MainApp.changerScene(Constantes.VUE_REGLES);
     }
-
-    // ========================================================
-    // AIDE & CALCULATRICE
-    // ========================================================
 
     @FXML void actionCalculatrice(ActionEvent event) { JeuUtilitaires.afficherCalculatrice(event); }
     

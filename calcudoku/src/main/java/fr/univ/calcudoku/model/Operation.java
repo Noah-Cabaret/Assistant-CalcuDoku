@@ -39,7 +39,7 @@ public enum Operation {
     },
     
     /** Division (valeur max / valeur min) */
-    DIVISION("÷") { 
+    DIVISION(" ∕") { 
         @Override
         public int calculer(List<Integer> valeurs) {
             if (valeurs.isEmpty()) return 0;
