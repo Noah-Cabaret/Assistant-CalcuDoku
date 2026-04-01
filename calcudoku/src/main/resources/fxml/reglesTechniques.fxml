@@ -46,13 +46,19 @@
             
             <center>
                 <ScrollPane fitToWidth="true" fitToHeight="true" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
-                    <VBox alignment="CENTER" spacing="30" style="-fx-padding: 10 40 10 40;">
+                    
+                    <VBox alignment="CENTER" style="-fx-padding: 10 20 10 20;">
                         
-                        <Label fx:id="lblTexte" maxWidth="700" wrapText="true" textAlignment="CENTER" style="-fx-font-size: 16px; -fx-line-spacing: 5px; -fx-alignment: center;" text="Lorem ipsum dolor sit amet..." />
-                        
-                        <ImageView fx:id="imgExemple" fitWidth="350" preserveRatio="true" />
+                        <VBox alignment="TOP_LEFT" spacing="30" maxWidth="450">
+                            
+                            <Label fx:id="lblTexte" wrapText="true" textAlignment="LEFT" style="-fx-font-size: 16px; -fx-line-spacing: 5px;" text="Lorem ipsum dolor sit amet..." />
+                            
+                            <ImageView fx:id="imgExemple" fitWidth="450" preserveRatio="true" />
+                            
+                        </VBox>
                         
                     </VBox>
+                    
                 </ScrollPane>
             </center>
             
