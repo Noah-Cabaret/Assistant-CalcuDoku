@@ -91,7 +91,7 @@
                             </StackPane>
                             <VBox alignment="CENTER_LEFT">
                                 <Label text="Annotation" style="-fx-font-weight: bold;"/>
-                                <Label text="" style="-fx-font-size: 11px; -fx-text-fill: gray;"/>
+                                <Label text="Touche A" style="-fx-font-size: 11px; -fx-text-fill: gray;"/>
                             </VBox>
                         </HBox>
                         

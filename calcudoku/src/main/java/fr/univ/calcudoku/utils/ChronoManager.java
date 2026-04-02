@@ -1,37 +1,29 @@
 package fr.univ.calcudoku.utils;
 
 import fr.univ.calcudoku.challenge.Defi;
-import fr.univ.calcudoku.save.Temps;
+import fr.univ.calcudoku.save.Sauvegarde;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.scene.control.Label;
 import javafx.util.Duration;
 
-/**
- * Gestionnaire du temps de la partie.
- * S'occupe de l'affichage du chronomètre et de la logique de compte à rebours.
- */
 public class ChronoManager {
 
     private Timeline timeline;
     private int secondesEcoulees;
-    private final Temps tempsSave;
-    private final Defi.TypeDefi defi;
+    private final Sauvegarde save;
     private final Label labelChrono;
-    
-    // Callback : l'action à exécuter si le temps du défi "Contre la montre" est écoulé
     private final Runnable actionDefaiteTemps;
 
-    public ChronoManager(Label labelChrono, Temps tempsSave, Defi.TypeDefi defi, Runnable actionDefaiteTemps) {
+    public ChronoManager(Label labelChrono, Sauvegarde save, Runnable actionDefaiteTemps) {
         this.labelChrono = labelChrono;
-        this.tempsSave = tempsSave;
-        this.defi = defi;
+        this.save = save;
         this.actionDefaiteTemps = actionDefaiteTemps;
     }
 
     public void demarrer() {
-        if (tempsSave != null && tempsSave.getTempsPrecedent() != null) {
-            secondesEcoulees = tempsSave.getTempsPrecedent().intValue();
+        if (save.tmp != null && save.tmp.getTempsPrecedent() != null) {
+            secondesEcoulees = save.tmp.getTempsPrecedent().intValue();
         } else {
             secondesEcoulees = 0;
         }
@@ -40,42 +32,35 @@ public class ChronoManager {
 
         timeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
             secondesEcoulees++;
-            actualiserAffichage();
             
-            if (defi == Defi.TypeDefi.CHRON) {
-                int restant = Math.max(0, tempsSave.getTempsMax().intValue() - secondesEcoulees);
+            if (save.getDefi() == Defi.TypeDefi.CHRON) {
+                int restant = Math.max(0, save.tmp.getTempsMax().intValue() - secondesEcoulees);
                 if (restant <= 0) {
                     arreter();
                     if (actionDefaiteTemps != null) actionDefaiteTemps.run();
                 }
             }
+            actualiserAffichage();
         }));
         
         timeline.setCycleCount(Timeline.INDEFINITE);
         timeline.play();
-        
-        if (tempsSave != null) tempsSave.lancer();
+        if (save.tmp != null) save.tmp.lancer();
     }
 
     public void arreter() {
-        if (timeline != null) {
-            timeline.stop();
-        }
-        if (tempsSave != null) {
-            tempsSave.arreter(); 
-        }
+        if (timeline != null) timeline.stop();
+        if (save.tmp != null) save.tmp.arreter();
     }
 
-    private void actualiserAffichage() {
-        if (defi == Defi.TypeDefi.CHRON) {
-            int restant = Math.max(0, tempsSave.getTempsMax().intValue() - secondesEcoulees);
+    public void actualiserAffichage() {
+        if (save.getDefi() == Defi.TypeDefi.CHRON) {
+            int restant = Math.max(0, save.tmp.getTempsMax().intValue() - secondesEcoulees);
             labelChrono.setText(String.format("%02d:%02d", restant / 60, restant % 60));
         } else {
             labelChrono.setText(String.format("%02d:%02d", secondesEcoulees / 60, secondesEcoulees % 60));
         }
     }
 
-    public int getSecondesEcoulees() {
-        return secondesEcoulees;
-    }
+    public int getSecondesEcoulees() { return secondesEcoulees; }
 }

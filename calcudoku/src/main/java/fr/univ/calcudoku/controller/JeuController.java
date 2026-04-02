@@ -181,7 +181,7 @@ public class JeuController {
 
         mettreAJourLabelDefi();
         
-        this.chronoManager = new ChronoManager(labelChrono, save.tmp, save.getDefi(), () -> declencherDefaite("Le temps est écoulé !"));
+        this.chronoManager = new ChronoManager(labelChrono, save, () -> declencherDefaite("Le temps est écoulé !"));
         this.chronoManager.demarrer();
     }
 
@@ -411,7 +411,8 @@ public class JeuController {
         
         String nomProfil = MainApp.getProfileManager().getProfilActif();
         int secEcoulees = (chronoManager != null) ? chronoManager.getSecondesEcoulees() : 0;
-        MainApp.getProfileManager().enregistrerFinDePartie(nomProfil, false, secEcoulees, 0, save.getDiff(), save.getIdGrille());        if (save != null && save.getMode() != Sauvegarde.ModeDeJeu.AVEN) {
+        MainApp.getProfileManager().enregistrerFinDePartie(nomProfil, false, secEcoulees, 0, save.getDiff(), save.getIdGrille());        
+        if (save != null && save.getMode() != Sauvegarde.ModeDeJeu.AVEN) {
             save.effacer(nomProfil);
         }
 
@@ -428,10 +429,25 @@ public class JeuController {
 
             String nomProfil = MainApp.getProfileManager().getProfilActif();
             int secEcoulees = chronoManager.getSecondesEcoulees();
-            long scoreCalcul = Math.max(0, (grilleModele.getTaille() * 1000) - (secEcoulees * 10));
-            boolean estAventure = (save.getMode() == Sauvegarde.ModeDeJeu.AVEN);
+            
+            int taille = grilleModele.getTaille();
+            long pointsBase = (taille * taille) * 100L; 
+            
+            long penaliteTemps = Math.min((long)(secEcoulees * 2L), (long)(pointsBase * 0.5));
+            
+            long penaliteErreurs = save.getMalus() * 50L;
+            
+            long penaliteAides = save.getAidesUtilisees() * 50L;
+            
+            long scoreCalcul = pointsBase - penaliteTemps - penaliteErreurs - penaliteAides;
+            
+            scoreCalcul = Math.max(100L, scoreCalcul);
+            
+            if (save.getDiff() == Sauvegarde.Difficulte.MOYEN) scoreCalcul = (long)(scoreCalcul * 1.5);
+            else if (save.getDiff() == Sauvegarde.Difficulte.DIFFI) scoreCalcul *= 2;
 
-            MainApp.getProfileManager().enregistrerFinDePartie(nomProfil, true, secEcoulees, scoreCalcul, save.getDiff(), save.getIdGrille());            if (save != null) save.effacer(nomProfil);
+            MainApp.getProfileManager().enregistrerFinDePartie(nomProfil, true, secEcoulees, scoreCalcul, save.getDiff(), save.getIdGrille());            
+            if (save != null) save.effacer(nomProfil);
 
             String msg = "Temps : " + (secEcoulees / 60) + " min " + (secEcoulees % 60) + " s.\nScore obtenu : " + scoreCalcul;
             PopupFactory.afficherPopupFinPartie("Victoire !", msg, Constantes.ICONE_VICTOIRE, Constantes.COULEUR_VICTOIRE, true, () -> actionRecommencer(null), () -> actionRetourMenu(null));
@@ -493,24 +509,31 @@ public class JeuController {
     }
 
     @FXML void actionVerifier(ActionEvent event) {
-        List<Case> erreurs = ValidateurJeu.trouverErreurs(grilleModele);
         List<VueCase> vuesEnErreur = new ArrayList<>();
+        boolean caseIncorrecte = false;
 
-        if (!erreurs.isEmpty() && save.getDefi() == Defi.TypeDefi.SURVI) {
+        for (int y = 0; y < grilleModele.getTaille(); y++) {
+            for (int x = 0; x < grilleModele.getTaille(); x++) {
+                Case c = grilleModele.getCase(x, y);
+                if (c.getValeur() != 0 && c.getValeur() != c.getSolution()) {
+                    vuesEnErreur.add(vueGrille.getGrilleVueCases(x, y));
+                    save.setMalus(save.getMalus() + 1); // Malus d'erreur !
+                    if (save.getDefi() == Defi.TypeDefi.SURVI) caseIncorrecte = true;
+                }
+            }
+        }
+
+        if (caseIncorrecte && save.getDefi() == Defi.TypeDefi.SURVI) {
             save.setVies(save.getVies() - 1);
-            mettreAJourLabelDefi(); 
+            mettreAJourLabelDefi();
             if (save.getVies() <= 0) {
                 declencherDefaite("Vous n'avez plus de vies !");
                 return;
             }
         }
 
-        for (Case c : erreurs) {
-            VueCase vc = vueGrille.getGrilleVueCases(c.getX(), c.getY());
-            vc.getStyleClass().add(Constantes.CSS_CASE_ERREUR);
-            vuesEnErreur.add(vc);
-        }
-        
+        for (VueCase vc : vuesEnErreur) vc.getStyleClass().add(Constantes.CSS_CASE_ERREUR);
+
         if (!vuesEnErreur.isEmpty()) {
             PauseTransition pause = new PauseTransition(Duration.seconds(3));
             pause.setOnFinished(e -> { 
@@ -562,7 +585,7 @@ public class JeuController {
         if (conteneurBoutonsHypothese != null) conteneurBoutonsHypothese.setVisible(false);
         for (int y = 0; y < grilleModele.getTaille(); y++) {
             for (int x = 0; x < grilleModele.getTaille(); x++) {
-                grilleModele.getCase(x, y).setEstHypothese(false); // <-- LA CORRECTION EST LÀ !
+                grilleModele.getCase(x, y).setEstHypothese(false); 
                 vueGrille.getGrilleVueCases(x, y).setEstHypothese(false);
             }
         }
@@ -597,7 +620,7 @@ public class JeuController {
                 Case c = grilleModele.getCase(targetX, i);
                 c.supprimerUneNote(valeurJouee);
             }
-                        if (i != targetX) {
+            if (i != targetX) {
                 Case c = grilleModele.getCase(i, targetY);
                 c.supprimerUneNote(valeurJouee); 
             }
@@ -651,6 +674,9 @@ public class JeuController {
         if (chronoManager != null) chronoManager.arreter();
         save.tmp.setTempsPrecedent(0.0);
         
+        save.setMalus(0); // On remet les erreurs à 0 !
+        save.setAidesUtilisees(0); // On remet les aides à 0 !
+        
         fr.univ.calcudoku.model.DonneesNiveau dataBase = fr.univ.calcudoku.utils.GestionnaireJeu.lireDonneesNiveauRessource(save.getIdGrille() + ".json");
         if (dataBase != null) save.setVies(dataBase.vies);
         
@@ -693,6 +719,13 @@ public class JeuController {
             btnActualiserAide.setVisible(false); 
             btnActualiserAide.setManaged(false);
         }
+        
+        // --- MALUS D'AIDE ---
+        // On compte une utilisation d'aide uniquement quand on l'ouvre
+        if (bulleAide != null && !bulleAide.isVisible()) {
+            save.setAidesUtilisees(save.getAidesUtilisees() + 1);
+        }
+
         if (bulleAide != null) bulleAide.setVisible(true); 
         listeAides.get(indexAideActuelle).afficher();
         mettreAJourBoutonsNavigation();
@@ -704,7 +737,11 @@ public class JeuController {
     }
 
     @FXML public void actionAmeliorerAide() {
-        if (!listeAides.isEmpty()) { listeAides.get(indexAideActuelle).ameliorerNiveau(); mettreAJourBoutonsNavigation(); }
+        if (!listeAides.isEmpty()) { 
+            listeAides.get(indexAideActuelle).ameliorerNiveau(); 
+            save.setAidesUtilisees(save.getAidesUtilisees() + 1); // Malus d'amélioration
+            mettreAJourBoutonsNavigation(); 
+        }
     }
 
     @FXML public void actionAideSuivante() {
