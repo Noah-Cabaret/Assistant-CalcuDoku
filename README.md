@@ -29,6 +29,8 @@ Un manuel utilisateur pour ce logiciel est disponible à la génération via des
 Le code source de l'_Assistant CalcuDoku_ est documenté via Javadoc. Cette dernière peut être consultée à même le code, mais une version web (HTML) formattée peut être générée en lançant la commande suivante à la racine du projet:
 
 ```sh
-# TODO: SI BESOIN, COMPLETER/FIX COMMANDE APRES INSPECTION DU CODE
-javadoc -d doc/javadoc --source-path calcudoku/src/main/java/fr/univ/calcudoku
+# Cette commande part du principe que votre "Current Working Directory"
+# est celle du `pom.xml` Maven.
+# Voir aussi: <https://maven.apache.org/plugins/maven-javadoc-plugin/usage.html>
+mvn site
 ```
