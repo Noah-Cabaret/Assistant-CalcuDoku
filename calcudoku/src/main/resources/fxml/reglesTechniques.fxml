@@ -51,7 +51,7 @@
                         
                         <VBox alignment="TOP_LEFT" spacing="30" maxWidth="450">
                             
-                            <Label fx:id="lblTexte" wrapText="true" textAlignment="LEFT" style="-fx-font-size: 16px; -fx-line-spacing: 5px;" text="Lorem ipsum dolor sit amet..." />
+                            <Label fx:id="lblTexte" wrapText="true" minHeight="-Infinity" textAlignment="LEFT" style="-fx-font-size: 16px; -fx-line-spacing: 5px;" text="Lorem ipsum dolor sit amet..." />
                             
                             <ImageView fx:id="imgExemple" fitWidth="450" preserveRatio="true" />
                             
