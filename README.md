@@ -2,7 +2,7 @@
 
 L'_Assistant CalcuDoku_ est une application _desktop_ permettant de résoudre des puzzles de [CalcuDoku](https://www.conceptispuzzles.com/index.aspx?uri=puzzle/calcudoku), construite autour d'un système d'assistance s'adaptant à l'état courant d'une partie.
 
-L'application est écrite en [Java](https://www.oracle.com/java/technologies/), utilise [Apache Maven](https://maven.apache.org/) comme système d'automatisatino de _build_ et est documentée via [Javadoc](https://www.oracle.com/java/technologies/javase/javadoc.html) (code source) ainsi que [Sphinx](https://www.sphinx-doc.org/) (manuel utilisateur).
+L'application est écrite en [Java](https://www.oracle.com/java/technologies/), utilise [Apache Maven](https://maven.apache.org/) comme système d'automatisation de _build_ et est documentée via [Javadoc](https://www.oracle.com/java/technologies/javase/javadoc.html) (code source) ainsi que [Sphinx](https://www.sphinx-doc.org/) (manuel utilisateur).
 
 ## Contexte
 
