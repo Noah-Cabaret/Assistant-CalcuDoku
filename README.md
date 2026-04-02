@@ -10,13 +10,23 @@ Cette application est un projet étudiant et le fruit de travail réalisé dans 
 
 ## Installation/Usage
 
-### Option n°1: Exécution d'une _Java Archive_.
+### Option n°1: _Java Archives_ distribuées sur la plateforme distante.
 
 Afin de pouvoir tourner de manière [_cross-platform_](https://fr.wiktionary.org/wiki/cross-platform) et éviter de rendre la compilation depuis le code source mandatoire, des [_Java Archives_](https://docs.oracle.com/javase/8/docs/technotes/guides/jar/jarGuide.html) (fichiers `.jar`) sont distribuées sur GitHub, la plateforme hôte du code source de l'_Assistant CalcuDoku_. Vous pouvez en retrouver la dernière version en vous rendant sur [l'onglet _Releases_ du dépôt du projet](https://github.com/Noah-Cabaret/Assistant-CalcuDoku/releases).
 
 ### Option n°2: Compilation à partir du code source
 
+#### Compilation en elle-même
+
 Si désiré, il est évidemment posible de compiler le code source de ce projet en un fichier exécutable. Pour ce faire, il suffit de suivre la procédure Maven standard, [détaillée dans sa documentation officielle](https://maven.apache.org/run.html).
+
+Pour compiler une archive Java (`.jar`) permettant d'appliquer le principe du *Write Once, Run Everywhere*, positionnez un terminal dans le répertoire du `pom.xml` du projet et lancez la commande suivante:
+
+```sh
+# Cette commande part du principe que Apache Maven est correctement
+# installé sur votre machine.
+mvn clean deploy site-deploy
+```
 
 ## Documentation
 
