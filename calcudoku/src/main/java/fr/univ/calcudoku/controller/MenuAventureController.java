@@ -14,8 +14,6 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.Cursor;
 import org.kordamp.ikonli.javafx.FontIcon;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.Color;
-import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.io.File;
 import java.util.Optional;
