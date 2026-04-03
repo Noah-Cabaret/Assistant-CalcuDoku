@@ -44,50 +44,95 @@ import java.util.List;
 
 import org.kordamp.ikonli.javafx.FontIcon;
 
+/**
+ * Contrôleur principal de la vue du jeu Calcudoku.
+ * Gère l'interaction utilisateur avec la grille, les boutons de contrôle,
+ * les aides, la sauvegarde et la logique de victoire/défaite.
+ */
 public class JeuController {
 
+    /** Conteneur principal de la grille de jeu. */
     @FXML private StackPane conteneurGrille;
+    /** Conteneur des boutons numériques (1 à N) pour la saisie. */
     @FXML private HBox conteneurBoutonsNombres;
+    /** Bouton pour annuler la dernière action. */
     @FXML private Button btnUndo, btnRedo, btnAnnoter, btnEffacer, btnCalculatrice;
+    /** Bulle d'aide contextuelle. */
     @FXML private VBox bulleAide;
+    /** Label affichant le message de l'aide. */
     @FXML private Label labelMessageAide;
+    /** Boutons de contrôle de l'aide. */
     @FXML private Button btnAmeliorerAide, btnAidePrecedente, btnAideSuivante, btnActualiserAide, btnValider, btnAide;    
+    /** Boutons pour la gestion des hypothèses. */
     @FXML private Button btnHypothese, btnValiderHypothese, btnAnnulerHypothese;
+    /** Boutons de navigation. */
     @FXML private Button btnRetour, btnMenu;
+    /** Conteneur des boutons d'hypothèse. */
     @FXML private HBox conteneurBoutonsHypothese;
+    /** Boîte affichant les combinaisons possibles pour une cage. */
     @FXML private VBox boiteCombinaisons;
+    /** Label affichant les combinaisons. */
     @FXML private Label labelCombinaisons;
+    /** Bouton radio pour l'aide "Combinaisons". */
     @FXML private RadioButton radioCombinaisons, radioCalculatrice;
+    /** Label affichant le chronomètre. */
     @FXML private Label labelChrono;
+    /** Label affichant le défi en cours. */
     @FXML private Label labelDefi;
+    /** Menu déroulant (hamburger menu). */
     @FXML private VBox menuDeroulant;
+    /** Popup de confirmation d'abandon de partie. */
     @FXML private StackPane popupAbandon;
 
+    /** Modèle de la grille de jeu. */
     private Grille grilleModele;
+    /** Vue graphique de la grille. */
     private VueGrille vueGrille;
+    /** Objet de sauvegarde de la partie. */
     private Sauvegarde save;
+    /** Gestionnaire du chronomètre. */
     private ChronoManager chronoManager; 
 
+    /** Indique si le mode hypothèse est actif. */
     private boolean modeHypotheseActif = false;
+    /** Indique si le mode annotation est actif. */
     private boolean modeAnnotationActif = false;
+    /** Indique si la partie est perdue (pour éviter les déclenchements multiples). */
     private boolean partiePerdue = false;
     
+    /** La vue de la case actuellement sélectionnée. */
     private VueCase vueCaseSelectionnee = null;
+    /** Le modèle de la case actuellement sélectionnée. */
     private Case caseModeleSelectionnee = null;
     
+    /** Service d'aide pour trouver des indices. */
     private final AideService aideService = new AideService();
+    /** Liste des commandes d'aide à afficher. */
     private List<CommandeAide> listeAides = new ArrayList<>();
+    /** Liste des indices en attente d'affichage. */
     private List<Indice> indicesEnAttente = new ArrayList<>();
+    /** Index de l'aide actuellement affichée. */
     private int indexAideActuelle = 0;
     
+    /** Filtre d'événements clavier pour la navigation et la saisie. */
     private EventHandler<KeyEvent> filtreClavier;
+    /** Filtre d'événements clavier pour les raccourcis (ex: annotation). */
     private EventHandler<KeyEvent> raccourcisClavier;
 
+    /**
+     * Initialise une nouvelle partie de jeu.
+     * Cette méthode est appelée par le GestionnaireJeu pour configurer la grille
+     * et l'interface utilisateur avant le début de la partie.
+     *
+     * @param grille Le modèle de la grille de jeu à utiliser.
+     * @param save L'objet de sauvegarde associé à cette partie.
+     */
     public void initialiserPartie(Grille grille, Sauvegarde save) {
         this.grilleModele = grille;
         this.save = save;
         this.partiePerdue = false;
 
+        // Active les contrôles de la grille et des boutons
         conteneurGrille.setDisable(false);
         conteneurBoutonsNombres.setDisable(false);
         if (btnAide != null) {
@@ -99,11 +144,13 @@ public class JeuController {
             this.save.setIdGrille("libre_" + grille.getTaille() + "_1_1"); 
         }
 
+        // Crée et configure la vue de la grille
         this.vueGrille = new VueGrille(grille);
         conteneurGrille.getChildren().clear(); 
         conteneurGrille.getChildren().add(vueGrille);
         
         NumberBinding tailleCarree = Bindings.min(conteneurGrille.widthProperty(), conteneurGrille.heightProperty());
+        // Lie la taille de la vue de la grille à la taille du conteneur
         vueGrille.prefWidthProperty().bind(tailleCarree);
         vueGrille.prefHeightProperty().bind(tailleCarree);
         vueGrille.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
@@ -118,12 +165,14 @@ public class JeuController {
             }
         }
         
+        // Initialise les styles et l'affichage
         initialiserClassesCSS(); 
         appliquerModeSombre(); 
         genererBoutonsNombres(grille.getTaille());
         conteneurBoutonsNombres.applyCss();
         conteneurBoutonsNombres.layout();
         
+        // Cache les éléments de popup et de menu au démarrage
         if (popupAbandon != null) popupAbandon.setVisible(false);
         if (menuDeroulant != null) menuDeroulant.setVisible(false);
         if (bulleAide != null) bulleAide.setVisible(false);
@@ -132,18 +181,20 @@ public class JeuController {
             btnActualiserAide.setOnAction(this::actionActualiserAide);
         }
 
+        // Configure le service d'aide
         aideService.setOnSucceeded(event -> { 
             indicesEnAttente = aideService.getValue(); 
             if (bulleAide != null && bulleAide.isVisible()) {
                 rafraichirContenuBulleAide();
             }
         });
-        
+        // Calcule les possibilités initiales des groupements
         for (GroupementCases bloc : grilleModele.getListeGroupements()) { 
             bloc.calculerPossibilites(grilleModele); 
         }
         aideService.lancerAnalyse(grilleModele);
 
+        // Gère le défi "NOAID" (aucune aide)
         if (save.getDefi() == Defi.TypeDefi.NOAID && btnAide != null) {
             btnAide.setDisable(true);
             btnAide.setOpacity(0.5);
@@ -175,6 +226,7 @@ public class JeuController {
             });
         }
 
+        // Configure les gestionnaires d'événements clavier
         filtreClavier = ClavierHandler.creerFiltre(
             grilleModele,
             () -> caseModeleSelectionnee,
@@ -190,6 +242,7 @@ public class JeuController {
             }
         };
 
+        // Installe les filtres clavier et les sécurités de fermeture
         Platform.runLater(() -> {
             Scene scene = conteneurGrille.getScene();
             if (scene != null) {
@@ -203,12 +256,17 @@ public class JeuController {
             }
         });
 
+        // Met à jour le label du défi et démarre le chronomètre
         mettreAJourLabelDefi();
         
         this.chronoManager = new ChronoManager(labelChrono, save, () -> declencherDefaite("Le temps est écoulé !"));
         this.chronoManager.demarrer();
     }
 
+    /**
+     * Initialise les classes CSS pour les éléments de l'interface utilisateur.
+     * Cela permet d'appliquer des styles prédéfinis et de gérer les changements de thème.
+     */
     private void initialiserClassesCSS() {
         if (btnValider != null) { btnValider.setStyle(""); btnValider.getStyleClass().add("bouton-rond"); }
         if (btnAide != null) { btnAide.setStyle(""); btnAide.getStyleClass().add("bouton-rond"); }
@@ -226,6 +284,10 @@ public class JeuController {
         if (boiteCombinaisons != null) { boiteCombinaisons.setStyle(""); boiteCombinaisons.getStyleClass().add("boite-combinaisons"); }
     }
 
+    /**
+     * Applique le thème sombre ou clair à l'interface utilisateur.
+     * Met à jour les couleurs des textes, fonds, bordures et icônes.
+     */
     private void appliquerModeSombre() {
         boolean sombre = MainApp.modeSombreActif;
         
@@ -312,6 +374,9 @@ public class JeuController {
         });
     }
 
+    /**
+     * Met à jour le label affichant le défi en cours (si applicable).
+     */
     private void mettreAJourLabelDefi() {
         if (labelDefi == null || save == null) return;
 
@@ -335,6 +400,10 @@ public class JeuController {
         }
     }
 
+    /**
+     * Applique le mode d'aide sélectionné (Combinaisons ou Calculatrice).
+     * @param mode La chaîne de caractères représentant le mode d'aide (Constantes.VALEUR_AIDE_CALCULATRICE ou Constantes.VALEUR_AIDE_COMBINAISONS).
+     */
     private void appliquerModeAide(String mode) {
         if (mode.equals(Constantes.VALEUR_AIDE_CALCULATRICE)) {
             if (boiteCombinaisons != null) {
@@ -358,6 +427,10 @@ public class JeuController {
         }
     }
 
+    /**
+     * Génère dynamiquement les boutons numériques (1 à N) en fonction de la taille de la grille.
+     * @param taille La taille de la grille (N).
+     */
     private void genererBoutonsNombres(int taille) {
         if (conteneurBoutonsNombres != null) {
             conteneurBoutonsNombres.getChildren().clear(); 
@@ -373,6 +446,10 @@ public class JeuController {
         }
     }
 
+    /**
+     * Rafraîchit la zone d'affichage des combinaisons possibles pour la cage de la case sélectionnée.
+     * @param modeleCase La case modèle actuellement sélectionnée.
+     */
     private void rafraichirZoneCombinaisons(Case modeleCase) {
         if (labelCombinaisons == null) return;
         
@@ -400,6 +477,9 @@ public class JeuController {
         }
     }
 
+    /**
+     * Sauvegarde l'état actuel de la partie.
+     */
     private void sauvegarderPartie() {
         if (save != null && !partiePerdue && save.getIdGrille() != null && !save.getIdGrille().isEmpty()) {
             if (save.getMode() == Sauvegarde.ModeDeJeu.AVEN && partiePerdue) return;
@@ -418,6 +498,9 @@ public class JeuController {
         }
     }
 
+    /**
+     * Déconnecte les gestionnaires d'événements clavier de la scène.
+     */
     private void deconnecterClavier() {
         if (conteneurGrille != null && conteneurGrille.getScene() != null) {
             if (filtreClavier != null) {
@@ -430,6 +513,10 @@ public class JeuController {
         }
     }
 
+    /**
+     * Déclenche la fin de partie en cas de défaite (ex: temps écoulé, vies épuisées).
+     * @param message Le message à afficher au joueur.
+     */
     private void declencherDefaite(String message) {
         if (partiePerdue) return;
         partiePerdue = true;
@@ -449,6 +536,9 @@ public class JeuController {
         PopupFactory.afficherPopupFinPartie("Défi échoué !", message, Constantes.ICONE_DEFAITE, Constantes.COULEUR_DEFAITE, false, () -> actionRecommencer(null), () -> actionRetourMenu(null));
     }
     
+    /**
+     * Vérifie si la grille est résolue correctement et déclenche la victoire si c'est le cas.
+     */
     private void verifierVictoire() {
         if (ValidateurJeu.estVictoire(grilleModele) && !partiePerdue) {
             partiePerdue = true; 
@@ -481,6 +571,11 @@ public class JeuController {
         }
     }
 
+    /**
+     * Sélectionne une case sur la grille. Met à jour la surbrillance et les informations affichées.
+     * @param vueCase La vue de la case sélectionnée.
+     * @param modeleCase Le modèle de la case sélectionnée.
+     */
     private void selectionnerCase(VueCase vueCase, Case modeleCase) {
         if (vueCaseSelectionnee != null) vueCaseSelectionnee.getStyleClass().remove(Constantes.CSS_CASE_SELECTIONNEE);
         this.vueCaseSelectionnee = vueCase;
@@ -491,6 +586,10 @@ public class JeuController {
         mettreAJourGuidesVisuels(modeleCase);
     }
 
+    /**
+     * Gère le clic sur un bouton numérique ou la saisie d'un chiffre au clavier.
+     * @param valeur La valeur numérique à insérer ou annoter.
+     */
     private void actionChiffreClique(int valeur) {
         if (caseModeleSelectionnee != null) {
             if (modeAnnotationActif) {
@@ -514,11 +613,19 @@ public class JeuController {
         }
     }
 
+    /**
+     * Bascule le mode annotation (pour écrire des petites notes dans les cases).
+     * @param event L'événement de clic.
+     */
     @FXML void actionBasculeAnnotation(ActionEvent event) {
         modeAnnotationActif = !modeAnnotationActif;
         if (btnAnnoter != null) btnAnnoter.setStyle(modeAnnotationActif ? "-fx-background-color: #bbdefb;" : "");
     }
 
+    /**
+     * Efface la valeur et les annotations de la case sélectionnée.
+     * @param event L'événement de clic.
+     */
     @FXML void actionEffacer(ActionEvent event) {
         if (caseModeleSelectionnee != null) {
             caseModeleSelectionnee.setEstHypothese(false);
@@ -532,6 +639,10 @@ public class JeuController {
         }
     }
 
+    /**
+     * Vérifie la grille pour les erreurs et les signale visuellement.
+     * @param event L'événement de clic.
+     */
     @FXML void actionVerifier(ActionEvent event) {
         List<VueCase> vuesEnErreur = new ArrayList<>();
         boolean caseIncorrecte = false;
@@ -567,16 +678,28 @@ public class JeuController {
         }
     }
 
+    /**
+     * Annule la dernière action du joueur.
+     * @param event L'événement de clic.
+     */
     @FXML void actionUndo(ActionEvent event) {
         save.hist.appliquerUndo(grilleModele, modeHypotheseActif);
         synchroniserVuesApresHistorique();
     }
 
+    /**
+     * Rétablit la dernière action annulée.
+     * @param event L'événement de clic.
+     */
     @FXML void actionRedo(ActionEvent event) {
         save.hist.appliquerRedo(grilleModele);
         synchroniserVuesApresHistorique();
     }
 
+    /**
+     * Synchronise l'affichage de la grille après une opération d'historique (undo/redo).
+     * Met à jour les combinaisons et les guides visuels.
+     */
     private void synchroniserVuesApresHistorique() {
         if (caseModeleSelectionnee != null) rafraichirZoneCombinaisons(caseModeleSelectionnee);
         for (int y = 0; y < grilleModele.getTaille(); y++) {
@@ -588,17 +711,29 @@ public class JeuController {
         mettreAJourGuidesVisuels(caseModeleSelectionnee);
     }
 
+    /**
+     * Active le mode hypothèse.
+     * @param event L'événement de clic.
+     */
     @FXML void actionHypothese(ActionEvent event) {
         modeHypotheseActif = true;
         if (btnHypothese != null) btnHypothese.setDisable(true); 
         if (conteneurBoutonsHypothese != null) conteneurBoutonsHypothese.setVisible(true);
     }
 
+    /**
+     * Valide les hypothèses en cours, les transformant en valeurs réelles.
+     * @param event L'événement de clic.
+     */
     @FXML void actionValiderHypothese(ActionEvent event) {
         quitterModeHypotheseVisuel();
         save.hist.validerHypotheses();
     }
 
+    /**
+     * Annule toutes les hypothèses en cours, restaurant l'état précédent.
+     * @param event L'événement de clic.
+     */
     @FXML void actionAnnulerHypothese(ActionEvent event) {
         quitterModeHypotheseVisuel();
         save.hist.rollbackHypotheses(grilleModele, modeHypotheseActif);
@@ -616,10 +751,18 @@ public class JeuController {
         }
     }
 
+    /**
+     * Bascule la visibilité du menu déroulant.
+     * @param event L'événement de clic.
+     */
     @FXML void actionBasculerMenu(ActionEvent event) {
         if (menuDeroulant != null) menuDeroulant.setVisible(!menuDeroulant.isVisible());
     }
 
+    /**
+     * Retourne au menu principal, en sauvegardant la partie si nécessaire.
+     * @param event L'événement de clic.
+     */
     @FXML void actionRetourMenu(ActionEvent event) {
         sauvegarderPartie();
         deconnecterClavier(); 
@@ -637,6 +780,13 @@ public class JeuController {
         }
     }
 
+    /**
+     * Rafraîchit les annotations des cases en supprimant la valeur jouée
+     * des notes des cases sur la même ligne et colonne.
+     * @param targetX La coordonnée X de la case modifiée.
+     * @param targetY La coordonnée Y de la case modifiée.
+     * @param valeurJouee La valeur qui a été jouée.
+     */
     private void rafraichirAnnotations(int targetX, int targetY, int valeurJouee) {
         int taille = grilleModele.getTaille();
 
@@ -652,15 +802,27 @@ public class JeuController {
         }
     }
 
+    /**
+     * Affiche la popup de confirmation d'abandon.
+     * @param event L'événement de clic.
+     */
     @FXML void actionAbandonner(ActionEvent event) {
         if (menuDeroulant != null) menuDeroulant.setVisible(false);
         if (popupAbandon != null) popupAbandon.setVisible(true);
     }
 
+    /**
+     * Annule l'abandon de la partie et cache la popup.
+     * @param event L'événement de clic.
+     */
     @FXML void actionAnnulerAbandon(ActionEvent event) {
         if (popupAbandon != null) popupAbandon.setVisible(false);
     }
 
+    /**
+     * Confirme l'abandon de la partie, enregistre la défaite et retourne au menu.
+     * @param event L'événement de clic.
+     */
     @FXML void actionConfirmerAbandon(ActionEvent event) {
         if (popupAbandon != null) popupAbandon.setVisible(false);
         String nomProfil = MainApp.getProfileManager().getProfilActif();
@@ -671,6 +833,10 @@ public class JeuController {
         actionRetourMenu(event);
     }
 
+    /**
+     * Réinitialise la partie en cours.
+     * @param event L'événement de clic.
+     */
     @FXML void actionRecommencer(ActionEvent event) {
         if (menuDeroulant != null) menuDeroulant.setVisible(false);
         
@@ -712,6 +878,10 @@ public class JeuController {
         mettreAJourGuidesVisuels(caseModeleSelectionnee);
     }
 
+    /**
+     * Sauvegarde la partie et redirige vers la vue des règles et techniques.
+     * @param event L'événement de clic.
+     */
     @FXML void actionReglesTechniques(ActionEvent event) {
         sauvegarderPartie();
         deconnecterClavier(); 
@@ -730,13 +900,24 @@ public class JeuController {
         MainApp.changerScene(Constantes.VUE_REGLES);
     }
 
+    /**
+     * Affiche la calculatrice contextuelle.
+     * @param event L'événement de clic.
+     */
     @FXML void actionCalculatrice(ActionEvent event) { JeuUtilitaires.afficherCalculatrice(event); }
     
+    /**
+     * Actualise les indices d'aide en relançant l'analyse de la grille.
+     * @param event L'événement de clic.
+     */
     @FXML void actionActualiserAide(ActionEvent event) {
         if (labelMessageAide != null) labelMessageAide.setText("Recherche de techniques en cours...");
         aideService.lancerAnalyse(grilleModele); 
     }
     
+    /**
+     * Affiche la bulle d'aide et lance la recherche d'indices.
+     */
     @FXML public void actionBoutonAidePointInterrogation() {
         aideService.lancerAnalyse(grilleModele); 
         
@@ -754,6 +935,9 @@ public class JeuController {
         rafraichirContenuBulleAide();
     }
     
+    /**
+     * Rafraîchit le contenu de la bulle d'aide avec les indices trouvés.
+     */
     private void rafraichirContenuBulleAide() {
         if (!listeAides.isEmpty() && indexAideActuelle < listeAides.size()) listeAides.get(indexAideActuelle).masquer();
         listeAides.clear(); 
@@ -774,11 +958,17 @@ public class JeuController {
         }
     }
 
+    /**
+     * Ferme la bulle d'aide.
+     */
     @FXML public void actionFermerBulleAide() {
         if (!listeAides.isEmpty()) listeAides.get(indexAideActuelle).masquer();
         if (bulleAide != null) bulleAide.setVisible(false);
     }
 
+    /**
+     * Améliore le niveau de détail de l'aide actuellement affichée.
+     */
     @FXML public void actionAmeliorerAide() {
         if (!listeAides.isEmpty()) { 
             listeAides.get(indexAideActuelle).ameliorerNiveau(); 
@@ -787,6 +977,9 @@ public class JeuController {
         }
     }
 
+    /**
+     * Affiche l'aide suivante dans la liste des indices.
+     */
     @FXML public void actionAideSuivante() {
         if (indexAideActuelle < listeAides.size() - 1) {
             listeAides.get(indexAideActuelle).masquer(); indexAideActuelle++;
@@ -794,6 +987,9 @@ public class JeuController {
         }
     }
 
+    /**
+     * Affiche l'aide précédente dans la liste des indices.
+     */
     @FXML public void actionAidePrecedente() {
         if (indexAideActuelle > 0) {
             listeAides.get(indexAideActuelle).masquer(); indexAideActuelle--;
@@ -801,6 +997,9 @@ public class JeuController {
         }
     }
 
+    /**
+     * Met à jour l'état des boutons de navigation de l'aide (précédent, suivant, améliorer).
+     */
     private void mettreAJourBoutonsNavigation() {
         if (listeAides.isEmpty()) return;
         btnAidePrecedente.setDisable(indexAideActuelle == 0);
@@ -808,6 +1007,10 @@ public class JeuController {
         btnAmeliorerAide.setDisable(!listeAides.get(indexAideActuelle).peutEtreAmeliore());
     }
 
+    /**
+     * Met à jour les guides visuels sur la grille (cases sur la même ligne/colonne ou ayant la même valeur).
+     * @param caseActuelle La case actuellement sélectionnée.
+     */
     private void mettreAJourGuidesVisuels(Case caseActuelle) {
         if (grilleModele == null || vueGrille == null) return;
         int taille = grilleModele.getTaille();

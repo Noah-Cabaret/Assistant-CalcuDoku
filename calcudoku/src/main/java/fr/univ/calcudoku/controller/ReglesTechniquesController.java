@@ -14,34 +14,64 @@ import javafx.scene.paint.Color;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Contrôleur pour la vue des règles et techniques.
+ * Gère l'affichage de contenu paginé dans différentes sections (onglets).
+ */
 public class ReglesTechniquesController {
 
+    /** Groupe de bascule pour les onglets de section. */
     @FXML private ToggleGroup groupeOnglets;
+    /** Bouton pour retourner à l'écran précédent. */
     @FXML private Button btnRetour;
+    /** Label pour le titre de la section. */
     @FXML private Label lblTitreHaut;
+    /** Label pour afficher le contenu textuel de la page. */
     @FXML private Label lblTexte;
+    /** Vue pour afficher l'image d'exemple. */
     @FXML private ImageView imgExemple;
+    /** Label pour la légende de l'image. */
     @FXML private Label lblLegendeImage;
     
-    // Les nouveaux boutons de pagination
+    /** Bouton pour la pagination vers la page précédente. */
     @FXML private Button btnPrecedent;
+    /** Bouton pour la pagination vers la page suivante. */
     @FXML private Button btnSuivant;
+    /** Icône pour le bouton de pagination précédent. */
     @FXML private FontIcon iconPrecedent;
+    /** Icône pour le bouton de pagination suivant. */
     @FXML private FontIcon iconSuivant;
+    /**
+     * Action personnalisée à exécuter lors du clic sur le bouton retour.
+     * Permet de revenir à une partie en cours. Si null, le retour se fait vers le menu.
+     */
     public static Runnable actionRetour = null;
 
-    // --- SYSTÈME DE PAGINATION ---
+    /** Liste des pages pour la section actuellement affichée. */
     private List<PageContenu> pagesDeLaSection = new ArrayList<>();
+    /** Index de la page courante dans la liste {@link #pagesDeLaSection}. */
     private int indexPageActuelle = 0;
 
+    /** Chemin FXML de la page précédente (utilisé si {@link #actionRetour} est null). */
     public static String pagePrecedente = "/fxml/menu.fxml";
 
-    // Petite classe interne pour stocker les infos d'une page
+    /**
+     * Classe interne représentant le contenu d'une seule page dans la section des règles/techniques.
+     */
     private class PageContenu {
+        /** Le contenu textuel principal de la page. */
         String texte;
+        /** Le chemin vers l'image d'illustration dans les ressources. */
         String cheminImage;
+        /** La légende de l'image. */
         String legende;
 
+        /**
+         * Constructeur pour une page de contenu.
+         * @param texte Le texte à afficher.
+         * @param cheminImage Le chemin de l'image.
+         * @param legende La légende de l'image.
+         */
         PageContenu(String texte, String cheminImage, String legende) {
             this.texte = texte;
             this.cheminImage = cheminImage;
@@ -49,9 +79,14 @@ public class ReglesTechniquesController {
         }
     }
 
+    /**
+     * Méthode d'initialisation appelée après le chargement du FXML.
+     * Configure les listeners pour les onglets, applique le thème (sombre/clair)
+     * et charge la première section par défaut (les règles).
+     */
     @FXML
     public void initialize() {
-        // Appliquer une couleur grise à l'onglet sélectionné
+        // Ajoute un listener pour changer le style de l'onglet sélectionné
         groupeOnglets.selectedToggleProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal == null) {
                 groupeOnglets.selectToggle(oldVal); 
@@ -67,7 +102,7 @@ public class ReglesTechniquesController {
             }
         });
 
-        // --- FORCER LA COULEUR DU TEXTE ---
+        // Applique les styles pour le thème sombre ou clair
         if (MainApp.modeSombreActif) {
             lblTitreHaut.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-border-color: white; -fx-border-radius: 10; -fx-padding: 10 30 10 30; -fx-text-fill: white;");
             lblTexte.setStyle("-fx-font-size: 16px; -fx-line-spacing: 5px; -fx-text-fill: white;");
@@ -77,7 +112,7 @@ public class ReglesTechniquesController {
             
             if (iconPrecedent != null) iconPrecedent.setIconColor(Color.WHITE);
             if (iconSuivant != null) iconSuivant.setIconColor(Color.WHITE);
-            // --> ON AJOUTE LA FLÈCHE DE RETOUR EN BLANC
+            // Applique la couleur à l'icône du bouton de retour
             if (btnRetour != null && btnRetour.getGraphic() instanceof FontIcon) {
                 ((FontIcon) btnRetour.getGraphic()).setIconColor(Color.WHITE);
             }
@@ -90,7 +125,7 @@ public class ReglesTechniquesController {
             
             if (iconPrecedent != null) iconPrecedent.setIconColor(Color.BLACK);
             if (iconSuivant != null) iconSuivant.setIconColor(Color.BLACK);
-            // --> ON AJOUTE LA FLÈCHE DE RETOUR EN NOIR
+            // Applique la couleur à l'icône du bouton de retour
             if (btnRetour != null && btnRetour.getGraphic() instanceof FontIcon) {
                 ((FontIcon) btnRetour.getGraphic()).setIconColor(Color.BLACK);
             }
@@ -100,7 +135,9 @@ public class ReglesTechniquesController {
         afficherRegles();
     }
 
-    // --- ACTIONS DES FLÈCHES ---
+    /**
+     * Gère le clic sur le bouton 'Précédent'. Affiche la page précédente de la section.
+     */
     @FXML
     private void onPagePrecedente() {
         if (indexPageActuelle > 0) {
@@ -109,6 +146,9 @@ public class ReglesTechniquesController {
         }
     }
 
+    /**
+     * Gère le clic sur le bouton 'Suivant'. Affiche la page suivante de la section.
+     */
     @FXML
     private void onPageSuivante() {
         if (indexPageActuelle < pagesDeLaSection.size() - 1) {
@@ -117,14 +157,23 @@ public class ReglesTechniquesController {
         }
     }
 
-    // --- MOTEUR D'AFFICHAGE ---
+    /**
+     * Charge une nouvelle section. Met à jour le titre, réinitialise la liste des pages
+     * et affiche la première page de la nouvelle section.
+     * @param titre Le titre de la section à afficher.
+     * @param pages La liste des pages de contenu pour cette section.
+     */
     private void chargerSection(String titre, List<PageContenu> pages) {
         lblTitreHaut.setText(titre);
         this.pagesDeLaSection = pages;
-        this.indexPageActuelle = 0; // On repart à la page 1 de la section
+        this.indexPageActuelle = 0;
         afficherPageCourante();
     }
 
+    /**
+     * Affiche le contenu de la page actuelle (texte, image, légende) et met à jour
+     * la visibilité des boutons de pagination.
+     */
     private void afficherPageCourante() {
         if (pagesDeLaSection.isEmpty()) return;
 
@@ -148,8 +197,9 @@ public class ReglesTechniquesController {
         btnSuivant.setVisible(indexPageActuelle < pagesDeLaSection.size() - 1);
     }
 
-    // --- DÉFINITION DES ONGLETS ---
-
+    /**
+     * Charge le contenu de la section "Règles du Calcudoku".
+     */
     @FXML
     private void afficherRegles() {
         List<PageContenu> pages = new ArrayList<>();
@@ -178,6 +228,9 @@ public class ReglesTechniquesController {
         chargerSection("Règles du Calcudoku", pages);
     }
 
+    /**
+     * Charge le contenu de la section "Fonctionnalités et Outils".
+     */
     @FXML
     private void afficherFonctionnalites() {
         List<PageContenu> pages = new ArrayList<>();
@@ -217,6 +270,9 @@ public class ReglesTechniquesController {
         chargerSection("Fonctionnalités et Outils", pages);
     }
 
+    /**
+     * Charge le contenu de la section "Techniques de base".
+     */
     @FXML
     private void afficherBase() {
         List<PageContenu> pages = new ArrayList<>();
@@ -230,6 +286,9 @@ public class ReglesTechniquesController {
         chargerSection("Techniques de base", pages);
     }
 
+    /**
+     * Charge le contenu de la section "Techniques : Blocs Uniques".
+     */
     @FXML
     private void afficherBlocsUniques() {
         List<PageContenu> pages = new ArrayList<>();
@@ -293,6 +352,9 @@ public class ReglesTechniquesController {
         chargerSection("Techniques : Blocs Uniques", pages);
     }
 
+    /**
+     * Charge le contenu de la section "Technique : Candidat Unique".
+     */
     @FXML
     private void afficherCandidatUnique() {
         List<PageContenu> pages = new ArrayList<>();
@@ -306,6 +368,9 @@ public class ReglesTechniquesController {
         chargerSection("Technique : Candidat Unique", pages);
     }
 
+    /**
+     * Charge le contenu de la section "Technique : Reste de Grille".
+     */
     @FXML
     private void afficherResteGrille() {
         List<PageContenu> pages = new ArrayList<>();
@@ -342,6 +407,9 @@ public class ReglesTechniquesController {
         chargerSection("Technique : Reste de Grille", pages);
     }
 
+    /**
+     * Charge le contenu de la section "Technique : Intra Bloc".
+     */
     @FXML
     private void afficherIntraBloc() {
         List<PageContenu> pages = new ArrayList<>();
@@ -378,6 +446,10 @@ public class ReglesTechniquesController {
         chargerSection("Technique : Intra Bloc", pages);
     }
 
+    /**
+     * Gère le clic sur le bouton de retour. Exécute l'action personnalisée
+     * {@link #actionRetour} si elle existe, sinon change la scène vers le menu principal.
+     */
     @FXML
     private void onRetourClick() {
         if (actionRetour != null) {

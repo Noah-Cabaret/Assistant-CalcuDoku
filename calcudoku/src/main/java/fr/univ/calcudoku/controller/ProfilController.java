@@ -21,24 +21,63 @@ import java.io.File;
 import java.util.Map;
 import java.util.Scanner;
 
+/**
+ * Contrôleur de la vue du profil utilisateur.
+ * Affiche les statistiques, les paramètres (thème, aide au calcul) et les parties en cours.
+ */
 public class ProfilController {
 
+    /**
+     * Stocke le chemin de la page précédente pour le bouton "Retour".
+     */
     public static String pagePrecedente = "/fxml/menu.fxml";
 
+    /** Icône de l'avatar du profil. */
     @FXML private FontIcon imgAvatar;
+    /** Label affichant le nom du profil. */
     @FXML private Label lblNomProfil;
+    /** Conteneur principal de la vue. */
     @FXML private VBox boxCentrale;
     
-    @FXML private Label lblPartiesJouees, lblVictoires, lblTempsMoyen, lblTauxReussite, lblNiveauAventure, lblDifficulteMax, lblMeilleurScore;
+    /** Label pour le nombre de parties jouées. */
+    @FXML private Label lblPartiesJouees;
+    /** Label pour le nombre de victoires. */
+    @FXML private Label lblVictoires;
+    /** Label pour le temps de jeu moyen. */
+    @FXML private Label lblTempsMoyen;
+    /** Label pour le taux de réussite. */
+    @FXML private Label lblTauxReussite;
+    /** Label pour le niveau atteint en mode Aventure. */
+    @FXML private Label lblNiveauAventure;
+    /** Label pour la difficulté maximale jouée. */
+    @FXML private Label lblDifficulteMax;
+    /** Label pour le meilleur score obtenu. */
+    @FXML private Label lblMeilleurScore;
     
-    @FXML private RadioButton radioSombre, radioClair;
-    @FXML private RadioButton radioProfilCombinaisons, radioProfilCalculatrice;
+    /** Bouton radio pour activer le thème sombre. */
+    @FXML private RadioButton radioSombre;
+    /** Bouton radio pour activer le thème clair. */
+    @FXML private RadioButton radioClair;
+    /** Bouton radio pour sélectionner l'aide "Combinaisons". */
+    @FXML private RadioButton radioProfilCombinaisons;
+    /** Bouton radio pour sélectionner l'aide "Calculatrice". */
+    @FXML private RadioButton radioProfilCalculatrice;
+    /** Groupe de toggles pour l'aide au calcul. */
     @FXML private javafx.scene.control.ToggleGroup groupeAide;
+    /** Conteneur pour les cartes des parties en cours. */
     @FXML private HBox boxParties;
+    /** Groupe de toggles pour le thème. */
     @FXML private javafx.scene.control.ToggleGroup groupeTheme;
+    /** Bouton pour retourner à la page précédente. */
     @FXML private Button btnRetour;
+    /** Bouton pour se déconnecter et retourner à l'accueil. */
     @FXML private Button btnDeconnexion;
 
+    /**
+     * Méthode d'initialisation appelée après le chargement du FXML.
+     * Charge les informations du profil actif (nom, avatar, statistiques, paramètres)
+     * et les parties sauvegardées. Configure les listeners pour les changements de paramètres.
+     */
     @FXML
     public void initialize() {
         ProfileManager manager = MainApp.getProfileManager();
@@ -67,6 +106,11 @@ public class ProfilController {
         if (radioProfilCalculatrice != null) radioProfilCalculatrice.setOnAction(e -> manager.mettreAJourStatistique(lblNomProfil.getText(), "aide_calcul", "calculatrice"));
     }
 
+    /**
+     * Charge les parties sauvegardées pour un profil donné, en parcourant les dossiers
+     * du mode libre et du mode aventure.
+     * @param nomProfil Le nom du profil dont on veut charger les parties.
+     */
     private void chargerPartiesSauvegardees(String nomProfil) {
         File dossierParties = new File("profils/" + nomProfil + "/parties");
         chargerFichiersDossier(nomProfil, dossierParties);
@@ -75,6 +119,12 @@ public class ProfilController {
         chargerFichiersDossier(nomProfil, dossierAventure);
     }
 
+    /**
+     * Parcourt un dossier spécifique à la recherche de fichiers de sauvegarde (.json)
+     * et crée une carte visuelle pour chaque partie trouvée.
+     * @param nomProfil Le nom du profil.
+     * @param dossier Le dossier à analyser.
+     */
     private void chargerFichiersDossier(String nomProfil, File dossier) {
         if (!dossier.exists() || !dossier.isDirectory()) return;
 
@@ -95,6 +145,11 @@ public class ProfilController {
         }
     }
 
+    /**
+     * Lit le temps de jeu écoulé depuis un fichier de sauvegarde .ini.
+     * @param fichierIni Le fichier .ini à lire.
+     * @return Le temps en secondes, ou 0 si non trouvé ou en cas d'erreur.
+     */
     private int lireTempsDepuisIni(File fichierIni) {
         if (!fichierIni.exists()) return 0;
         try (Scanner sc = new Scanner(fichierIni)) {
@@ -106,6 +161,15 @@ public class ProfilController {
         return 0;
     }
 
+    /**
+     * Crée une carte visuelle (VBox) pour une partie sauvegardée.
+     * La carte affiche une image de la grille, son nom et le temps de jeu.
+     * Elle est cliquable pour reprendre la partie.
+     * @param nomProfil Le nom du profil.
+     * @param fichierJson Le fichier de sauvegarde de la partie.
+     * @param temps Le temps de jeu écoulé en secondes.
+     * @return Un VBox représentant la carte de la partie.
+     */
     private VBox creerCartePartie(String nomProfil, File fichierJson, int temps) {
         File fichierImage = new File("profils/" + nomProfil + "/jeu/images/" + fichierJson.getName().replace(".json", ".png"));
         ImageView imgView = new ImageView();
@@ -147,6 +211,11 @@ public class ProfilController {
         return carte;
     }
 
+    /**
+     * Charge et affiche les statistiques et les paramètres du profil.
+     * @param nom Le nom du profil.
+     * @param manager Le gestionnaire de profils.
+     */
     private void chargerStatistiquesProfil(String nom, ProfileManager manager) {
         Map<String, String> stats = manager.lireStatistiques(nom);
 
@@ -177,8 +246,16 @@ public class ProfilController {
         javafx.application.Platform.runLater(() -> activerModeSombre(isSombre));
     }
     
+    /**
+     * Charge l'avatar et ajuste sa couleur en fonction du thème (sombre/clair).
+     */
     private void chargerAvatar() { imgAvatar.setIconColor(MainApp.modeSombreActif ? Color.WHITE : Color.BLACK); }
     
+    /**
+     * Formate un temps en secondes en une chaîne de caractères "MM:SS".
+     * @param s Le temps en secondes, sous forme de chaîne.
+     * @return La chaîne formatée, ou "00:00" en cas d'erreur.
+     */
     private String formatTemps(String s) {
         try {
             int totalSecondes = Integer.parseInt(s);
@@ -190,6 +267,11 @@ public class ProfilController {
         }
     }
 
+    /**
+     * Active ou désactive le mode sombre pour la scène actuelle et met à jour
+     * les couleurs des éléments de l'interface.
+     * @param activer true pour activer le mode sombre, false pour le désactiver.
+     */
     private void activerModeSombre(boolean activer) {
         MainApp.modeSombreActif = activer;
         javafx.scene.Scene sceneActuelle = boxParties.getScene();
@@ -242,6 +324,15 @@ public class ProfilController {
         }
     }
 
+    /**
+     * Gère le clic sur le bouton "Retour".
+     * Redirige vers la page précédente stockée dans {@link #pagePrecedente}.
+     */
     @FXML private void onRetourClick() { MainApp.changerScene(pagePrecedente); }
+    
+    /**
+     * Gère le clic sur le bouton "Déconnexion".
+     * Redirige vers l'écran d'accueil et désactive le mode sombre.
+     */
     @FXML private void onDeconnexionClick() { MainApp.changerScene("/fxml/accueil.fxml"); MainApp.modeSombreActif = false; }
 }

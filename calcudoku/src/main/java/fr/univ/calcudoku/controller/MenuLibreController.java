@@ -20,24 +20,39 @@ import java.io.File;
 import java.util.Scanner;
 
 public class MenuLibreController {
+    /** Groupe de boutons radio pour la sélection de la taille de la grille. */
+    @FXML 
+    private ToggleGroup groupeTaille;
+    /** Groupe de boutons radio pour la sélection de la difficulté de la grille. */
+    @FXML 
+    private ToggleGroup groupeDifficulte;
+    /** Conteneur HBox pour afficher les cartes des grilles disponibles. */
+    @FXML 
+    private HBox boxGrilles;
+    /** Icône des paramètres, dont la couleur s'adapte au thème. */
+    @FXML 
+    private FontIcon imgParametres;
+    /** Bouton de retour vers le menu principal. */
+    @FXML 
+    private Button btnRetour;
 
-    @FXML private ToggleGroup groupeTaille;
-    @FXML private ToggleGroup groupeDifficulte;
-    @FXML private HBox boxGrilles;
-    @FXML private FontIcon imgParametres;
-    @FXML private Button btnRetour;
-
-    // LES STYLES VISUELS DES BOUTONS
+    /** Style CSS par défaut pour les boutons non sélectionnés dans les groupes de toggles. */
     private final String STYLE_NORMAL = "-fx-background-color: transparent; -fx-text-fill: #555555; -fx-cursor: hand; -fx-background-radius: 50em; -fx-pref-width: 40px; -fx-pref-height: 40px; -fx-font-size: 14px;";
+    /** Style CSS pour les boutons sélectionnés dans les groupes de toggles. */
     private final String STYLE_SELECTIONNE = "-fx-background-color: white; -fx-border-color: black; -fx-border-radius: 50em; -fx-background-radius: 50em; -fx-text-fill: black; -fx-cursor: hand; -fx-pref-width: 40px; -fx-pref-height: 40px; -fx-font-weight: bold; -fx-font-size: 14px;";
 
+    /**
+     * Méthode d'initialisation appelée automatiquement après le chargement du fichier FXML.
+     * Configure la couleur de l'icône des paramètres, initialise les groupes de toggles
+     * pour la taille et la difficulté, et rafraîchit l'affichage des grilles.
+     */
     @FXML
     public void initialize() {
-
         imgParametres.setIconColor(MainApp.modeSombreActif ? Color.WHITE : Color.BLACK);
         configurerToggleGroup(groupeTaille);
         configurerToggleGroup(groupeDifficulte);
 
+        // Adapte le style du bouton de retour au thème sombre/clair
         if (btnRetour != null) {
             btnRetour.setStyle("-fx-background-color: transparent; -fx-cursor: hand;"); 
             
@@ -49,6 +64,11 @@ public class MenuLibreController {
         rafraichirGrilles();
     }
 
+    /**
+     * Configure un groupe de boutons radio (ToggleGroup) pour appliquer des styles visuels
+     * en fonction de l'état sélectionné et déclencher un rafraîchissement des grilles.
+     * @param groupe Le ToggleGroup à configurer.
+     */
     private void configurerToggleGroup(ToggleGroup groupe) {
         for (Toggle t : groupe.getToggles()) {
             ToggleButton btn = (ToggleButton) t;
@@ -70,6 +90,10 @@ public class MenuLibreController {
         });
     }
 
+    /**
+     * Rafraîchit l'affichage des cartes de grilles dans le conteneur {@code boxGrilles}.
+     * Les grilles affichées dépendent de la taille et de la difficulté sélectionnées.
+     */
     private void rafraichirGrilles() {
         boxGrilles.getChildren().clear();
 
@@ -94,6 +118,15 @@ public class MenuLibreController {
         }
     }
 
+    /**
+     * Crée une carte visuelle pour représenter un niveau de grille spécifique.
+     * La carte affiche le nom de la grille, le temps de jeu en cours ou le record,
+     * et une image de la grille. Elle est interactive pour lancer la partie.
+     * @param niveau Les données du niveau (taille, difficulté, etc.).
+     * @param baseName Le nom de base de la grille (ex: "libre_4_Facile_1").
+     * @param index L'index de la grille dans sa catégorie (ex: 1, 2, 3).
+     * @return Un conteneur VBox représentant la carte de la grille.
+     */
     private VBox creerCarteNiveau(DonneesNiveau niveau, String baseName, int index) {
         String nomProfil = MainApp.getProfileManager().getProfilActif();
 
@@ -155,6 +188,12 @@ public class MenuLibreController {
         );
     }
 
+    /**
+     * Lit le temps de jeu sauvegardé depuis un fichier .ini.
+     * @param fichierIni Le fichier .ini contenant le temps.
+     * @return Le temps en secondes si trouvé et valide, sinon 0.
+     *         Affiche la trace de la pile en cas d'erreur de lecture.
+     */
     private int lireTempsDepuisIni(File fichierIni) {
         if (!fichierIni.exists()) return 0;
         try (Scanner sc = new Scanner(fichierIni)) {
@@ -173,12 +212,20 @@ public class MenuLibreController {
         return 0;
     }
 
+    /**
+     * Gère le clic sur le bouton des paramètres.
+     * Redirige vers la vue du profil, en spécifiant que la page précédente était le menu libre.
+     */
     @FXML 
     private void onParametresClick() { 
         ProfilController.pagePrecedente = Constantes.VUE_MENU_LIBRE; 
         MainApp.changerScene(Constantes.VUE_PROFIL); 
     }
     
+    /**
+     * Gère le clic sur le bouton de retour.
+     * Redirige vers la vue du menu principal.
+     */
     @FXML 
     private void onRetourClick() { 
         MainApp.changerScene(Constantes.VUE_MENU); 
