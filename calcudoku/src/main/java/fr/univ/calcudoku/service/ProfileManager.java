@@ -82,13 +82,17 @@ public class ProfileManager {
             if (score > stats.getScore()) stats.setScore(score);
             if (diff != null && diff.ordinal() > stats.getDiffMax().ordinal()) stats.setDiffMax(diff);
             
-            if (idGrille != null && idGrille.startsWith("aventure_")) {
-                try {
-                    int niveauGagne = Integer.parseInt(idGrille.replace("aventure_", ""));
-                    if (niveauGagne >= stats.getProgressionAventure()) {
-                        stats.setProgressionAventure(niveauGagne + 1);
-                    }
-                } catch (Exception e) {}
+            if (idGrille != null) {
+                if (idGrille.startsWith("aventure_")) {
+                    try {
+                        int niveauGagne = Integer.parseInt(idGrille.replace("aventure_", ""));
+                        if (niveauGagne >= stats.getProgressionAventure()) {
+                            stats.setProgressionAventure(niveauGagne + 1);
+                        }
+                    } catch (Exception e) {}
+                } else if (idGrille.startsWith("libre_")) {
+                    fr.univ.calcudoku.save.GestionnaireRecords.enregistrerSiMeilleur(idGrille, score, (int) temps, nomProfil);
+                }
             }
             
             double ancienneMoyenne = stats.getMoyenne() != null ? stats.getMoyenne() : 0.0;
@@ -171,6 +175,6 @@ public class ProfileManager {
                 stats.setVictoires(Integer.parseInt(valeur));
             } catch (Exception e) {}
             stats.enreg(nomProfil);
-        } // Ajoutez d'autres statistiques si besoin
+        }
     }
 }

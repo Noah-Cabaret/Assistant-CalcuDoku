@@ -28,14 +28,16 @@ public class Sauvegarde {
     private Defi.TypeDefi defi;
     private int bonus, malus;
     private int vies;
+    private int aidesUtilisees;
 
     private static class CaseSauvegarde {
         int valeur;
         List<Integer> notes;
-        
-        public CaseSauvegarde(int valeur, List<Integer> notes) {
+        boolean validee;
+        public CaseSauvegarde(int valeur, List<Integer> notes, boolean validee) {
             this.valeur = valeur;
             this.notes = notes;
+            this.validee = validee;
         }
     }
 
@@ -45,6 +47,7 @@ public class Sauvegarde {
         this.hist = new Historique();
         this.defi = Defi.TypeDefi.AUCUN;
         this.diff = Difficulte.FACIL;
+        this.aidesUtilisees = 0;
     }
 
     public boolean getTerminee() { return this.terminee; }
@@ -63,6 +66,8 @@ public class Sauvegarde {
     public void setMalus(int newMalus) { this.malus = newMalus; }
     public int getVies() { return this.vies; }
     public void setVies(int newVies) { this.vies = newVies; }
+    public int getAidesUtilisees() { return this.aidesUtilisees; }
+    public void setAidesUtilisees(int a) { this.aidesUtilisees = a; }
 
     public void enreg(String compte, Grille grille) {
         String cheminSave = "profils/" + compte + "/parties/";
@@ -85,6 +90,7 @@ public class Sauvegarde {
             ini.write("bonus=" + this.bonus + "\n");
             ini.write("malus=" + this.malus + "\n");
             ini.write("vies=" + this.vies + "\n");
+            ini.write("aides=" + this.aidesUtilisees + "\n");
         } catch (IOException e) {
             e.printStackTrace();
             iniFonctionnel = false;
@@ -98,7 +104,7 @@ public class Sauvegarde {
                         Case c = grille.getCase(i, j);
                         List<Integer> notes = new ArrayList<>(c.getNotes()); 
                         int valeurASauvegarder = c.getValeur() + (c.isEstHypothese() ? 20 : 0);
-                        matrice[i][j] = new CaseSauvegarde(valeurASauvegarder, notes);
+                        matrice[i][j] = new CaseSauvegarde(valeurASauvegarder, notes, c.isValidee());
                     }
                 }
                 new Gson().toJson(matrice, json);
@@ -140,6 +146,7 @@ public class Sauvegarde {
                             case "bonus": this.bonus = Integer.parseInt(val); break;
                             case "malus": this.malus = Integer.parseInt(val); break;
                             case "vies": this.vies = Integer.parseInt(val); break;
+                            case "aides": this.aidesUtilisees = Integer.parseInt(val); break;
                             case "historique":
                                 Scanner histScanner = new Scanner(val);
                                 histScanner.useDelimiter("[,\\n\\[\\]]");
@@ -177,6 +184,7 @@ public class Sauvegarde {
                         for (int i = 0; i < matrice.length; i++) {
                             for (int j = 0; j < matrice[i].length; j++) {
                                 Case c = grille.getCase(i, j);
+                                
                                 int valLue = matrice[i][j].valeur;
                                 if (valLue >= 20) {
                                     c.setValeur(valLue - 20);
@@ -185,6 +193,7 @@ public class Sauvegarde {
                                     c.setValeur(valLue);
                                     c.setEstHypothese(false);
                                 }
+                                c.setValidee(matrice[i][j].validee);
                                 c.effacerNotes();
                                 if (matrice[i][j].notes != null) {
                                     for (int note : matrice[i][j].notes) {

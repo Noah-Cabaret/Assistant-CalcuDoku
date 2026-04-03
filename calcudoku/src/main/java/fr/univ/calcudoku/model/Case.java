@@ -19,6 +19,7 @@ public class Case implements ElementVisitable {
     private final int solution;
     private GroupementCases groupement;
     private boolean estHypothese = false;
+    private boolean validee = false;
 
     private final ObservableSet<Integer> annotations = FXCollections.observableSet(new HashSet<>());
 
@@ -47,6 +48,7 @@ public class Case implements ElementVisitable {
         this.valeur = new SimpleIntegerProperty(source.getValeur());
         this.annotations.addAll(source.getNotes());
         this.estHypothese = source.isEstHypothese();
+        this.validee = source.isValidee();
     }
     
     /**
@@ -176,4 +178,7 @@ public class Case implements ElementVisitable {
     public void accepter(VisiteurGrille visiteur) {
         visiteur.visiter(this);
     }
+
+    public void setValidee(boolean validee) { this.validee = validee; }
+    public boolean isValidee() { return validee; }
 }

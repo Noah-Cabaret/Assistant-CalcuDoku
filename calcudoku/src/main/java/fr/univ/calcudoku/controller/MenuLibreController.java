@@ -11,13 +11,10 @@ import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import org.kordamp.ikonli.javafx.FontIcon;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.Color;
-import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.io.File;
 import java.util.Scanner;
@@ -53,27 +50,22 @@ public class MenuLibreController {
     }
 
     private void configurerToggleGroup(ToggleGroup groupe) {
-        // Appliquer le style initial à tous les boutons
         for (Toggle t : groupe.getToggles()) {
             ToggleButton btn = (ToggleButton) t;
             btn.setStyle(btn.isSelected() ? STYLE_SELECTIONNE : STYLE_NORMAL);
         }
 
-        // Écouter les clics de l'utilisateur
         groupe.selectedToggleProperty().addListener((obs, oldVal, newVal) -> {
-            // Empêcher la désélection
             if (newVal == null) {
                 groupe.selectToggle(oldVal);
                 return;
             }
 
-            // Mettre à jour l'apparence des boutons (le cercle noir)
             for (Toggle t : groupe.getToggles()) {
                 ToggleButton btn = (ToggleButton) t;
                 btn.setStyle(btn.isSelected() ? STYLE_SELECTIONNE : STYLE_NORMAL);
             }
 
-            // Charger les nouvelles grilles
             rafraichirGrilles();
         });
     }
@@ -103,10 +95,8 @@ public class MenuLibreController {
     }
 
     private VBox creerCarteNiveau(DonneesNiveau niveau, String baseName, int index) {
-        // 1. Récupérer le nom du profil actif
         String nomProfil = MainApp.getProfileManager().getProfilActif();
 
-        // 2. Définir les chemins de sauvegarde potentiels
         File fichierJsonSave = new File("profils/" + nomProfil + "/parties/" + baseName + ".json");
         File fichierIniSave = new File("profils/" + nomProfil + "/parties/" + baseName + ".ini");
         File fichierImageSave = new File("profils/" + nomProfil + "/jeu/images/" + baseName + ".png");
@@ -115,21 +105,24 @@ public class MenuLibreController {
         String texteTemps;
         Runnable actionClic;
 
-        // 3. Vérifier si une sauvegarde existe
+        // Récupération du record de la grille
+        fr.univ.calcudoku.save.Record rec = fr.univ.calcudoku.save.GestionnaireRecords.getRecord(baseName);
+
         if (fichierJsonSave.exists() && fichierIniSave.exists()) {
             
-            // --- CAS A : PARTIE EN COURS ---
             if (fichierImageSave.exists()) {
                 imageA_Afficher = new Image(fichierImageSave.toURI().toString());
             } else {
-                // Securité si l'image png a été supprimée mais pas le json
                 imageA_Afficher = CacheRessources.getImage("/grilles/images/" + baseName + ".png");
             }
             
             int tempsSave = lireTempsDepuisIni(fichierIniSave);
-            int min = tempsSave / 60;
-            int sec = tempsSave % 60;
-            texteTemps = String.format("En cours : %d:%02d", min, sec);
+            texteTemps = String.format("En cours : %02d:%02d", tempsSave / 60, tempsSave % 60);
+            
+            // On ajoute le record en dessous s'il existe
+            if (rec != null) {
+                texteTemps += String.format("\n🏆 %s : %d pts (%02d:%02d)", rec.joueur, rec.score, rec.temps / 60, rec.temps % 60);
+            }
             
             actionClic = () -> {
                 javafx.stage.Stage stage = (javafx.stage.Stage) boxGrilles.getScene().getWindow();
@@ -138,13 +131,14 @@ public class MenuLibreController {
 
         } else {
             
-            // --- CAS B : NOUVELLE PARTIE ---
             imageA_Afficher = CacheRessources.getImage("/grilles/images/" + baseName + ".png");
             
-            int tempsCible = niveau.temps != null ? niveau.temps.intValue() : 0;
-            int min = tempsCible / 60;
-            int sec = tempsCible % 60;
-            texteTemps = String.format("Temps cible : %d:%02d", min, sec);
+            // --- MODIFICATION ICI : On enlève le temps cible ---
+            if (rec != null) {
+                texteTemps = String.format("🏆 %s : %d pts (%02d:%02d)", rec.joueur, rec.score, rec.temps / 60, rec.temps % 60);
+            } else {
+                texteTemps = "Nouvelle partie";
+            }
             
             actionClic = () -> {
                 javafx.stage.Stage stage = (javafx.stage.Stage) boxGrilles.getScene().getWindow();
@@ -152,7 +146,6 @@ public class MenuLibreController {
             };
         }
 
-        // la commande de la carte à Usine {factory pattern} 
         return fr.univ.calcudoku.utils.CarteUIFactory.creerCarteGrille(
             "Grille " + index, 
             texteTemps, 
@@ -162,7 +155,6 @@ public class MenuLibreController {
         );
     }
 
-    // Méthode utilitaire pour lire le temps du fichier INI
     private int lireTempsDepuisIni(File fichierIni) {
         if (!fichierIni.exists()) return 0;
         try (Scanner sc = new Scanner(fichierIni)) {
@@ -183,7 +175,6 @@ public class MenuLibreController {
 
     @FXML 
     private void onParametresClick() { 
-        // On prévient le Profil la page a revenir
         ProfilController.pagePrecedente = Constantes.VUE_MENU_LIBRE; 
         MainApp.changerScene(Constantes.VUE_PROFIL); 
     }

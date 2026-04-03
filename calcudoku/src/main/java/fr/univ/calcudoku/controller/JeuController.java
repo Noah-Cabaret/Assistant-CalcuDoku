@@ -126,8 +126,18 @@ public class JeuController {
         if (popupAbandon != null) popupAbandon.setVisible(false);
         if (menuDeroulant != null) menuDeroulant.setVisible(false);
         if (bulleAide != null) bulleAide.setVisible(false);
+        
+        if (btnActualiserAide != null) {
+            btnActualiserAide.setOnAction(this::actionActualiserAide);
+        }
 
-        aideService.setOnSucceeded(event -> { indicesEnAttente = aideService.getValue(); });
+        aideService.setOnSucceeded(event -> { 
+            indicesEnAttente = aideService.getValue(); 
+            if (bulleAide != null && bulleAide.isVisible()) {
+                rafraichirContenuBulleAide();
+            }
+        });
+        
         for (GroupementCases bloc : grilleModele.getListeGroupements()) { bloc.calculerPossibilites(grilleModele); }
         aideService.lancerAnalyse(grilleModele);
 
@@ -181,7 +191,7 @@ public class JeuController {
 
         mettreAJourLabelDefi();
         
-        this.chronoManager = new ChronoManager(labelChrono, save.tmp, save.getDefi(), () -> declencherDefaite("Le temps est écoulé !"));
+        this.chronoManager = new ChronoManager(labelChrono, save, () -> declencherDefaite("Le temps est écoulé !"));
         this.chronoManager.demarrer();
     }
 
@@ -411,7 +421,8 @@ public class JeuController {
         
         String nomProfil = MainApp.getProfileManager().getProfilActif();
         int secEcoulees = (chronoManager != null) ? chronoManager.getSecondesEcoulees() : 0;
-        MainApp.getProfileManager().enregistrerFinDePartie(nomProfil, false, secEcoulees, 0, save.getDiff(), save.getIdGrille());        if (save != null && save.getMode() != Sauvegarde.ModeDeJeu.AVEN) {
+        MainApp.getProfileManager().enregistrerFinDePartie(nomProfil, false, secEcoulees, 0, save.getDiff(), save.getIdGrille());        
+        if (save != null && save.getMode() != Sauvegarde.ModeDeJeu.AVEN) {
             save.effacer(nomProfil);
         }
 
@@ -428,10 +439,22 @@ public class JeuController {
 
             String nomProfil = MainApp.getProfileManager().getProfilActif();
             int secEcoulees = chronoManager.getSecondesEcoulees();
-            long scoreCalcul = Math.max(0, (grilleModele.getTaille() * 1000) - (secEcoulees * 10));
-            boolean estAventure = (save.getMode() == Sauvegarde.ModeDeJeu.AVEN);
+            
+            int taille = grilleModele.getTaille();
+            long pointsBase = (taille * taille) * 100L; 
+            
+            long penaliteTemps = Math.min((long)(secEcoulees * 2L), (long)(pointsBase * 0.5));
+            long penaliteErreurs = save.getMalus() * 50L;
+            long penaliteAides = save.getAidesUtilisees() * 50L;
+            
+            long scoreCalcul = pointsBase - penaliteTemps - penaliteErreurs - penaliteAides;
+            scoreCalcul = Math.max(100L, scoreCalcul);
+            
+            if (save.getDiff() == Sauvegarde.Difficulte.MOYEN) scoreCalcul = (long)(scoreCalcul * 1.5);
+            else if (save.getDiff() == Sauvegarde.Difficulte.DIFFI) scoreCalcul *= 2;
 
-            MainApp.getProfileManager().enregistrerFinDePartie(nomProfil, true, secEcoulees, scoreCalcul, save.getDiff(), save.getIdGrille());            if (save != null) save.effacer(nomProfil);
+            MainApp.getProfileManager().enregistrerFinDePartie(nomProfil, true, secEcoulees, scoreCalcul, save.getDiff(), save.getIdGrille());            
+            if (save != null) save.effacer(nomProfil);
 
             String msg = "Temps : " + (secEcoulees / 60) + " min " + (secEcoulees % 60) + " s.\nScore obtenu : " + scoreCalcul;
             PopupFactory.afficherPopupFinPartie("Victoire !", msg, Constantes.ICONE_VICTOIRE, Constantes.COULEUR_VICTOIRE, true, () -> actionRecommencer(null), () -> actionRetourMenu(null));
@@ -444,6 +467,9 @@ public class JeuController {
         this.caseModeleSelectionnee = modeleCase;
         vueCaseSelectionnee.getStyleClass().add(Constantes.CSS_CASE_SELECTIONNEE);
         rafraichirZoneCombinaisons(modeleCase);
+        
+        // NOUVEAU : Met à jour les guides visuels au clic
+        mettreAJourGuidesVisuels(modeleCase);
     }
 
     private void actionChiffreClique(int valeur) {
@@ -459,13 +485,12 @@ public class JeuController {
                 vueCaseSelectionnee.setEstHypothese(modeHypotheseActif);
                 rafraichirAnnotations(caseModeleSelectionnee.getX(), caseModeleSelectionnee.getY(), valeur);
                 rafraichirZoneCombinaisons(caseModeleSelectionnee);
-                if (bulleAide != null && bulleAide.isVisible()) {
-                    if (btnActualiserAide != null) {
-                        btnActualiserAide.setVisible(true);
-                        btnActualiserAide.setManaged(true);
-                    }
-                }
+                
                 aideService.lancerAnalyse(grilleModele);
+                
+                // NOUVEAU : Met à jour les guides visuels quand on tape un chiffre
+                mettreAJourGuidesVisuels(caseModeleSelectionnee);
+                
                 verifierVictoire();
             }
         }
@@ -481,36 +506,41 @@ public class JeuController {
             caseModeleSelectionnee.setEstHypothese(false);
             caseModeleSelectionnee.setValeur(0);
             caseModeleSelectionnee.effacerNotes();
-            if (bulleAide != null && bulleAide.isVisible()) {
-                if (btnActualiserAide != null) {
-                    btnActualiserAide.setVisible(true);
-                    btnActualiserAide.setManaged(true);
-                }
-            }
+            
             aideService.lancerAnalyse(grilleModele);
             save.hist.addEtape(caseModeleSelectionnee.getX(), caseModeleSelectionnee.getY(), (modeHypotheseActif ? 20 : 0));
+            
+            // NOUVEAU : Rafraîchir les guides pour enlever les chiffres identiques
+            mettreAJourGuidesVisuels(caseModeleSelectionnee);
         }
     }
 
     @FXML void actionVerifier(ActionEvent event) {
-        List<Case> erreurs = ValidateurJeu.trouverErreurs(grilleModele);
         List<VueCase> vuesEnErreur = new ArrayList<>();
+        boolean caseIncorrecte = false;
 
-        if (!erreurs.isEmpty() && save.getDefi() == Defi.TypeDefi.SURVI) {
+        for (int y = 0; y < grilleModele.getTaille(); y++) {
+            for (int x = 0; x < grilleModele.getTaille(); x++) {
+                Case c = grilleModele.getCase(x, y);
+                if (c.getValeur() != 0 && c.getValeur() != c.getSolution()) {
+                    vuesEnErreur.add(vueGrille.getGrilleVueCases(x, y));
+                    save.setMalus(save.getMalus() + 1); 
+                    if (save.getDefi() == Defi.TypeDefi.SURVI) caseIncorrecte = true;
+                }
+            }
+        }
+
+        if (caseIncorrecte && save.getDefi() == Defi.TypeDefi.SURVI) {
             save.setVies(save.getVies() - 1);
-            mettreAJourLabelDefi(); 
+            mettreAJourLabelDefi();
             if (save.getVies() <= 0) {
                 declencherDefaite("Vous n'avez plus de vies !");
                 return;
             }
         }
 
-        for (Case c : erreurs) {
-            VueCase vc = vueGrille.getGrilleVueCases(c.getX(), c.getY());
-            vc.getStyleClass().add(Constantes.CSS_CASE_ERREUR);
-            vuesEnErreur.add(vc);
-        }
-        
+        for (VueCase vc : vuesEnErreur) vc.getStyleClass().add(Constantes.CSS_CASE_ERREUR);
+
         if (!vuesEnErreur.isEmpty()) {
             PauseTransition pause = new PauseTransition(Duration.seconds(3));
             pause.setOnFinished(e -> { 
@@ -538,6 +568,8 @@ public class JeuController {
                 vueGrille.getGrilleVueCases(x, y).setEstHypothese(c.isEstHypothese());
             }
         }
+        // Mise à jour des guides visuels au cas où l'undo/redo change la case selectionnée
+        mettreAJourGuidesVisuels(caseModeleSelectionnee);
     }
 
     @FXML void actionHypothese(ActionEvent event) {
@@ -562,7 +594,7 @@ public class JeuController {
         if (conteneurBoutonsHypothese != null) conteneurBoutonsHypothese.setVisible(false);
         for (int y = 0; y < grilleModele.getTaille(); y++) {
             for (int x = 0; x < grilleModele.getTaille(); x++) {
-                grilleModele.getCase(x, y).setEstHypothese(false); // <-- LA CORRECTION EST LÀ !
+                grilleModele.getCase(x, y).setEstHypothese(false); 
                 vueGrille.getGrilleVueCases(x, y).setEstHypothese(false);
             }
         }
@@ -597,7 +629,7 @@ public class JeuController {
                 Case c = grilleModele.getCase(targetX, i);
                 c.supprimerUneNote(valeurJouee);
             }
-                        if (i != targetX) {
+            if (i != targetX) {
                 Case c = grilleModele.getCase(i, targetY);
                 c.supprimerUneNote(valeurJouee); 
             }
@@ -651,6 +683,9 @@ public class JeuController {
         if (chronoManager != null) chronoManager.arreter();
         save.tmp.setTempsPrecedent(0.0);
         
+        save.setMalus(0); 
+        save.setAidesUtilisees(0); 
+        
         fr.univ.calcudoku.model.DonneesNiveau dataBase = fr.univ.calcudoku.utils.GestionnaireJeu.lireDonneesNiveauRessource(save.getIdGrille() + ".json");
         if (dataBase != null) save.setVies(dataBase.vies);
         
@@ -659,6 +694,7 @@ public class JeuController {
         if (chronoManager != null) chronoManager.demarrer();
         aideService.lancerAnalyse(grilleModele);
         if (caseModeleSelectionnee != null) rafraichirZoneCombinaisons(caseModeleSelectionnee);
+        mettreAJourGuidesVisuels(caseModeleSelectionnee);
     }
 
     @FXML void actionReglesTechniques(ActionEvent event) {
@@ -681,21 +717,46 @@ public class JeuController {
 
     @FXML void actionCalculatrice(ActionEvent event) { JeuUtilitaires.afficherCalculatrice(event); }
     
+    @FXML void actionActualiserAide(ActionEvent event) {
+        if (labelMessageAide != null) labelMessageAide.setText("Recherche de techniques en cours...");
+        aideService.lancerAnalyse(grilleModele); 
+    }
+    
     @FXML public void actionBoutonAidePointInterrogation() {
+        aideService.lancerAnalyse(grilleModele); 
+        
+        if (bulleAide != null && !bulleAide.isVisible()) {
+            save.setAidesUtilisees(save.getAidesUtilisees() + 1);
+        }
+
+        if (bulleAide != null) bulleAide.setVisible(true); 
+        
+        if (btnActualiserAide != null) {
+            btnActualiserAide.setVisible(true); 
+            btnActualiserAide.setManaged(true);
+        }
+        
+        rafraichirContenuBulleAide();
+    }
+    
+    private void rafraichirContenuBulleAide() {
         if (!listeAides.isEmpty() && indexAideActuelle < listeAides.size()) listeAides.get(indexAideActuelle).masquer();
-        listeAides.clear(); indexAideActuelle = 0;
+        listeAides.clear(); 
+        indexAideActuelle = 0;
+        
         if (indicesEnAttente != null) {
             for (Indice ind : indicesEnAttente) listeAides.add(new CommandeAfficherIndice(ind, labelMessageAide, vueGrille));
         }
-        if (listeAides.isEmpty()) return;
         
-        if (btnActualiserAide != null) {
-            btnActualiserAide.setVisible(false); 
-            btnActualiserAide.setManaged(false);
+        if (!listeAides.isEmpty()) {
+            listeAides.get(indexAideActuelle).afficher();
+            mettreAJourBoutonsNavigation();
+        } else {
+            if (labelMessageAide != null) labelMessageAide.setText("Aucune technique trouvée pour le moment.");
+            if (btnAmeliorerAide != null) btnAmeliorerAide.setDisable(true);
+            if (btnAidePrecedente != null) btnAidePrecedente.setDisable(true);
+            if (btnAideSuivante != null) btnAideSuivante.setDisable(true);
         }
-        if (bulleAide != null) bulleAide.setVisible(true); 
-        listeAides.get(indexAideActuelle).afficher();
-        mettreAJourBoutonsNavigation();
     }
 
     @FXML public void actionFermerBulleAide() {
@@ -704,7 +765,11 @@ public class JeuController {
     }
 
     @FXML public void actionAmeliorerAide() {
-        if (!listeAides.isEmpty()) { listeAides.get(indexAideActuelle).ameliorerNiveau(); mettreAJourBoutonsNavigation(); }
+        if (!listeAides.isEmpty()) { 
+            listeAides.get(indexAideActuelle).ameliorerNiveau(); 
+            save.setAidesUtilisees(save.getAidesUtilisees() + 1); 
+            mettreAJourBoutonsNavigation(); 
+        }
     }
 
     @FXML public void actionAideSuivante() {
@@ -726,5 +791,43 @@ public class JeuController {
         btnAidePrecedente.setDisable(indexAideActuelle == 0);
         btnAideSuivante.setDisable(indexAideActuelle == listeAides.size() - 1);
         btnAmeliorerAide.setDisable(!listeAides.get(indexAideActuelle).peutEtreAmeliore());
+    }
+
+    /**
+     * Met à jour les guides visuels grisés (Ligne, Colonne, Chiffres identiques).
+     */
+    private void mettreAJourGuidesVisuels(Case caseActuelle) {
+        if (grilleModele == null || vueGrille == null) return;
+        int taille = grilleModele.getTaille();
+
+        // 1. Nettoyage général : on enlève le gris de TOUTES les cases
+        for (int x = 0; x < taille; x++) {
+            for (int y = 0; y < taille; y++) {
+                vueGrille.getGrilleVueCases(x, y).getStyleClass().remove("case-guide-visuel");
+            }
+        }
+
+        if (caseActuelle == null) return;
+
+        int selX = caseActuelle.getX();
+        int selY = caseActuelle.getY();
+        int selValeur = caseActuelle.getValeur();
+
+        for (int x = 0; x < taille; x++) {
+            for (int y = 0; y < taille; y++) {
+                Case c = grilleModele.getCase(x, y);
+                
+                boolean estSurMemeLigne = (y == selY);
+                boolean estSurMemeColonne = (x == selX);
+                boolean aMemeValeur = (selValeur != 0 && selValeur <= taille && c.getValeur() == selValeur);
+
+                if ((estSurMemeLigne || estSurMemeColonne || aMemeValeur) && c != caseActuelle) {
+                    VueCase vueCase = vueGrille.getGrilleVueCases(x, y);
+                    if (!vueCase.getStyleClass().contains("case-guide-visuel")) {
+                        vueCase.getStyleClass().add("case-guide-visuel");
+                    }
+                }
+            }
+        }
     }
 }

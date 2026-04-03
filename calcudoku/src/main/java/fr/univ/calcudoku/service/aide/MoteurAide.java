@@ -45,14 +45,18 @@ public class MoteurAide {
         moyennes.add(new TechniquePlaceUniqueLigneColonne());
         moyennes.add(new TechniqueBlocUnique());
         moyennes.add(new TechniqueCandidatUnique());
+        moyennes.add(new TechniqueChiffreIncontournable());
         moyennes.add(new TechniqueUniqueCache());
         this.techniquesParNiveau.put(NiveauAide.MOYEN, moyennes);
 
         // --- NIVEAU DIFFICILE ---
         List<TechniqueAide> difficiles = new ArrayList<>();
         difficiles.add(new TechniqueIntraBloc_1_3());
+        difficiles.add(new TechniqueVerrouillageBloc());
         difficiles.add(new TechniqueResteDeGrilleType1());
         difficiles.add(new TechniqueResteDeGrilleType2());
+        difficiles.add(new TechniquePairesIsolees());
+        difficiles.add(new TechniquePairesCachees());
         this.techniquesParNiveau.put(NiveauAide.DIFFICILE, difficiles);
     }
 
