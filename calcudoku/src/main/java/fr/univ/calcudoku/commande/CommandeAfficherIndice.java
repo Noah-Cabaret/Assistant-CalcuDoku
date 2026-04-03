@@ -1,7 +1,6 @@
 package fr.univ.calcudoku.commande;
 
 import java.util.List;
-import java.util.Map;
 import fr.univ.calcudoku.model.Case;
 import fr.univ.calcudoku.model.Indice;
 import fr.univ.calcudoku.view.VueCase;
@@ -28,27 +27,19 @@ public class CommandeAfficherIndice implements CommandeAide {
         return indice.getCasesASurbriller() != null && !indice.getCasesASurbriller().isEmpty();
     }
 
-    private boolean possedeNiveau3() {
-        return indice.getSolutions() != null && !indice.getSolutions().isEmpty();
-    }
-
     @Override
     public void afficher() {
         labelMessageAide.setText("");
 
         String niveauTexte = (indice.getNiveauAide() != null) ? "Niveau " + indice.getNiveauAide() + " | " : "";
         
-        // --- MODIFICATION ICI : On adapte le message à l'étape actuelle ---
         List<String> messages = indice.getMessagesExplicatifs();
         String texteExplicatif = "";
         
         if (messages != null && !messages.isEmpty()) {
-            // L'étape commence à 1, donc l'index de la liste est (etapeActuelle - 1).
-            // Le Math.min évite les erreurs si on a moins de messages que d'étapes.
             int index = Math.min(etapeActuelle - 1, messages.size() - 1);
             texteExplicatif = messages.get(index);
         } else {
-            // Sécurité de rétrocompatibilité pour les techniques non mises à jour
             texteExplicatif = indice.getMessageExplicatif(); 
         }
 
@@ -61,7 +52,6 @@ public class CommandeAfficherIndice implements CommandeAide {
         if (etapeActuelle >= 2 && possedeNiveau2()) {
             for (Case c : indice.getCasesASurbriller()) {
                 VueCase vueCase = vueGrille.getGrilleVueCases(c.getX(), c.getY());
-                // Retire l'ancienne classe si présente
                 vueCase.getStyleClass().remove("case-indice-surbrillance");
                 if (!vueCase.getStyleClass().contains("case-aide-surbrillance")) {
                     vueCase.getStyleClass().add("case-aide-surbrillance");
@@ -76,18 +66,6 @@ public class CommandeAfficherIndice implements CommandeAide {
             }
         }
 
-        if (etapeActuelle >= 3 && possedeNiveau3()) {
-            StringBuilder texteSol = new StringBuilder("\n\nSolution : ");
-            for (Map.Entry<Case, Integer> reponse : indice.getSolutions().entrySet()) {
-                Case c = reponse.getKey();
-                texteSol.append("Saisissez ").append(reponse.getValue()).append(" dans la case (").append(c.getX() + 1).append(",").append(c.getY() + 1).append("). ");
-            }
-            Text texteSolution = new Text(texteSol.toString());
-            texteSolution.setFill(Color.web("#2c3e50"));
-            texteSolution.setStyle("-fx-font-weight: bold; -fx-font-size: 13px;");
-            textFlow.getChildren().add(texteSolution);
-        }
-
         labelMessageAide.setGraphic(textFlow);
     }
 
@@ -99,7 +77,7 @@ public class CommandeAfficherIndice implements CommandeAide {
             for (Case c : indice.getCasesASurbriller()) {
                 VueCase vueCase = vueGrille.getGrilleVueCases(c.getX(), c.getY());
                 vueCase.getStyleClass().remove("case-aide-surbrillance");
-                vueCase.getStyleClass().remove("case-indice-surbrillance"); // sécurité si ancienne classe
+                vueCase.getStyleClass().remove("case-indice-surbrillance"); 
             }
         }
     }
@@ -115,8 +93,7 @@ public class CommandeAfficherIndice implements CommandeAide {
     @Override
     public boolean peutEtreAmeliore() {
         if (etapeActuelle == 1 && !possedeNiveau2()) return false; 
-        if (etapeActuelle == 2 && !possedeNiveau3()) return false; 
-        
-        return etapeActuelle < 3;
+        // L'aide s'arrête obligatoirement à l'étape 2 (plus de solutions dévoilées)
+        return etapeActuelle < 2;
     }
 }

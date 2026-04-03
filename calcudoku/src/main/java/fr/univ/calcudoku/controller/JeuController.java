@@ -126,8 +126,18 @@ public class JeuController {
         if (popupAbandon != null) popupAbandon.setVisible(false);
         if (menuDeroulant != null) menuDeroulant.setVisible(false);
         if (bulleAide != null) bulleAide.setVisible(false);
+        
+        if (btnActualiserAide != null) {
+            btnActualiserAide.setOnAction(this::actionActualiserAide);
+        }
 
-        aideService.setOnSucceeded(event -> { indicesEnAttente = aideService.getValue(); });
+        aideService.setOnSucceeded(event -> { 
+            indicesEnAttente = aideService.getValue(); 
+            if (bulleAide != null && bulleAide.isVisible()) {
+                rafraichirContenuBulleAide();
+            }
+        });
+        
         for (GroupementCases bloc : grilleModele.getListeGroupements()) { bloc.calculerPossibilites(grilleModele); }
         aideService.lancerAnalyse(grilleModele);
 
@@ -434,13 +444,10 @@ public class JeuController {
             long pointsBase = (taille * taille) * 100L; 
             
             long penaliteTemps = Math.min((long)(secEcoulees * 2L), (long)(pointsBase * 0.5));
-            
             long penaliteErreurs = save.getMalus() * 50L;
-            
             long penaliteAides = save.getAidesUtilisees() * 50L;
             
             long scoreCalcul = pointsBase - penaliteTemps - penaliteErreurs - penaliteAides;
-            
             scoreCalcul = Math.max(100L, scoreCalcul);
             
             if (save.getDiff() == Sauvegarde.Difficulte.MOYEN) scoreCalcul = (long)(scoreCalcul * 1.5);
@@ -460,6 +467,9 @@ public class JeuController {
         this.caseModeleSelectionnee = modeleCase;
         vueCaseSelectionnee.getStyleClass().add(Constantes.CSS_CASE_SELECTIONNEE);
         rafraichirZoneCombinaisons(modeleCase);
+        
+        // NOUVEAU : Met à jour les guides visuels au clic
+        mettreAJourGuidesVisuels(modeleCase);
     }
 
     private void actionChiffreClique(int valeur) {
@@ -475,13 +485,12 @@ public class JeuController {
                 vueCaseSelectionnee.setEstHypothese(modeHypotheseActif);
                 rafraichirAnnotations(caseModeleSelectionnee.getX(), caseModeleSelectionnee.getY(), valeur);
                 rafraichirZoneCombinaisons(caseModeleSelectionnee);
-                if (bulleAide != null && bulleAide.isVisible()) {
-                    if (btnActualiserAide != null) {
-                        btnActualiserAide.setVisible(true);
-                        btnActualiserAide.setManaged(true);
-                    }
-                }
+                
                 aideService.lancerAnalyse(grilleModele);
+                
+                // NOUVEAU : Met à jour les guides visuels quand on tape un chiffre
+                mettreAJourGuidesVisuels(caseModeleSelectionnee);
+                
                 verifierVictoire();
             }
         }
@@ -497,14 +506,12 @@ public class JeuController {
             caseModeleSelectionnee.setEstHypothese(false);
             caseModeleSelectionnee.setValeur(0);
             caseModeleSelectionnee.effacerNotes();
-            if (bulleAide != null && bulleAide.isVisible()) {
-                if (btnActualiserAide != null) {
-                    btnActualiserAide.setVisible(true);
-                    btnActualiserAide.setManaged(true);
-                }
-            }
+            
             aideService.lancerAnalyse(grilleModele);
             save.hist.addEtape(caseModeleSelectionnee.getX(), caseModeleSelectionnee.getY(), (modeHypotheseActif ? 20 : 0));
+            
+            // NOUVEAU : Rafraîchir les guides pour enlever les chiffres identiques
+            mettreAJourGuidesVisuels(caseModeleSelectionnee);
         }
     }
 
@@ -517,7 +524,7 @@ public class JeuController {
                 Case c = grilleModele.getCase(x, y);
                 if (c.getValeur() != 0 && c.getValeur() != c.getSolution()) {
                     vuesEnErreur.add(vueGrille.getGrilleVueCases(x, y));
-                    save.setMalus(save.getMalus() + 1); // Malus d'erreur !
+                    save.setMalus(save.getMalus() + 1); 
                     if (save.getDefi() == Defi.TypeDefi.SURVI) caseIncorrecte = true;
                 }
             }
@@ -561,6 +568,8 @@ public class JeuController {
                 vueGrille.getGrilleVueCases(x, y).setEstHypothese(c.isEstHypothese());
             }
         }
+        // Mise à jour des guides visuels au cas où l'undo/redo change la case selectionnée
+        mettreAJourGuidesVisuels(caseModeleSelectionnee);
     }
 
     @FXML void actionHypothese(ActionEvent event) {
@@ -674,8 +683,8 @@ public class JeuController {
         if (chronoManager != null) chronoManager.arreter();
         save.tmp.setTempsPrecedent(0.0);
         
-        save.setMalus(0); // On remet les erreurs à 0 !
-        save.setAidesUtilisees(0); // On remet les aides à 0 !
+        save.setMalus(0); 
+        save.setAidesUtilisees(0); 
         
         fr.univ.calcudoku.model.DonneesNiveau dataBase = fr.univ.calcudoku.utils.GestionnaireJeu.lireDonneesNiveauRessource(save.getIdGrille() + ".json");
         if (dataBase != null) save.setVies(dataBase.vies);
@@ -685,6 +694,7 @@ public class JeuController {
         if (chronoManager != null) chronoManager.demarrer();
         aideService.lancerAnalyse(grilleModele);
         if (caseModeleSelectionnee != null) rafraichirZoneCombinaisons(caseModeleSelectionnee);
+        mettreAJourGuidesVisuels(caseModeleSelectionnee);
     }
 
     @FXML void actionReglesTechniques(ActionEvent event) {
@@ -707,28 +717,46 @@ public class JeuController {
 
     @FXML void actionCalculatrice(ActionEvent event) { JeuUtilitaires.afficherCalculatrice(event); }
     
+    @FXML void actionActualiserAide(ActionEvent event) {
+        if (labelMessageAide != null) labelMessageAide.setText("Recherche de techniques en cours...");
+        aideService.lancerAnalyse(grilleModele); 
+    }
+    
     @FXML public void actionBoutonAidePointInterrogation() {
-        if (!listeAides.isEmpty() && indexAideActuelle < listeAides.size()) listeAides.get(indexAideActuelle).masquer();
-        listeAides.clear(); indexAideActuelle = 0;
-        if (indicesEnAttente != null) {
-            for (Indice ind : indicesEnAttente) listeAides.add(new CommandeAfficherIndice(ind, labelMessageAide, vueGrille));
-        }
-        if (listeAides.isEmpty()) return;
+        aideService.lancerAnalyse(grilleModele); 
         
-        if (btnActualiserAide != null) {
-            btnActualiserAide.setVisible(false); 
-            btnActualiserAide.setManaged(false);
-        }
-        
-        // --- MALUS D'AIDE ---
-        // On compte une utilisation d'aide uniquement quand on l'ouvre
         if (bulleAide != null && !bulleAide.isVisible()) {
             save.setAidesUtilisees(save.getAidesUtilisees() + 1);
         }
 
         if (bulleAide != null) bulleAide.setVisible(true); 
-        listeAides.get(indexAideActuelle).afficher();
-        mettreAJourBoutonsNavigation();
+        
+        if (btnActualiserAide != null) {
+            btnActualiserAide.setVisible(true); 
+            btnActualiserAide.setManaged(true);
+        }
+        
+        rafraichirContenuBulleAide();
+    }
+    
+    private void rafraichirContenuBulleAide() {
+        if (!listeAides.isEmpty() && indexAideActuelle < listeAides.size()) listeAides.get(indexAideActuelle).masquer();
+        listeAides.clear(); 
+        indexAideActuelle = 0;
+        
+        if (indicesEnAttente != null) {
+            for (Indice ind : indicesEnAttente) listeAides.add(new CommandeAfficherIndice(ind, labelMessageAide, vueGrille));
+        }
+        
+        if (!listeAides.isEmpty()) {
+            listeAides.get(indexAideActuelle).afficher();
+            mettreAJourBoutonsNavigation();
+        } else {
+            if (labelMessageAide != null) labelMessageAide.setText("Aucune technique trouvée pour le moment.");
+            if (btnAmeliorerAide != null) btnAmeliorerAide.setDisable(true);
+            if (btnAidePrecedente != null) btnAidePrecedente.setDisable(true);
+            if (btnAideSuivante != null) btnAideSuivante.setDisable(true);
+        }
     }
 
     @FXML public void actionFermerBulleAide() {
@@ -739,7 +767,7 @@ public class JeuController {
     @FXML public void actionAmeliorerAide() {
         if (!listeAides.isEmpty()) { 
             listeAides.get(indexAideActuelle).ameliorerNiveau(); 
-            save.setAidesUtilisees(save.getAidesUtilisees() + 1); // Malus d'amélioration
+            save.setAidesUtilisees(save.getAidesUtilisees() + 1); 
             mettreAJourBoutonsNavigation(); 
         }
     }
@@ -763,5 +791,43 @@ public class JeuController {
         btnAidePrecedente.setDisable(indexAideActuelle == 0);
         btnAideSuivante.setDisable(indexAideActuelle == listeAides.size() - 1);
         btnAmeliorerAide.setDisable(!listeAides.get(indexAideActuelle).peutEtreAmeliore());
+    }
+
+    /**
+     * Met à jour les guides visuels grisés (Ligne, Colonne, Chiffres identiques).
+     */
+    private void mettreAJourGuidesVisuels(Case caseActuelle) {
+        if (grilleModele == null || vueGrille == null) return;
+        int taille = grilleModele.getTaille();
+
+        // 1. Nettoyage général : on enlève le gris de TOUTES les cases
+        for (int x = 0; x < taille; x++) {
+            for (int y = 0; y < taille; y++) {
+                vueGrille.getGrilleVueCases(x, y).getStyleClass().remove("case-guide-visuel");
+            }
+        }
+
+        if (caseActuelle == null) return;
+
+        int selX = caseActuelle.getX();
+        int selY = caseActuelle.getY();
+        int selValeur = caseActuelle.getValeur();
+
+        for (int x = 0; x < taille; x++) {
+            for (int y = 0; y < taille; y++) {
+                Case c = grilleModele.getCase(x, y);
+                
+                boolean estSurMemeLigne = (y == selY);
+                boolean estSurMemeColonne = (x == selX);
+                boolean aMemeValeur = (selValeur != 0 && selValeur <= taille && c.getValeur() == selValeur);
+
+                if ((estSurMemeLigne || estSurMemeColonne || aMemeValeur) && c != caseActuelle) {
+                    VueCase vueCase = vueGrille.getGrilleVueCases(x, y);
+                    if (!vueCase.getStyleClass().contains("case-guide-visuel")) {
+                        vueCase.getStyleClass().add("case-guide-visuel");
+                    }
+                }
+            }
+        }
     }
 }
