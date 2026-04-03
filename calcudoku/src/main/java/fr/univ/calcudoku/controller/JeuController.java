@@ -24,6 +24,7 @@ import javafx.beans.binding.NumberBinding;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.KeyCode;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -80,7 +81,7 @@ public class JeuController {
     private int indexAideActuelle = 0;
     
     private EventHandler<KeyEvent> filtreClavier;
-
+    private EventHandler<KeyEvent> raccourcisClavier;
 
     public void initialiserPartie(Grille grille, Sauvegarde save) {
         this.grilleModele = grille;
@@ -138,7 +139,9 @@ public class JeuController {
             }
         });
         
-        for (GroupementCases bloc : grilleModele.getListeGroupements()) { bloc.calculerPossibilites(grilleModele); }
+        for (GroupementCases bloc : grilleModele.getListeGroupements()) { 
+            bloc.calculerPossibilites(grilleModele); 
+        }
         aideService.lancerAnalyse(grilleModele);
 
         if (save.getDefi() == Defi.TypeDefi.NOAID && btnAide != null) {
@@ -176,16 +179,27 @@ public class JeuController {
             grilleModele,
             () -> caseModeleSelectionnee,
             (x, y) -> selectionnerCase(vueGrille.getGrilleVueCases(x, y), grilleModele.getCase(x, y)),
-            val -> actionChiffreClique(val),
+            this::actionChiffreClique,
             () -> actionEffacer(null)
         );
+
+        raccourcisClavier = event -> {
+            if (event.getCode() == KeyCode.A) {
+                actionBasculeAnnotation(null);
+                event.consume();
+            }
+        };
 
         Platform.runLater(() -> {
             Scene scene = conteneurGrille.getScene();
             if (scene != null) {
                 scene.removeEventFilter(KeyEvent.KEY_PRESSED, filtreClavier);
                 scene.addEventFilter(KeyEvent.KEY_PRESSED, filtreClavier);
-                JeuUtilitaires.installerSecuritesFermeture(scene, () -> sauvegarderPartie(), () -> sauvegarderPartie());
+                
+                scene.removeEventFilter(KeyEvent.KEY_PRESSED, raccourcisClavier);
+                scene.addEventFilter(KeyEvent.KEY_PRESSED, raccourcisClavier);
+                
+                JeuUtilitaires.installerSecuritesFermeture(scene, this::sauvegarderPartie, this::sauvegarderPartie);
             }
         });
 
@@ -216,7 +230,6 @@ public class JeuController {
         boolean sombre = MainApp.modeSombreActif;
         
         Platform.runLater(() -> {
-            
             javafx.scene.Scene scene = conteneurGrille.getScene();
             if (scene != null) {
                 String cssPath = getClass().getResource("/styles/sombre.css").toExternalForm();
@@ -322,7 +335,6 @@ public class JeuController {
         }
     }
 
-
     private void appliquerModeAide(String mode) {
         if (mode.equals(Constantes.VALEUR_AIDE_CALCULATRICE)) {
             if (boiteCombinaisons != null) {
@@ -395,9 +407,14 @@ public class JeuController {
             String nomProfil = MainApp.getProfileManager().getProfilActif();
             
             if (chronoManager != null) chronoManager.arreter();
+
+            mettreAJourGuidesVisuels(null);
+            if (vueCaseSelectionnee != null) {
+                vueCaseSelectionnee.getStyleClass().remove(Constantes.CSS_CASE_SELECTIONNEE);
+            }
             
             save.enreg(nomProfil, grilleModele);
-            JeuUtilitaires.sauvegarderImageGrille(grilleModele, vueGrille, vueCaseSelectionnee, save.getIdGrille() + ".png", () -> actionFermerBulleAide());
+            JeuUtilitaires.sauvegarderImageGrille(grilleModele, vueGrille, vueCaseSelectionnee, save.getIdGrille() + ".png", this::actionFermerBulleAide);
         }
     }
 
@@ -405,6 +422,9 @@ public class JeuController {
         if (conteneurGrille != null && conteneurGrille.getScene() != null) {
             if (filtreClavier != null) {
                 conteneurGrille.getScene().removeEventFilter(KeyEvent.KEY_PRESSED, filtreClavier);
+            }
+            if (raccourcisClavier != null) {
+                conteneurGrille.getScene().removeEventFilter(KeyEvent.KEY_PRESSED, raccourcisClavier);
             }
             JeuUtilitaires.desinstallerSecuritesFermeture(conteneurGrille.getScene());
         }
@@ -468,7 +488,6 @@ public class JeuController {
         vueCaseSelectionnee.getStyleClass().add(Constantes.CSS_CASE_SELECTIONNEE);
         rafraichirZoneCombinaisons(modeleCase);
         
-        // NOUVEAU : Met à jour les guides visuels au clic
         mettreAJourGuidesVisuels(modeleCase);
     }
 
@@ -488,7 +507,6 @@ public class JeuController {
                 
                 aideService.lancerAnalyse(grilleModele);
                 
-                // NOUVEAU : Met à jour les guides visuels quand on tape un chiffre
                 mettreAJourGuidesVisuels(caseModeleSelectionnee);
                 
                 verifierVictoire();
@@ -510,7 +528,6 @@ public class JeuController {
             aideService.lancerAnalyse(grilleModele);
             save.hist.addEtape(caseModeleSelectionnee.getX(), caseModeleSelectionnee.getY(), (modeHypotheseActif ? 20 : 0));
             
-            // NOUVEAU : Rafraîchir les guides pour enlever les chiffres identiques
             mettreAJourGuidesVisuels(caseModeleSelectionnee);
         }
     }
@@ -568,7 +585,6 @@ public class JeuController {
                 vueGrille.getGrilleVueCases(x, y).setEstHypothese(c.isEstHypothese());
             }
         }
-        // Mise à jour des guides visuels au cas où l'undo/redo change la case selectionnée
         mettreAJourGuidesVisuels(caseModeleSelectionnee);
     }
 
@@ -635,7 +651,6 @@ public class JeuController {
             }
         }
     }
-    
 
     @FXML void actionAbandonner(ActionEvent event) {
         if (menuDeroulant != null) menuDeroulant.setVisible(false);
@@ -793,14 +808,10 @@ public class JeuController {
         btnAmeliorerAide.setDisable(!listeAides.get(indexAideActuelle).peutEtreAmeliore());
     }
 
-    /**
-     * Met à jour les guides visuels grisés (Ligne, Colonne, Chiffres identiques).
-     */
     private void mettreAJourGuidesVisuels(Case caseActuelle) {
         if (grilleModele == null || vueGrille == null) return;
         int taille = grilleModele.getTaille();
 
-        // 1. Nettoyage général : on enlève le gris de TOUTES les cases
         for (int x = 0; x < taille; x++) {
             for (int y = 0; y < taille; y++) {
                 vueGrille.getGrilleVueCases(x, y).getStyleClass().remove("case-guide-visuel");
