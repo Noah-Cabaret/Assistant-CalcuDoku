@@ -42,5 +42,7 @@ Le code source de l'_Assistant CalcuDoku_ est documenté via Javadoc. Cette dern
 # Cette commande part du principe que votre "Current Working Directory"
 # est celle du `pom.xml` Maven.
 # Voir aussi: <https://maven.apache.org/plugins/maven-javadoc-plugin/usage.html>
-mvn site
+mvn javadoc::javadoc
 ```
+
+Après quoi la documentation (sous forme de pages HTML) peut être trouvée dans son dossier au sein du répertoire [`calcudoku/target`](calcudoku/target/).
