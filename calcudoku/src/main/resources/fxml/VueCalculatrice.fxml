@@ -6,7 +6,7 @@
 
 <VBox spacing="15" alignment="CENTER" styleClass="calc-main-window" 
       stylesheets="@../style.css"
-      xmlns="http://javafx.com/javafx/17" 
+      xmlns="http://javafx.com/javafx/16" 
       xmlns:fx="http://javafx.com/fxml/1" 
       fx:controller="fr.univ.calcudoku.controller.CalculatriceController">
     
