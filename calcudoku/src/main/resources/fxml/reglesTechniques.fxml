@@ -27,6 +27,7 @@
                 </fx:define>
                 <ToggleButton fx:id="btnRegles" text="Règles" toggleGroup="$groupeOnglets" selected="true" onAction="#afficherRegles" prefWidth="180" prefHeight="50" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 10; -fx-border-color: #999999; -fx-border-radius: 10;" />
                 <ToggleButton text="Fonctionnalités" toggleGroup="$groupeOnglets" onAction="#afficherFonctionnalites" prefWidth="180" prefHeight="50" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 10; -fx-border-color: #999999; -fx-border-radius: 10;" />
+                <ToggleButton text="Techniques 0 (la base)" toggleGroup="$groupeOnglets" onAction="#afficherBase" prefWidth="180" prefHeight="50" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 10; -fx-border-color: #999999; -fx-border-radius: 10;" />
                 <ToggleButton text="Techniques 1 (Bloc unique)" toggleGroup="$groupeOnglets" onAction="#afficherBlocsUniques" prefWidth="180" prefHeight="50" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 10; -fx-border-color: #999999; -fx-border-radius: 10;" />
                 <ToggleButton text="Techniques 2 (Candidat unique)" toggleGroup="$groupeOnglets" onAction="#afficherCandidatUnique" prefWidth="180" prefHeight="50" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 10; -fx-border-color: #999999; -fx-border-radius: 10;" />
                 <ToggleButton text="Techniques 3 (Reste grille)" toggleGroup="$groupeOnglets" onAction="#afficherResteGrille" prefWidth="180" prefHeight="50" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 10; -fx-border-color: #999999; -fx-border-radius: 10;" />
@@ -46,13 +47,19 @@
             
             <center>
                 <ScrollPane fitToWidth="true" fitToHeight="true" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
-                    <VBox alignment="CENTER" spacing="30" style="-fx-padding: 10 40 10 40;">
+                    
+                    <VBox alignment="CENTER" style="-fx-padding: 10 20 10 20;">
                         
-                        <Label fx:id="lblTexte" maxWidth="700" wrapText="true" textAlignment="CENTER" style="-fx-font-size: 16px; -fx-line-spacing: 5px; -fx-alignment: center;" text="Lorem ipsum dolor sit amet..." />
-                        
-                        <ImageView fx:id="imgExemple" fitWidth="350" preserveRatio="true" />
+                        <VBox alignment="TOP_LEFT" spacing="30" maxWidth="450">
+                            
+                            <Label fx:id="lblTexte" wrapText="true" minHeight="-Infinity" textAlignment="LEFT" style="-fx-font-size: 16px; -fx-line-spacing: 5px;" text="Lorem ipsum dolor sit amet..." />
+                            
+                            <ImageView fx:id="imgExemple" fitWidth="450" preserveRatio="true" />
+                            
+                        </VBox>
                         
                     </VBox>
+                    
                 </ScrollPane>
             </center>
             
