@@ -442,7 +442,7 @@ public class JeuController {
         String nomProfil = MainApp.getProfileManager().getProfilActif();
         int secEcoulees = (chronoManager != null) ? chronoManager.getSecondesEcoulees() : 0;
         MainApp.getProfileManager().enregistrerFinDePartie(nomProfil, false, secEcoulees, 0, save.getDiff(), save.getIdGrille());        
-        if (save != null && save.getMode() != Sauvegarde.ModeDeJeu.AVEN) {
+        if (save != null) {
             save.effacer(nomProfil);
         }
 
