@@ -21,6 +21,10 @@ import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.util.Optional;
 
+/**
+ * Contrôleur de l'écran d'accueil de l'application.
+ * Gère l'affichage, la sélection, la création et la suppression des profils utilisateurs.
+ */
 public class AccueilController {
 
     @FXML
@@ -28,12 +32,21 @@ public class AccueilController {
 
     private ProfileManager manager;
 
+    /**
+     * Méthode d'initialisation appelée automatiquement après le chargement du fichier FXML.
+     * Récupère le gestionnaire de profils et rafraîchit l'affichage.
+     */
     @FXML
     public void initialize() {
         manager = MainApp.getProfileManager();
         rafraichirAffichage();
     }
 
+    /**
+     * Rafraîchit l'affichage de la liste des profils dans le conteneur principal.
+     * Efface les éléments existants et recrée les cartes pour chaque profil,
+     * ainsi que le bouton permettant d'ajouter un nouveau profil.
+     */
     private void rafraichirAffichage() {
         boxProfils.getChildren().clear();
 
@@ -45,6 +58,12 @@ public class AccueilController {
         boxProfils.getChildren().add(creerCarteAjout());
     }
 
+    /**
+     * Crée une carte visuelle représentant un profil utilisateur existant.
+     * 
+     * @param nom Le nom du profil à afficher.
+     * @return Un conteneur VBox représentant la carte du profil interactif.
+     */
     private VBox creerCarteProfil(String nom) {
         VBox carte = new VBox(10);
         carte.setAlignment(Pos.CENTER);
@@ -105,6 +124,11 @@ public class AccueilController {
         return carte;
     }
 
+    /**
+     * Crée une carte visuelle servant de bouton pour ajouter un nouveau profil.
+     * 
+     * @return Un conteneur VBox représentant la carte d'ajout.
+     */
     private VBox creerCarteAjout() {
         VBox carte = new VBox(10);
         carte.setAlignment(Pos.CENTER);
@@ -126,6 +150,11 @@ public class AccueilController {
         return carte;
     }
 
+    /**
+     * Gère l'ouverture de la fenêtre contextuelle (popup) permettant la création d'un nouveau profil.
+     * Affiche un champ de saisie pour le pseudo et gère les erreurs si le champ est vide
+     * ou si le nom de profil existe déjà.
+     */
     private void gererCreationProfil() {
         Stage popup = new Stage();
         popup.initModality(Modality.APPLICATION_MODAL); 

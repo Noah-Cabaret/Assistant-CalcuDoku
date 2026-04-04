@@ -14,22 +14,35 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.Cursor;
 import org.kordamp.ikonli.javafx.FontIcon;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.Color;
-import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.io.File;
 import java.util.Optional;
 
+/**
+ * Contrôleur pour le menu du mode Aventure.
+ * Gère l'affichage du chemin de progression des niveaux, le lancement des parties
+ * et la réinitialisation de la progression du joueur.
+ */
 public class MenuAventureController {
 
+    /** Conteneur pour les boutons de niveau et les ponts de liaison. */
     @FXML private HBox boxNiveaux;
+    /** Pane de fond pour la ligne de progression (actuellement non utilisé). */
     @FXML private StackPane ligneFond; 
+    /** Icône pour le bouton des paramètres. */
     @FXML private FontIcon imgParametres;
+    /** Icône pour le bouton de réinitialisation. */
     @FXML private FontIcon imgReset;
+    /** Bouton pour retourner au menu principal. */
     @FXML private Button btnRetour;
     
+    /** Nombre total de niveaux dans le mode Aventure. */
     private final int NB_NIVEAUX_TOTAL = 5;
 
+    /**
+     * Méthode d'initialisation appelée après le chargement du FXML.
+     * Configure les icônes en fonction du thème et charge la progression du joueur.
+     */
     @FXML
     public void initialize() {
         Color couleurIcone = MainApp.isModeSombre() ? Color.WHITE : Color.BLACK;
@@ -53,6 +66,10 @@ public class MenuAventureController {
         chargerProgression();
     }
 
+    /**
+     * Charge la progression actuelle du joueur depuis son profil
+     * et lance la génération de l'affichage du chemin des niveaux.
+     */
     private void chargerProgression() {
         ProfileManager manager = MainApp.getProfileManager();
         String nomActuel = manager.getProfilActif();
@@ -69,6 +86,12 @@ public class MenuAventureController {
         genererChemin(progression);
     }
 
+    /**
+     * Génère et affiche dynamiquement le chemin des niveaux (boutons et ponts).
+     * Le style des éléments dépend de la progression du joueur (terminé, actuel, verrouillé).
+     *
+     * @param progressionActuelle Le niveau le plus élevé atteint par le joueur.
+     */
     private void genererChemin(int progressionActuelle) {
         boxNiveaux.getChildren().clear();
         boxNiveaux.setSpacing(0); 
@@ -134,6 +157,12 @@ public class MenuAventureController {
         }
     }
 
+    /**
+     * Lance une partie du mode Aventure.
+     * Charge une partie sauvegardée si elle existe, sinon commence un nouveau niveau.
+     *
+     * @param idNiveau L'identifiant du niveau à lancer.
+     */
     private void lancerNiveauAventure(int idNiveau) {
         String nomGrille = "aventure_" + idNiveau;
         String nomProfil = MainApp.getProfileManager().getProfilActif();
@@ -150,6 +179,10 @@ public class MenuAventureController {
         }
     }
 
+    /**
+     * Gère le clic sur le bouton de réinitialisation.
+     * Affiche une alerte de confirmation avant de supprimer les sauvegardes du mode Aventure et de réinitialiser la progression.
+     */
     @FXML
     private void onResetClick() {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -176,12 +209,18 @@ public class MenuAventureController {
         }
     }
 
+    /**
+     * Gère le clic sur le bouton des paramètres, redirigeant vers l'écran de profil.
+     */
     @FXML
     private void onParametresClick() {
         ProfilController.pagePrecedente = Constantes.VUE_MENU_AVENTURE;
         MainApp.changerScene(Constantes.VUE_PROFIL);
     }
 
+    /**
+     * Gère le clic sur le bouton de retour, redirigeant vers le menu principal.
+     */
     @FXML
     private void onRetourClick() {
         MainApp.changerScene(Constantes.VUE_MENU);

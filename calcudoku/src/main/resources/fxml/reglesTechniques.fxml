@@ -12,7 +12,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import org.kordamp.ikonli.javafx.FontIcon?>
 
-<BorderPane style="-fx-padding: 15;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fr.univ.calcudoku.controller.ReglesTechniquesController">
+<BorderPane style="-fx-padding: 15;" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fr.univ.calcudoku.controller.ReglesTechniquesController">
 
     <left>
         <VBox style="-fx-padding: 0 20 0 0;">

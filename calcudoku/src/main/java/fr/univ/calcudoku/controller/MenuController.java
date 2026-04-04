@@ -11,17 +11,36 @@ import javafx.scene.layout.HBox;
 import org.kordamp.ikonli.javafx.FontIcon;
 import javafx.scene.paint.Color;
 
+/**
+ * Contrôleur de la vue du menu principal.
+ * Gère la navigation vers les différents modes de jeu (Libre, Aventure),
+ * le profil, les règles et la sortie de l'application.
+ */
 public class MenuController {
 
+    /**
+     * Conteneur pour les boutons de sous-menu (Libre, Aventure).
+     */
     @FXML
     private HBox boxSousMenu;
 
+    /**
+     * Icône représentant l'avatar du profil utilisateur.
+     */
     @FXML 
     private FontIcon imgAvatar;
     
+    /**
+     * Label affichant le nom du profil actuellement connecté.
+     */
     @FXML
     private Label labelNomProfil; 
 
+    /**
+     * Méthode d'initialisation appelée après le chargement du FXML.
+     * Configure l'affichage en fonction du profil actif et du thème (sombre/clair),
+     * et précharge la vue du jeu pour une meilleure performance.
+     */
     @FXML
     public void initialize() {
         // Adaptation de la couleur de l'avatar au thème
@@ -56,32 +75,56 @@ public class MenuController {
         GestionnaireJeu.prechargerPageJeu();
     }
 
+    /**
+     * Gère le clic sur le bouton "Jouer".
+     * Affiche ou masque le sous-menu contenant les modes de jeu.
+     */
     @FXML
     private void onJouerClick() {
         boxSousMenu.setVisible(!boxSousMenu.isVisible());
     }
 
+    /**
+     * Gère le clic sur le bouton du profil.
+     * Redirige l'utilisateur vers la page de son profil.
+     */
     @FXML
     private void onProfilClick() {
         ProfilController.pagePrecedente = Constantes.VUE_MENU;
         MainApp.changerScene(Constantes.VUE_PROFIL);
     }
 
+    /**
+     * Gère le clic sur le bouton "Mode Libre".
+     * Redirige l'utilisateur vers le menu du mode libre.
+     */
     @FXML 
     private void onLibreClick() { 
         MainApp.changerScene(Constantes.VUE_MENU_LIBRE);
     }
 
+    /**
+     * Gère le clic sur le bouton "Mode Aventure".
+     * Redirige l'utilisateur vers le menu du mode aventure.
+     */
     @FXML 
     private void onAventureClick() { 
         MainApp.changerScene(Constantes.VUE_MENU_AVENTURE); 
     }
     
+    /**
+     * Gère le clic sur le bouton "Règles".
+     * Redirige l'utilisateur vers la page des règles et techniques.
+     */
     @FXML
     private void onReglesClick() { 
         MainApp.changerScene(Constantes.VUE_REGLES); 
     }
 
+    /**
+     * Gère le clic sur le bouton "Quitter".
+     * Ferme l'application.
+     */
     @FXML
     private void onQuitterClick() {
         Platform.exit();

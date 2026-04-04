@@ -11,15 +11,29 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Gère la création, la suppression, le chargement et la gestion des profils utilisateurs.
+ * Inclut la persistance des statistiques et des options spécifiques à chaque profil.
+ */
 public class ProfileManager {
 
+    /** Le nom du profil actuellement actif. */
     private String profilActif;
 
+    /**
+     * Constructeur du ProfileManager.
+     * S'assure que le dossier racine des profils existe.
+     */
     public ProfileManager() {
         File dossier = new File(Constantes.DOSSIER_PROFILS);
         if (!dossier.exists()) dossier.mkdir();
     }
 
+    /**
+     * Crée un nouveau profil utilisateur avec le nom spécifié.
+     * @param nom Le nom du profil à créer.
+     * @return true si le profil a été créé avec succès, false si un profil avec ce nom existe déjà ou si la création des dossiers échoue.
+     */
     public boolean creerProfil(String nom) {
         File dossierProfil = new File(Constantes.DOSSIER_PROFILS, nom);
         if (dossierProfil.exists()) return false;
@@ -37,12 +51,22 @@ public class ProfileManager {
         return false;
     }
 
+    /**
+     * Supprime un profil utilisateur et tous les fichiers associés.
+     * @param nom Le nom du profil à supprimer.
+     * @return true si le profil a été supprimé avec succès, false sinon.
+     */
     public boolean supprimerProfil(String nom) {
         File dossier = new File(Constantes.DOSSIER_PROFILS, nom);
         if (dossier.exists()) return supprimerRecursif(dossier);
         return false;
     }
 
+    /**
+     * Méthode utilitaire récursive pour supprimer un fichier ou un répertoire et son contenu.
+     * @param fichierOuDossier Le fichier ou le dossier à supprimer.
+     * @return true si la suppression a été effectuée avec succès, false sinon.
+     */
     private boolean supprimerRecursif(File fichierOuDossier) {
         if (fichierOuDossier.isDirectory()) {
             File[] enfants = fichierOuDossier.listFiles();
@@ -53,6 +77,10 @@ public class ProfileManager {
         return fichierOuDossier.delete();
     }
 
+    /**
+     * Liste tous les noms de profils existants.
+     * @return Une liste de chaînes de caractères représentant les noms des profils.
+     */
     public List<String> listerProfils() {
         List<String> noms = new ArrayList<>();
         File dossier = new File(Constantes.DOSSIER_PROFILS);
@@ -63,14 +91,27 @@ public class ProfileManager {
         return noms;
     }
 
+    /**
+     * Définit le profil utilisateur actif.
+     * @param nom Le nom du profil à activer.
+     */
     public void chargerProfil(String nom) {
         this.profilActif = nom;
     }
 
+    /**
+     * Retourne le nom du profil actuellement actif.
+     * @return Le nom du profil actif.
+     */
     public String getProfilActif() {
         return profilActif;
     }
     
+    /**
+     * Enregistre les statistiques de fin de partie pour le profil actif.
+     * Met à jour le nombre de parties jouées, les victoires, le score, la progression en mode Aventure,
+     * la difficulté maximale et le temps moyen.
+     */
     public void enregistrerFinDePartie(String nomProfil, boolean victoire, double temps, long score, Sauvegarde.Difficulte diff, String idGrille) {
         Statistiques stats = new Statistiques();
         stats.charger(nomProfil);
@@ -109,6 +150,11 @@ public class ProfileManager {
         stats.enreg(nomProfil);
     }
 
+    /**
+     * Lit et retourne les statistiques et options d'un profil sous forme de Map.
+     * @param nomProfil Le nom du profil dont on veut lire les statistiques.
+     * @return Une Map où les clés sont les noms des statistiques/options et les valeurs sont leurs représentations textuelles.
+     */
     public Map<String, String> lireStatistiques(String nomProfil) {
         Map<String, String> statsMap = new HashMap<>();
         Statistiques stats = new Statistiques();
@@ -148,6 +194,12 @@ public class ProfileManager {
         return statsMap;
     }
 
+    /**
+     * Met à jour une statistique ou une option spécifique pour un profil donné.
+     * @param nomProfil Le nom du profil à modifier.
+     * @param cle La clé de la statistique ou de l'option (ex: "mode_sombre", "progression").
+     * @param valeur La nouvelle valeur à assigner à la clé.
+     */
     public void mettreAJourStatistique(String nomProfil, String cle, String valeur) {
         if (cle.equals(Constantes.OPTION_MODE_SOMBRE) || cle.equals(Constantes.OPTION_AIDE_CALCUL)) {
             Options opt = new Options();
