@@ -83,3 +83,104 @@
 .case-aide-surbrillance.case-selectionnee {
     -fx-background-color: #bbdefb !important;
 }
+
+/* Menu Déroulant */
+.menu-deroulant {
+    -fx-background-color: white;
+    -fx-border-color: #dddddd;
+    -fx-border-width: 1px;
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+    -fx-padding: 15px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 10, 0, 0, 5);
+}
+.menu-deroulant .sous-section {
+    -fx-border-color: #eeeeee;
+    -fx-border-width: 1 0 0 0;
+    -fx-padding: 10 0 0 0;
+}
+.menu-deroulant .sous-section .label {
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+}
+.menu-deroulant .radio-button {
+    -fx-cursor: hand;
+}
+
+/* Popup Abandon */
+.popup-abandon-fond {
+    -fx-background-color: rgba(0, 0, 0, 0.4);
+}
+.popup-abandon-boite {
+    -fx-background-color: white;
+    -fx-background-radius: 12px;
+    -fx-padding: 20px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 15, 0, 0, 0);
+}
+.popup-abandon-titre {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+}
+.popup-abandon-avertissement {
+    -fx-font-size: 13px;
+    -fx-text-fill: #e57373;
+}
+.popup-abandon-btn-annuler {
+    -fx-background-color: #f5f5f5;
+    -fx-border-color: #cccccc;
+    -fx-cursor: hand;
+    -fx-min-width: 90px;
+}
+.popup-abandon-btn-quitter {
+    -fx-background-color: #e57373;
+    -fx-text-fill: white;
+    -fx-cursor: hand;
+    -fx-min-width: 90px;
+}
+
+/* Label Chrono */
+.label-chrono {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-font-family: 'System Bold';
+}
+
+/* Popup Fin de Partie */
+.popup-fin-carte {
+    -fx-background-color: white;
+    -fx-background-radius: 15;
+    -fx-padding: 30;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 20, 0, 0, 0);
+}
+.popup-fin-titre {
+    -fx-font-size: 26px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #333333;
+}
+.popup-fin-message {
+    -fx-font-size: 15px;
+    -fx-text-fill: #666666;
+    -fx-text-alignment: center;
+}
+.popup-fin-btn-rejouer {
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 10 25;
+    -fx-background-radius: 20;
+    -fx-cursor: hand;
+}
+.popup-fin-btn-quitter {
+    -fx-background-color: transparent;
+    -fx-border-color: #cccccc;
+    -fx-border-width: 2px;
+    -fx-border-radius: 20;
+    -fx-text-fill: #666666;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 8 25;
+    -fx-cursor: hand;
+}
+.popup-fin-fond {
+    -fx-background-color: rgba(0, 0, 0, 0.3);
+}

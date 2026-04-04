@@ -32,7 +32,7 @@ public class PopupFactory {
             // La carte principale blanche
             VBox carte = new VBox(20);
             carte.setAlignment(Pos.CENTER);
-            carte.setStyle("-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 30; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 20, 0, 0, 0);");
+            carte.getStyleClass().add("popup-fin-carte");
             
             // L'icône
             FontIcon icone = new FontIcon(iconeNom);
@@ -41,16 +41,17 @@ public class PopupFactory {
 
             // Les textes stylisés
             Label lblTitre = new Label(titre);
-            lblTitre.setStyle("-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: #333333;");
+            lblTitre.getStyleClass().add("popup-fin-titre");
             
             Label lblMessage = new Label(message);
-            lblMessage.setStyle("-fx-font-size: 15px; -fx-text-fill: #666666; -fx-text-alignment: center;");
+            lblMessage.getStyleClass().add("popup-fin-message");
 
             // --- CRÉATION DES BOUTONS ---
             
-            // Bouton Rejouer (Coloré)
+            // Bouton Rejouer (Coloré — couleur dynamique)
             Button btnRejouer = new Button(victoire ? "Rejouer" : "Réessayer");
-            btnRejouer.setStyle("-fx-background-color: " + couleurHex + "; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 10 25; -fx-background-radius: 20; -fx-cursor: hand;");
+            btnRejouer.getStyleClass().add("popup-fin-btn-rejouer");
+            btnRejouer.setStyle("-fx-background-color: " + couleurHex + ";");
             btnRejouer.setOnAction(e -> { 
                 fenetreModale.close(); 
                 if (actionRejouer != null) {
@@ -60,7 +61,7 @@ public class PopupFactory {
 
             // Bouton Quitter (Gris / Transparent)
             Button btnQuitter = new Button("Menu");
-            btnQuitter.setStyle("-fx-background-color: transparent; -fx-border-color: #cccccc; -fx-border-width: 2px; -fx-border-radius: 20; -fx-text-fill: #666666; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 8 25; -fx-cursor: hand;");
+            btnQuitter.getStyleClass().add("popup-fin-btn-quitter");
             btnQuitter.setOnAction(e -> { 
                 fenetreModale.close(); 
                 if (actionQuitter != null) {
@@ -78,10 +79,11 @@ public class PopupFactory {
             
             // Un fond semi-transparent pour assombrir le jeu derrière la pop-up
             StackPane fond = new StackPane(carte);
-            fond.setStyle("-fx-background-color: rgba(0, 0, 0, 0.3);");
+            fond.getStyleClass().add("popup-fin-fond");
             fond.setPadding(new Insets(50));
             
             Scene scene = new Scene(fond, Color.TRANSPARENT);
+            scene.getStylesheets().add(PopupFactory.class.getResource("/styles/style.css").toExternalForm());
             fenetreModale.setScene(scene);
             
             // Bloque les clics sur la fenêtre principale tant que la pop-up est ouverte

@@ -14,7 +14,7 @@ public class ThemeUtil {
      * Les "..." permettent de passer autant d'images que l'on veut séparées par des virgules !
      */
     public static void appliquerFiltreBlancSiSombre(ImageView... images) {
-        if (MainApp.modeSombreActif) {
+        if (MainApp.isModeSombre()) {
             ColorAdjust filtreBlanc = new ColorAdjust();
             filtreBlanc.setBrightness(1.0);
             

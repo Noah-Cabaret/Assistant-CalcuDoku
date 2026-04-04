@@ -85,7 +85,7 @@ public class Historique {
         while (curr > 0) {
             Etape e = this.hist.get(curr);
             if (e.hypotheseNormale() || e.hypotheseAnnotation()) {
-                e.setN(e.getN() - 20); 
+                e.setN(e.getN() - Etape.OFFSET_HYPOTHESE);
             } else {
                 break;
             }
@@ -125,7 +125,7 @@ public class Historique {
             Etape e = this.hist.get(k);
             Case c = grilleModele.getCase(e.getX(), e.getY());
             
-            if (e.getN() == 0 || e.getN() == 20) {
+            if (e.getN() == 0 || e.getN() == Etape.OFFSET_HYPOTHESE) {
                 c.setValeur(0);
                 c.effacerNotes();
                 c.setEstHypothese(false);
@@ -135,14 +135,14 @@ public class Historique {
                 c.setEstHypothese(false);
                 supprimerNotesLigneColonne(grilleModele, e.getX(), e.getY(), e.getN());
             } else if (e.annotation()) {
-                c.basculerNote(e.getN() - 10);
+                c.basculerNote(e.getN() - Etape.OFFSET_ANNOTATION);
             } else if (e.hypotheseNormale()) {
                 c.effacerNotes();
-                c.setValeur(e.getN() - 20);
+                c.setValeur(e.getN() - Etape.OFFSET_HYPOTHESE);
                 c.setEstHypothese(true);
-                supprimerNotesLigneColonne(grilleModele, e.getX(), e.getY(), e.getN() - 20);
+                supprimerNotesLigneColonne(grilleModele, e.getX(), e.getY(), e.getN() - Etape.OFFSET_HYPOTHESE);
             } else if (e.hypotheseAnnotation()) {
-                c.basculerNote(e.getN() - 30);
+                c.basculerNote(e.getN() - Etape.OFFSET_HYPOTHESE_ANNOTATION);
             }
         }
     }

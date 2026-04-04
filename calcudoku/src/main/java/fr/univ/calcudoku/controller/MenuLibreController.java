@@ -34,7 +34,7 @@ public class MenuLibreController {
     @FXML
     public void initialize() {
 
-        imgParametres.setIconColor(MainApp.modeSombreActif ? Color.WHITE : Color.BLACK);
+        imgParametres.setIconColor(MainApp.isModeSombre() ? Color.WHITE : Color.BLACK);
         configurerToggleGroup(groupeTaille);
         configurerToggleGroup(groupeDifficulte);
 
@@ -42,7 +42,7 @@ public class MenuLibreController {
             btnRetour.setStyle("-fx-background-color: transparent; -fx-cursor: hand;"); 
             
             if (btnRetour.getGraphic() instanceof FontIcon) {
-                ((FontIcon) btnRetour.getGraphic()).setIconColor(MainApp.modeSombreActif ? Color.WHITE : Color.BLACK);
+                ((FontIcon) btnRetour.getGraphic()).setIconColor(MainApp.isModeSombre() ? Color.WHITE : Color.BLACK);
             }
         }
 

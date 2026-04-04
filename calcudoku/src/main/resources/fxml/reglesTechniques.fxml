@@ -32,13 +32,16 @@
                 <ToggleButton text="Techniques 2 (Candidat unique)" toggleGroup="$groupeOnglets" onAction="#afficherCandidatUnique" prefWidth="180" prefHeight="50" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 10; -fx-border-color: #999999; -fx-border-radius: 10;" />
                 <ToggleButton text="Techniques 3 (Reste grille)" toggleGroup="$groupeOnglets" onAction="#afficherResteGrille" prefWidth="180" prefHeight="50" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 10; -fx-border-color: #999999; -fx-border-radius: 10;" />
                 <ToggleButton text="Techniques 4 (Intra bloc)" toggleGroup="$groupeOnglets" onAction="#afficherIntraBloc" prefWidth="180" prefHeight="50" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 10; -fx-border-color: #999999; -fx-border-radius: 10;" />
+                
+                <ToggleButton text="Techniques 5 (Verrouillage)" toggleGroup="$groupeOnglets" onAction="#afficherVerrouillage" prefWidth="180" prefHeight="50" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 10; -fx-border-color: #999999; -fx-border-radius: 10;" />
+                <ToggleButton text="Techniques 6 (Incontournable)" toggleGroup="$groupeOnglets" onAction="#afficherIncontournable" prefWidth="180" prefHeight="50" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 10; -fx-border-color: #999999; -fx-border-radius: 10;" />
+                <ToggleButton text="Techniques 7 (Unique Caché)" toggleGroup="$groupeOnglets" onAction="#afficherUniqueCache" prefWidth="180" prefHeight="50" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 10; -fx-border-color: #999999; -fx-border-radius: 10;" />
             </VBox>
         </VBox>
     </left>
 
     <center>
         <BorderPane>
-            
             <top>
                 <HBox alignment="CENTER" style="-fx-padding: 0 0 20 0;">
                     <Label fx:id="lblTitreHaut" translateY="5" style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-border-color: #cccccc; -fx-border-radius: 10; -fx-padding: 10 30 10 30;" text="Règles du Calcudoku" />
@@ -47,19 +50,12 @@
             
             <center>
                 <ScrollPane fitToWidth="true" fitToHeight="true" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
-                    
                     <VBox alignment="CENTER" style="-fx-padding: 10 20 10 20;">
-                        
                         <VBox alignment="TOP_LEFT" spacing="30" maxWidth="450">
-                            
                             <Label fx:id="lblTexte" wrapText="true" minHeight="-Infinity" textAlignment="LEFT" style="-fx-font-size: 16px; -fx-line-spacing: 5px;" text="Lorem ipsum dolor sit amet..." />
-                            
                             <ImageView fx:id="imgExemple" fitWidth="450" preserveRatio="true" />
-                            
                         </VBox>
-                        
                     </VBox>
-                    
                 </ScrollPane>
             </center>
             
@@ -68,15 +64,12 @@
                     <Button fx:id="btnPrecedent" onAction="#onPagePrecedente" style="-fx-background-color: transparent; -fx-cursor: hand;">
                         <graphic><FontIcon fx:id="iconPrecedent" iconLiteral="fas-chevron-left" iconSize="40"/></graphic>
                     </Button>
-                    
                     <Label fx:id="lblLegendeImage" text="Légende de l'image" style="-fx-font-size: 14px; -fx-text-fill: gray; -fx-font-weight: bold;" />
-                    
                     <Button fx:id="btnSuivant" onAction="#onPageSuivante" style="-fx-background-color: transparent; -fx-cursor: hand;">
                         <graphic><FontIcon fx:id="iconSuivant" iconLiteral="fas-chevron-right" iconSize="40"/></graphic>
                     </Button>
                 </HBox>
             </bottom>
-            
         </BorderPane>
     </center>
 

@@ -22,8 +22,8 @@ public class ChronoManager {
     }
 
     public void demarrer() {
-        if (save.tmp != null && save.tmp.getTempsPrecedent() != null) {
-            secondesEcoulees = save.tmp.getTempsPrecedent().intValue();
+        if (save.getTemps() != null && save.getTemps().getTempsPrecedent() != null) {
+            secondesEcoulees = save.getTemps().getTempsPrecedent().intValue();
         } else {
             secondesEcoulees = 0;
         }
@@ -34,7 +34,7 @@ public class ChronoManager {
             secondesEcoulees++;
             
             if (save.getDefi() == Defi.TypeDefi.CHRON) {
-                int restant = Math.max(0, save.tmp.getTempsMax().intValue() - secondesEcoulees);
+                int restant = Math.max(0, save.getTemps().getTempsMax().intValue() - secondesEcoulees);
                 if (restant <= 0) {
                     arreter();
                     if (actionDefaiteTemps != null) actionDefaiteTemps.run();
@@ -45,17 +45,17 @@ public class ChronoManager {
         
         timeline.setCycleCount(Timeline.INDEFINITE);
         timeline.play();
-        if (save.tmp != null) save.tmp.lancer();
+        if (save.getTemps() != null) save.getTemps().lancer();
     }
 
     public void arreter() {
         if (timeline != null) timeline.stop();
-        if (save.tmp != null) save.tmp.arreter();
+        if (save.getTemps() != null) save.getTemps().arreter();
     }
 
     public void actualiserAffichage() {
         if (save.getDefi() == Defi.TypeDefi.CHRON) {
-            int restant = Math.max(0, save.tmp.getTempsMax().intValue() - secondesEcoulees);
+            int restant = Math.max(0, save.getTemps().getTempsMax().intValue() - secondesEcoulees);
             labelChrono.setText(String.format("%02d:%02d", restant / 60, restant % 60));
         } else {
             labelChrono.setText(String.format("%02d:%02d", secondesEcoulees / 60, secondesEcoulees % 60));

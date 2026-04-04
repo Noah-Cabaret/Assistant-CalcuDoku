@@ -106,13 +106,13 @@ public class GestionnaireJeu {
                 if (nomActuel == null) nomActuel = "Invité";
                 save.charger(nomActuel, grille);
                 
-                if (data.temps != null) save.tmp.setTempsMax(data.temps);
+                if (data.temps != null) save.getTemps().setTempsMax(data.temps);
                 
             } else {
                 if (data.defi != null) save.setDefi(data.defi);
                 else save.setDefi(Defi.TypeDefi.AUCUN);
                 save.setVies(data.vies);
-                if (data.temps != null) save.tmp.setTempsMax(data.temps);
+                if (data.temps != null) save.getTemps().setTempsMax(data.temps);
             }
             
             controller.initialiserPartie(grille, save);

@@ -1,6 +1,10 @@
 package fr.univ.calcudoku.save;
 
 public class Etape {
+    public static final int OFFSET_ANNOTATION = 10;
+    public static final int OFFSET_HYPOTHESE = 20;
+    public static final int OFFSET_HYPOTHESE_ANNOTATION = 30;
+
     private int x;
     private int y;
     private int n;
@@ -59,19 +63,19 @@ public class Etape {
     }
 
     public boolean normale() {
-        return this.n >= 0 && this.n <= 9;
+        return this.n >= 0 && this.n < OFFSET_ANNOTATION;
     }
 
     public boolean annotation() {
-        return this.n >= 10 && this.n <= 19;
+        return this.n >= OFFSET_ANNOTATION && this.n < OFFSET_HYPOTHESE;
     }
 
     public boolean hypotheseNormale() {
-        return this.n >= 20 && this.n <= 29;
+        return this.n >= OFFSET_HYPOTHESE && this.n < OFFSET_HYPOTHESE_ANNOTATION;
     }
 
     public boolean hypotheseAnnotation() {
-        return this.n >= 30 && this.n <= 39;
+        return this.n >= OFFSET_HYPOTHESE_ANNOTATION && this.n < OFFSET_HYPOTHESE_ANNOTATION + OFFSET_ANNOTATION;
     }
 
     @Override

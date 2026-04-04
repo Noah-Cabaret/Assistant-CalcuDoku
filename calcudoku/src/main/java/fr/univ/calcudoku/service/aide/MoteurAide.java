@@ -55,8 +55,6 @@ public class MoteurAide {
         difficiles.add(new TechniqueVerrouillageBloc());
         difficiles.add(new TechniqueResteDeGrilleType1());
         difficiles.add(new TechniqueResteDeGrilleType2());
-        difficiles.add(new TechniquePairesIsolees());
-        difficiles.add(new TechniquePairesCachees());
         this.techniquesParNiveau.put(NiveauAide.DIFFICILE, difficiles);
     }
 

@@ -89,7 +89,11 @@ public class ProfileManager {
                         if (niveauGagne >= stats.getProgressionAventure()) {
                             stats.setProgressionAventure(niveauGagne + 1);
                         }
-                    } catch (Exception e) {}
+                    } catch (Exception e) {
+                        System.err.println("Erreur parsing progression aventure: " + e.getMessage());
+                    
+                        System.err.println("Erreur parsing progression aventure: " + e.getMessage());
+                    }
                 } else if (idGrille.startsWith("libre_")) {
                     fr.univ.calcudoku.save.GestionnaireRecords.enregistrerSiMeilleur(idGrille, score, (int) temps, nomProfil);
                 }
@@ -159,21 +163,27 @@ public class ProfileManager {
             stats.charger(nomProfil);
             try {
                 stats.setProgressionAventure(Integer.parseInt(valeur));
-            } catch (Exception e) {}
+            } catch (Exception e) {
+                System.err.println("Erreur parsing progression: " + e.getMessage());
+            }
             stats.enreg(nomProfil);
         } else if (cle.equals(Constantes.STAT_PARTIES_JOUEES)) {
             Statistiques stats = new Statistiques();
             stats.charger(nomProfil);
             try {
                 stats.setPartiesJouees(Integer.parseInt(valeur));
-            } catch (Exception e) {}
+            } catch (Exception e) {
+                System.err.println("Erreur parsing parties jouées: " + e.getMessage());
+            }
             stats.enreg(nomProfil);
         } else if (cle.equals(Constantes.STAT_VICTOIRES)) {
             Statistiques stats = new Statistiques();
             stats.charger(nomProfil);
             try {
                 stats.setVictoires(Integer.parseInt(valeur));
-            } catch (Exception e) {}
+            } catch (Exception e) {
+                System.err.println("Erreur parsing victoires: " + e.getMessage());
+            }
             stats.enreg(nomProfil);
         }
     }

@@ -47,7 +47,7 @@ public class JeuUtilitaires {
 
             // --- CORRECTION ABSOLUE DU THÈME CALCULATRICE ---
             root.getStylesheets().removeIf(s -> s.contains("sombre.css"));
-            if (MainApp.modeSombreActif) {
+            if (MainApp.isModeSombre()) {
                 root.getStylesheets().add(JeuUtilitaires.class.getResource("/styles/sombre.css").toExternalForm());
             }
 

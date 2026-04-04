@@ -81,3 +81,31 @@
     -fx-border-color: #888888 !important;
 }
 
+/* Menu Déroulant (sombre) */
+.menu-deroulant {
+    -fx-background-color: #3b3b3b !important;
+    -fx-border-color: #888888 !important;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 5);
+}
+.menu-deroulant .sous-section {
+    -fx-border-color: #888888 !important;
+}
+
+/* Popup Abandon (sombre) */
+.popup-abandon-boite {
+    -fx-background-color: #3b3b3b !important;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 15, 0, 0, 0);
+}
+.popup-abandon-avertissement {
+    -fx-text-fill: #ff6b6b !important;
+}
+.popup-abandon-btn-annuler {
+    -fx-background-color: #555555 !important;
+    -fx-border-color: #888888 !important;
+}
+
+/* Bouton hypothèse texte */
+.bouton-hypothese {
+    -fx-text-fill: white !important;
+}
+

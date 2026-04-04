@@ -18,8 +18,8 @@ public class Sauvegarde {
     public enum ModeDeJeu { LIBR, AVEN }
     public enum Difficulte { FACIL, MOYEN, DIFFI }
 
-    public Historique hist;
-    public Temps tmp;
+    private Historique hist;
+    private Temps tmp;
 
     private boolean terminee;
     private String idGrille;
@@ -69,6 +69,13 @@ public class Sauvegarde {
     public int getAidesUtilisees() { return this.aidesUtilisees; }
     public void setAidesUtilisees(int a) { this.aidesUtilisees = a; }
 
+    public Historique getHistorique() { return this.hist; }
+    public Temps getTemps() { return this.tmp; }
+
+    public void resetHistorique() {
+        this.hist = new Historique();
+    }
+
     public void enreg(String compte, Grille grille) {
         String cheminSave = "profils/" + compte + "/parties/";
         if (this.mode == ModeDeJeu.AVEN) cheminSave += "aventure/";
@@ -103,7 +110,7 @@ public class Sauvegarde {
                     for (int j = 0; j < grille.getTaille(); j++) {
                         Case c = grille.getCase(i, j);
                         List<Integer> notes = new ArrayList<>(c.getNotes()); 
-                        int valeurASauvegarder = c.getValeur() + (c.isEstHypothese() ? 20 : 0);
+                        int valeurASauvegarder = c.getValeur() + (c.isEstHypothese() ? Etape.OFFSET_HYPOTHESE : 0);
                         matrice[i][j] = new CaseSauvegarde(valeurASauvegarder, notes, c.isValidee());
                     }
                 }
@@ -149,7 +156,7 @@ public class Sauvegarde {
                             case "aides": this.aidesUtilisees = Integer.parseInt(val); break;
                             case "historique":
                                 Scanner histScanner = new Scanner(val);
-                                histScanner.useDelimiter("[,\\n\\[\\]]");
+                                histScanner.useDelimiter("[,\\n\\[\\]\\-]");
                                 while (histScanner.hasNext()) {
                                     String token = histScanner.next().trim();
                                     if (token.isEmpty()) continue;
@@ -160,12 +167,16 @@ public class Sauvegarde {
                                         e.setY(Integer.parseInt(histScanner.next().trim()));
                                         e.setN(Integer.parseInt(histScanner.next().trim()));
                                         this.hist.addEtape(e);
-                                    } catch (Exception ex) {}
+                                    } catch (Exception ex) {
+                                        System.err.println("Erreur parsing étape historique: " + ex.getMessage());
+                                    }
                                 }
                                 histScanner.close();
                                 break;
                         }
-                    } catch (Exception e) { }
+                    } catch (Exception e) {
+                        System.err.println("Erreur parsing clé INI: " + e.getMessage());
+                    }
                 }
                 sc.close();
             }
@@ -186,8 +197,8 @@ public class Sauvegarde {
                                 Case c = grille.getCase(i, j);
                                 
                                 int valLue = matrice[i][j].valeur;
-                                if (valLue >= 20) {
-                                    c.setValeur(valLue - 20);
+                                if (valLue >= Etape.OFFSET_HYPOTHESE) {
+                                    c.setValeur(valLue - Etape.OFFSET_HYPOTHESE);
                                     c.setEstHypothese(true);
                                 } else {
                                     c.setValeur(valLue);
@@ -210,8 +221,8 @@ public class Sauvegarde {
                             for (int j = 0; j < matrice[i].length; j++) {
                                 Case c = grille.getCase(i, j);
                                 int valLue = matrice[i][j];
-                                if (valLue >= 20) {
-                                    c.setValeur(valLue - 20);
+                                if (valLue >= Etape.OFFSET_HYPOTHESE) {
+                                    c.setValeur(valLue - Etape.OFFSET_HYPOTHESE);
                                     c.setEstHypothese(true);
                                 } else {
                                     c.setValeur(valLue);

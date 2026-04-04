@@ -25,7 +25,7 @@ public class MenuController {
     @FXML
     public void initialize() {
         // Adaptation de la couleur de l'avatar au thème
-        imgAvatar.setIconColor(MainApp.modeSombreActif ? Color.WHITE : Color.BLACK);
+        imgAvatar.setIconColor(MainApp.isModeSombre() ? Color.WHITE : Color.BLACK);
         
         String nomActuel = MainApp.getProfileManager().getProfilActif();
         labelNomProfil.setText(nomActuel);
@@ -34,9 +34,9 @@ public class MenuController {
             javafx.scene.Scene scene = boxSousMenu.getScene();
             if (scene != null) {
                 String cssPath = getClass().getResource("/styles/sombre.css").toExternalForm();
-                if (MainApp.modeSombreActif && !scene.getStylesheets().contains(cssPath)) {
+                if (MainApp.isModeSombre() && !scene.getStylesheets().contains(cssPath)) {
                     scene.getStylesheets().add(cssPath);
-                } else if (!MainApp.modeSombreActif) {
+                } else if (!MainApp.isModeSombre()) {
                     scene.getStylesheets().remove(cssPath);
                 }
                 
@@ -44,7 +44,7 @@ public class MenuController {
                 scene.getRoot().lookupAll(".button").forEach(noeud -> {
                     Button btn = (Button) noeud;
                     if (btn.getText() != null && !btn.getText().isEmpty()) {
-                        String couleurT = MainApp.modeSombreActif ? "white" : "white";
+                        String couleurT = MainApp.isModeSombre() ? "white" : "white";
                         // On ajoute !important virtuellement en forçant le style
                         btn.setStyle(btn.getStyle() + " -fx-text-fill: " + couleurT + ";");
                     }

@@ -13,7 +13,15 @@ public class MainApp extends Application {
 
     private static Stage primaryStage;
     private static ProfileManager profileManager;
-    public static boolean modeSombreActif = false;
+    private static boolean modeSombreActif = false;
+
+    public static boolean isModeSombre() {
+        return modeSombreActif;
+    }
+
+    public static void setModeSombre(boolean actif) {
+        modeSombreActif = actif;
+    }
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -53,7 +61,7 @@ public class MainApp extends Application {
             scene.getStylesheets().clear();
             String cssClair = MainApp.class.getResource("/styles/style.css").toExternalForm();
             String cssSombre = MainApp.class.getResource("/styles/sombre.css").toExternalForm();
-            if (modeSombreActif) {
+            if (isModeSombre()) {
                 scene.getStylesheets().add(cssSombre);
             } else {
                 scene.getStylesheets().add(cssClair);

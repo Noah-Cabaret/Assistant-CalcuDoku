@@ -20,7 +20,7 @@ public class CarteUIFactory {
         String styleNormal = "-fx-cursor: hand; -fx-padding: 10; -fx-background-color: transparent; -fx-border-color: transparent; -fx-border-radius: 10; -fx-background-radius: 10;";
         String styleHover = "-fx-cursor: hand; -fx-padding: 10; -fx-background-color: #f5f5f5; -fx-border-color: #cccccc; -fx-border-radius: 10; -fx-background-radius: 10;";
 
-        if (fr.univ.calcudoku.MainApp.modeSombreActif) {
+        if (fr.univ.calcudoku.MainApp.isModeSombre()) {
             styleHover = "-fx-cursor: hand; -fx-padding: 10; -fx-background-color: #444444; -fx-border-color: #777777; -fx-border-radius: 10; -fx-background-radius: 10;";
         }
 
@@ -47,7 +47,7 @@ public class CarteUIFactory {
         Label titre = new Label(titreText);
         Label lblTemps = new Label(tempsText);
 
-        if (fr.univ.calcudoku.MainApp.modeSombreActif) {
+        if (fr.univ.calcudoku.MainApp.isModeSombre()) {
             titre.setStyle("-fx-font-family: 'Arial'; -fx-font-weight: bold; -fx-font-size: 13px; -fx-text-fill: white;");
             lblTemps.setStyle("-fx-font-family: 'Arial'; -fx-font-size: 11px; -fx-text-fill: #cccccc;");
         } else {

@@ -102,7 +102,11 @@ public class ProfilController {
                 String line = sc.nextLine();
                 if (line.startsWith("temps=")) return (int) Double.parseDouble(line.split("=")[1].trim());
             }
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            System.err.println("Erreur lecture temps INI: " + e.getMessage());
+        
+            System.err.println("Erreur lecture temps INI: " + e.getMessage());
+        }
         return 0;
     }
 
@@ -118,7 +122,7 @@ public class ProfilController {
         Label lblTitre = new Label("Grille " + nomPropre);
         Label lblTemps = new Label(String.format("Temps : %d:%02d", temps / 60, temps % 60));
 
-        if (MainApp.modeSombreActif) {
+        if (MainApp.isModeSombre()) {
             lblTitre.setStyle("-fx-font-family: 'Arial'; -fx-font-weight: bold; -fx-font-size: 13px; -fx-text-fill: white;");
             lblTemps.setStyle("-fx-font-family: 'Arial'; -fx-font-size: 11px; -fx-text-fill: #cccccc;");
         } else {
@@ -132,7 +136,7 @@ public class ProfilController {
         String styleNormal = "-fx-cursor: hand; -fx-padding: 10; -fx-background-color: transparent; -fx-border-color: transparent; -fx-border-radius: 10; -fx-background-radius: 10;";
         String styleHover = "-fx-cursor: hand; -fx-padding: 10; -fx-background-color: #f5f5f5; -fx-border-color: #cccccc; -fx-border-radius: 10; -fx-background-radius: 10;";
 
-        if (MainApp.modeSombreActif) styleHover = "-fx-cursor: hand; -fx-padding: 10; -fx-background-color: #444444; -fx-border-color: #777777; -fx-border-radius: 10; -fx-background-radius: 10;";
+        if (MainApp.isModeSombre()) styleHover = "-fx-cursor: hand; -fx-padding: 10; -fx-background-color: #444444; -fx-border-color: #777777; -fx-border-radius: 10; -fx-background-radius: 10;";
 
         carte.setStyle(styleNormal);
         String finalStyleHover = styleHover;
@@ -177,7 +181,7 @@ public class ProfilController {
         javafx.application.Platform.runLater(() -> activerModeSombre(isSombre));
     }
     
-    private void chargerAvatar() { imgAvatar.setIconColor(MainApp.modeSombreActif ? Color.WHITE : Color.BLACK); }
+    private void chargerAvatar() { imgAvatar.setIconColor(MainApp.isModeSombre() ? Color.WHITE : Color.BLACK); }
     
     private String formatTemps(String s) {
         try {
@@ -191,7 +195,7 @@ public class ProfilController {
     }
 
     private void activerModeSombre(boolean activer) {
-        MainApp.modeSombreActif = activer;
+        MainApp.setModeSombre(activer);
         javafx.scene.Scene sceneActuelle = boxParties.getScene();
         if (sceneActuelle != null) {
             String cssPath = getClass().getResource("/styles/sombre.css").toExternalForm();
@@ -243,5 +247,5 @@ public class ProfilController {
     }
 
     @FXML private void onRetourClick() { MainApp.changerScene(pagePrecedente); }
-    @FXML private void onDeconnexionClick() { MainApp.changerScene("/fxml/accueil.fxml"); MainApp.modeSombreActif = false; }
+    @FXML private void onDeconnexionClick() { MainApp.changerScene("/fxml/accueil.fxml"); MainApp.setModeSombre(false); }
 }

@@ -32,7 +32,7 @@ public class MenuAventureController {
 
     @FXML
     public void initialize() {
-        Color couleurIcone = MainApp.modeSombreActif ? Color.WHITE : Color.BLACK;
+        Color couleurIcone = MainApp.isModeSombre() ? Color.WHITE : Color.BLACK;
         imgParametres.setIconColor(couleurIcone);
         imgReset.setIconColor(couleurIcone);
 
@@ -40,7 +40,7 @@ public class MenuAventureController {
             ligneFond.setVisible(false); 
         }
 
-        boolean sombre = MainApp.modeSombreActif;
+        boolean sombre = MainApp.isModeSombre();
         Color couleurC = sombre ? Color.WHITE : Color.BLACK;
         String couleurT = sombre ? "white" : "black";
         if (btnRetour != null) {
@@ -60,7 +60,11 @@ public class MenuAventureController {
         int progression = 1;
         try {
             progression = Integer.parseInt(manager.lireStatistiques(nomActuel).getOrDefault(Constantes.STAT_PROGRESSION, "1"));
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            System.err.println("Erreur parsing progression aventure: " + e.getMessage());
+        
+            System.err.println("Erreur parsing progression aventure: " + e.getMessage());
+        }
 
         genererChemin(progression);
     }
