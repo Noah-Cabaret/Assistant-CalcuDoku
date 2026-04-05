@@ -32,7 +32,6 @@ public class MoteurAide {
         // Utilisation d'une LinkedHashMap pour préserver l'ordre : Facile -> Moyen -> Difficile
         this.techniquesParNiveau = new LinkedHashMap<>();
 
-        // --- NIVEAU FACILE ---
         List<TechniqueAide> faciles = new ArrayList<>();
         faciles.add(new TechniqueBlocDe1());
         faciles.add(new TechniqueDerniereCaseLigneCol());
@@ -40,7 +39,6 @@ public class MoteurAide {
         faciles.add(new TechniqueDerniereCaseBloc());
         this.techniquesParNiveau.put(NiveauAide.FACILE, faciles);
 
-        // --- NIVEAU MOYEN ---
         List<TechniqueAide> moyennes = new ArrayList<>();
         moyennes.add(new TechniquePlaceUniqueLigneColonne());
         moyennes.add(new TechniqueBlocUnique());
@@ -49,7 +47,6 @@ public class MoteurAide {
         moyennes.add(new TechniqueUniqueCache());
         this.techniquesParNiveau.put(NiveauAide.MOYEN, moyennes);
 
-        // --- NIVEAU DIFFICILE ---
         List<TechniqueAide> difficiles = new ArrayList<>();
         difficiles.add(new TechniqueIntraBloc_1_3());
         difficiles.add(new TechniqueVerrouillageBloc());
@@ -71,7 +68,6 @@ public class MoteurAide {
         for (Map.Entry<NiveauAide, List<TechniqueAide>> entry : techniquesParNiveau.entrySet()) {
             List<Indice> resultatsPourCeNiveau = new ArrayList<>();
             
-            // On lance toutes les techniques du niveau et on récolte celles qui trouvent un résultat
             for (TechniqueAide technique : entry.getValue()) {
                 Indice indice = technique.analyser(grille);
                 if (indice != null) {
@@ -80,7 +76,6 @@ public class MoteurAide {
                 }
             }
             
-            // S'il y a des résultats, on les mélange et on garde uniquement le premier
             if (!resultatsPourCeNiveau.isEmpty()) {
                 Collections.shuffle(resultatsPourCeNiveau);
                 aidesTrouvees.add(resultatsPourCeNiveau.get(0));
@@ -102,7 +97,6 @@ public class MoteurAide {
         List<TechniqueAide> techniquesCiblees = techniquesParNiveau.getOrDefault(niveau, new ArrayList<>());
         List<Indice> resultatsPourCeNiveau = new ArrayList<>();
         
-        // On teste toutes les techniques du niveau ciblé
         for (TechniqueAide technique : techniquesCiblees) {
             Indice indice = technique.analyser(grille);
             if (indice != null) {
@@ -111,7 +105,6 @@ public class MoteurAide {
             }
         }
         
-        // Si on a obtenu des aides pour ce niveau, on les mélange pour en prendre une au hasard
         if (!resultatsPourCeNiveau.isEmpty()) {
             Collections.shuffle(resultatsPourCeNiveau);
             aidesTrouvees.add(resultatsPourCeNiveau.get(0));

@@ -14,6 +14,16 @@ import java.util.function.Supplier;
  */
 public class ClavierHandler {
     
+    /**
+     * Crée un filtre d'événements clavier pour naviguer dans la grille et saisir des chiffres.
+     *
+     * @param grille              la grille de jeu.
+     * @param getCaseSelectionnee fournit la case actuellement sélectionnée.
+     * @param onDeplacement       callback appelé lors d'un déplacement (x, y).
+     * @param onChiffreClique     callback appelé lors de la saisie d'un chiffre.
+     * @param onEffacer           callback appelé lors de l'effacement.
+     * @return le filtre d'événements clavier.
+     */
     public static EventHandler<KeyEvent> creerFiltre(Grille grille, Supplier<Case> getCaseSelectionnee, BiConsumer<Integer, Integer> onDeplacement, Consumer<Integer> onChiffreClique, Runnable onEffacer) {
         return event -> {
             Case caseSel = getCaseSelectionnee.get();

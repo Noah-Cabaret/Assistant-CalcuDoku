@@ -43,6 +43,11 @@ import javafx.application.Platform;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Contrôleur principal de la vue de jeu.
+ * Gère l'interaction utilisateur avec la grille, les commandes (undo/redo, annotations,
+ * hypothèses), le chronomètre, l'aide et la sauvegarde.
+ */
 public class JeuController {
 
     /** Conteneur principal de la grille de jeu. */
@@ -121,7 +126,6 @@ public class JeuController {
         this.save = save;
         this.partiePerdue = false;
 
-        // Active les contrôles de la grille et des boutons
         conteneurGrille.setDisable(false);
         conteneurBoutonsNombres.setDisable(false);
         if (btnAide != null) {
@@ -130,10 +134,9 @@ public class JeuController {
         }
 
         if (this.save != null && (this.save.getIdGrille() == null || this.save.getIdGrille().isEmpty())) {
-            this.save.setIdGrille("libre_" + grille.getTaille() + "_1_1"); 
+            this.save.setIdGrille(Constantes.PREFIX_LIBRE + grille.getTaille() + "_1_1"); 
         }
 
-        // Crée et configure la vue de la grille
         this.vueGrille = new VueGrille(grille);
         conteneurGrille.getChildren().clear(); 
         conteneurGrille.getChildren().add(vueGrille);
@@ -159,7 +162,6 @@ public class JeuController {
         conteneurBoutonsNombres.applyCss();
         conteneurBoutonsNombres.layout();
         
-        // Cache les éléments de popup et de menu au démarrage
         if (popupAbandon != null) popupAbandon.setVisible(false);
         if (menuDeroulant != null) menuDeroulant.setVisible(false);
         if (bulleAide != null) bulleAide.setVisible(false);
@@ -168,20 +170,17 @@ public class JeuController {
             btnActualiserAide.setOnAction(this::actionActualiserAide);
         }
 
-        // Configure le service d'aide
         aideService.setOnSucceeded(event -> { 
             aideNavigateur.mettreAJourIndices(aideService.getValue()); 
             if (bulleAide != null && bulleAide.isVisible()) {
                 aideNavigateur.rafraichirContenu(labelMessageAide, vueGrille, btnAmeliorerAide, btnAidePrecedente, btnAideSuivante);
             }
         });
-        // Calcule les possibilités initiales des groupements
         for (GroupementCases bloc : grilleModele.getListeGroupements()) { 
             bloc.calculerPossibilites(grilleModele); 
         }
         aideService.lancerAnalyse(grilleModele);
 
-        // Gère le défi "NOAID" (aucune aide)
         if (save.getDefi() == Defi.TypeDefi.NOAID && btnAide != null) {
             btnAide.setDisable(true);
             btnAide.setOpacity(0.5);
@@ -213,7 +212,6 @@ public class JeuController {
             });
         }
 
-        // Configure les gestionnaires d'événements clavier
         filtreClavier = ClavierHandler.creerFiltre(
             grilleModele,
             () -> caseModeleSelectionnee,
@@ -229,7 +227,6 @@ public class JeuController {
             }
         };
 
-        // Installe les filtres clavier et les sécurités de fermeture
         Platform.runLater(() -> {
             Scene scene = conteneurGrille.getScene();
             if (scene != null) {
@@ -241,7 +238,6 @@ public class JeuController {
             }
         });
 
-        // Met à jour le label du défi et démarre le chronomètre
         mettreAJourLabelDefi();
         
         this.chronoManager = new ChronoManager(labelChrono, save, () -> declencherDefaite("Le temps est écoulé !"));

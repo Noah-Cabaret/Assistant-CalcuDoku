@@ -19,6 +19,10 @@ import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.FileReader;
 
+/**
+ * Génère les images miniatures (PNG) de toutes les grilles du jeu.
+ * Utilisé en mode outil pour préparer les ressources visuelles.
+ */
 public class GenerateurSnapshot extends Application {
 
     private String getBasePath() {

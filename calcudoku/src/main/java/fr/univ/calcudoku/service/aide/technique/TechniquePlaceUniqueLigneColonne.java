@@ -11,6 +11,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * Technique d'aide : Place Unique sur Ligne/Colonne.
+ * Identifie un chiffre qui ne peut aller qu'à un seul endroit sur un axe donné.
+ */
 public class TechniquePlaceUniqueLigneColonne implements TechniqueAide {
 
     @Override

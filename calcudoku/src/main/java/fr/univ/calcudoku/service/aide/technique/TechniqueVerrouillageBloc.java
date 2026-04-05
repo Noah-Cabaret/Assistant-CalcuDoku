@@ -12,6 +12,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+/**
+ * Technique d'aide : Verrouillage de Bloc.
+ * Détecte quand un chiffre d'un bloc est contraint à une seule ligne ou colonne,
+ * permettant de l'éliminer des autres cases de cet axe.
+ */
 public class TechniqueVerrouillageBloc implements TechniqueAide {
     
     @Override

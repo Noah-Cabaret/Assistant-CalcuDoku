@@ -3,6 +3,7 @@ package fr.univ.calcudoku.controller;
 import fr.univ.calcudoku.MainApp;
 import fr.univ.calcudoku.model.DonneesNiveau;
 import fr.univ.calcudoku.service.ProfileManager;
+import fr.univ.calcudoku.utils.Constantes;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -93,17 +94,17 @@ public class ProfilController {
         if (radioSombre != null) radioSombre.setOnAction(e -> {
             activerModeSombre(true);
             if (boxParties != null) { boxParties.getChildren().clear(); chargerPartiesSauvegardees(lblNomProfil.getText()); }
-            manager.mettreAJourStatistique(lblNomProfil.getText(), "mode_sombre", "true");
+            manager.mettreAJourStatistique(lblNomProfil.getText(), Constantes.OPTION_MODE_SOMBRE, "true");
         });
         
         if (radioClair != null) radioClair.setOnAction(e -> {
             activerModeSombre(false);
             if (boxParties != null) { boxParties.getChildren().clear(); chargerPartiesSauvegardees(lblNomProfil.getText()); }
-            manager.mettreAJourStatistique(lblNomProfil.getText(), "mode_sombre", "false");
+            manager.mettreAJourStatistique(lblNomProfil.getText(), Constantes.OPTION_MODE_SOMBRE, "false");
         });
 
-        if (radioProfilCombinaisons != null) radioProfilCombinaisons.setOnAction(e -> manager.mettreAJourStatistique(lblNomProfil.getText(), "aide_calcul", "combinaisons"));
-        if (radioProfilCalculatrice != null) radioProfilCalculatrice.setOnAction(e -> manager.mettreAJourStatistique(lblNomProfil.getText(), "aide_calcul", "calculatrice"));
+        if (radioProfilCombinaisons != null) radioProfilCombinaisons.setOnAction(e -> manager.mettreAJourStatistique(lblNomProfil.getText(), Constantes.OPTION_AIDE_CALCUL, Constantes.VALEUR_AIDE_COMBINAISONS));
+        if (radioProfilCalculatrice != null) radioProfilCalculatrice.setOnAction(e -> manager.mettreAJourStatistique(lblNomProfil.getText(), Constantes.OPTION_AIDE_CALCUL, Constantes.VALEUR_AIDE_CALCULATRICE));
     }
 
     /**
@@ -112,10 +113,10 @@ public class ProfilController {
      * @param nomProfil Le nom du profil dont on veut charger les parties.
      */
     private void chargerPartiesSauvegardees(String nomProfil) {
-        File dossierParties = new File("profils/" + nomProfil + "/parties");
+        File dossierParties = new File(Constantes.DOSSIER_PROFILS + nomProfil + Constantes.SOUS_DOSSIER_PARTIES);
         chargerFichiersDossier(nomProfil, dossierParties);
 
-        File dossierAventure = new File("profils/" + nomProfil + "/parties/aventure");
+        File dossierAventure = new File(Constantes.DOSSIER_PROFILS + nomProfil + Constantes.SOUS_DOSSIER_PARTIES + Constantes.SOUS_DOSSIER_AVENTURE);
         chargerFichiersDossier(nomProfil, dossierAventure);
     }
 
@@ -175,7 +176,7 @@ public class ProfilController {
      * @return Un VBox représentant la carte de la partie.
      */
     private VBox creerCartePartie(String nomProfil, File fichierJson, int temps) {
-        File fichierImage = new File("profils/" + nomProfil + "/jeu/images/" + fichierJson.getName().replace(".json", ".png"));
+        File fichierImage = new File(Constantes.DOSSIER_PROFILS + nomProfil + Constantes.SOUS_DOSSIER_IMAGES + fichierJson.getName().replace(".json", ".png"));
         ImageView imgView = new ImageView();
         if (fichierImage.exists()) imgView.setImage(new Image(fichierImage.toURI().toString()));
         else imgView.setStyle("-fx-background-color: lightgray;");
@@ -223,30 +224,29 @@ public class ProfilController {
     private void chargerStatistiquesProfil(String nom, ProfileManager manager) {
         Map<String, String> stats = manager.lireStatistiques(nom);
 
-        if (lblPartiesJouees != null) lblPartiesJouees.setText("Parties jouées : " + stats.getOrDefault("parties_jouees", "0"));
-        if (lblVictoires != null) lblVictoires.setText("Victoires : " + stats.getOrDefault("victoires", "0"));
-        lblTempsMoyen.setText("Temps moyen : " + formatTemps(stats.getOrDefault("temps_moyen", "0")));
+        if (lblPartiesJouees != null) lblPartiesJouees.setText("Parties jouées : " + stats.getOrDefault(Constantes.STAT_PARTIES_JOUEES, "0"));
+        if (lblVictoires != null) lblVictoires.setText("Victoires : " + stats.getOrDefault(Constantes.STAT_VICTOIRES, "0"));
+        lblTempsMoyen.setText("Temps moyen : " + formatTemps(stats.getOrDefault(Constantes.STAT_TEMPS_MOYEN, "0")));
         
         try {
-            double ratio = Double.parseDouble(stats.getOrDefault("ratio_parties", "0")) * 100;
+            double ratio = Double.parseDouble(stats.getOrDefault(Constantes.STAT_RATIO, "0")) * 100;
             lblTauxReussite.setText("Taux de réussite : " + (int)ratio + "%");
         } catch(Exception e) { lblTauxReussite.setText("Taux : 0%"); }
 
-        lblNiveauAventure.setText("Niveau aventure : " + stats.getOrDefault("progression", "1"));
-        lblMeilleurScore.setText("Meilleur score : " + stats.getOrDefault("score_max", "0"));
+        lblNiveauAventure.setText("Niveau aventure : " + stats.getOrDefault(Constantes.STAT_PROGRESSION, "1"));
+        lblMeilleurScore.setText("Meilleur score : " + stats.getOrDefault(Constantes.STAT_SCORE_MAX, "0"));
         
-        String d = stats.getOrDefault("difficulte_max", "1");
+        String d = stats.getOrDefault(Constantes.STAT_DIFF_MAX, "1");
         lblDifficulteMax.setText("Difficulté max : " + (d.equals("3") ? "Difficile" : (d.equals("2") ? "Moyenne" : "Facile")));
 
-        boolean isSombre = Boolean.parseBoolean(stats.getOrDefault("mode_sombre", "false"));
+        boolean isSombre = Boolean.parseBoolean(stats.getOrDefault(Constantes.OPTION_MODE_SOMBRE, "false"));
         if (radioSombre != null) radioSombre.setSelected(isSombre);
         if (radioClair != null) radioClair.setSelected(!isSombre);
 
-        String aide = stats.getOrDefault("aide_calcul", "combinaisons");
-        if (aide.equals("calculatrice") && radioProfilCalculatrice != null) radioProfilCalculatrice.setSelected(true);
+        String aide = stats.getOrDefault(Constantes.OPTION_AIDE_CALCUL, Constantes.VALEUR_AIDE_COMBINAISONS);
+        if (aide.equals(Constantes.VALEUR_AIDE_CALCULATRICE) && radioProfilCalculatrice != null) radioProfilCalculatrice.setSelected(true);
         else if (radioProfilCombinaisons != null) radioProfilCombinaisons.setSelected(true);
 
-        // On force le redessinage complet des icônes au chargement de la page
         javafx.application.Platform.runLater(() -> activerModeSombre(isSombre));
     }
     
@@ -277,7 +277,7 @@ public class ProfilController {
         MainApp.setModeSombre(activer);
         javafx.scene.Scene sceneActuelle = boxParties.getScene();
         if (sceneActuelle != null) {
-            String cssPath = getClass().getResource("/styles/sombre.css").toExternalForm();
+            String cssPath = getClass().getResource(Constantes.CHEMIN_CSS_SOMBRE).toExternalForm();
             if (activer) {
                 if (!sceneActuelle.getStylesheets().contains(cssPath)) sceneActuelle.getStylesheets().add(cssPath);
             } else {
@@ -288,7 +288,6 @@ public class ProfilController {
         Color couleurC = activer ? Color.WHITE : Color.BLACK;
         String couleurT = activer ? "white" : "black";
 
-        // --- CORRECTION DE LA FLÈCHE DE RETOUR ---
         if (btnRetour != null) {
             btnRetour.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-text-fill: " + couleurT + ";");
             if (btnRetour.getGraphic() instanceof FontIcon) {
@@ -296,22 +295,18 @@ public class ProfilController {
             }
         }
 
-        // --- CORRECTION DU BOUTON DÉCONNEXION---
         if (btnDeconnexion != null) {
             if (btnDeconnexion.getGraphic() instanceof FontIcon) {
                 ((FontIcon) btnDeconnexion.getGraphic()).setIconColor(couleurC);
             }
         }
 
-        // --- CORRECTION DES BORDURES DES BOÎTES ---
         String couleurBordure = activer ? "white" : "black";
         
-        // 1. La boîte "Partie en cours" (C'est le 2ème élément de la boxCentrale)
         if (boxCentrale.getChildren().size() > 1 && boxCentrale.getChildren().get(1) instanceof VBox) {
             boxCentrale.getChildren().get(1).setStyle("-fx-border-color: " + couleurBordure + "; -fx-border-radius: 20; -fx-border-width: 1; -fx-padding: 10;");
         }
         
-        // 2. Les 3 boîtes du haut (Touches, Stats, Paramètres)
         if (boxCentrale.getChildren().size() > 0 && boxCentrale.getChildren().get(0) instanceof HBox) {
             HBox ligneHaut = (HBox) boxCentrale.getChildren().get(0);
             for (javafx.scene.Node boite : ligneHaut.getChildren()) {
@@ -319,7 +314,6 @@ public class ProfilController {
             }
         }
         
-        // --- CORRECTION DE L'AVATAR ---
         if (imgAvatar != null) {
             imgAvatar.setIconColor(couleurC);
         }
@@ -330,5 +324,5 @@ public class ProfilController {
      * Redirige vers la page précédente stockée dans {@link #pagePrecedente}.
      */
     @FXML private void onRetourClick() { MainApp.changerScene(pagePrecedente); }
-    @FXML private void onDeconnexionClick() { MainApp.changerScene("/fxml/accueil.fxml"); MainApp.setModeSombre(false); }
+    @FXML private void onDeconnexionClick() { MainApp.changerScene(Constantes.VUE_ACCUEIL); MainApp.setModeSombre(false); }
 }

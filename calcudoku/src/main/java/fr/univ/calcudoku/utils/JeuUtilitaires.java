@@ -20,11 +20,18 @@ import javafx.embed.swing.SwingFXUtils;
 import javax.imageio.ImageIO;
 import java.io.File;
 
+/**
+ * Méthodes utilitaires pour le jeu : calculatrice, captures d'écran, sécurités de fermeture.
+ */
 public class JeuUtilitaires {
 
     private static Popup calcPopup;
     private static double xOffset = 0, yOffset = 0;
 
+    /**
+     * Affiche ou masque la calculatrice flottante.
+     * @param event l'événement du bouton déclencheur
+     */
     public static void afficherCalculatrice(ActionEvent event) {
         try {
             if (calcPopup != null && calcPopup.isShowing()) { calcPopup.hide(); return; }
@@ -32,7 +39,7 @@ public class JeuUtilitaires {
             Parent root;
             if (calcPopup == null) {
                 root = FXMLLoader.load(JeuUtilitaires.class.getResource(Constantes.VUE_CALCULATRICE));
-                root.getStyleClass().add("calculatrice-popup"); // Ligne magique
+                root.getStyleClass().add("calculatrice-popup");
                 
                 calcPopup = new Popup();
                 calcPopup.getContent().add(root);
@@ -45,10 +52,10 @@ public class JeuUtilitaires {
                 root = (Parent) calcPopup.getContent().get(0);
             }
 
-            // --- CORRECTION ABSOLUE DU THÈME CALCULATRICE ---
+            // Application du thème sombre à la calculatrice
             root.getStylesheets().removeIf(s -> s.contains("sombre.css"));
             if (MainApp.isModeSombre()) {
-                root.getStylesheets().add(JeuUtilitaires.class.getResource("/styles/sombre.css").toExternalForm());
+                root.getStylesheets().add(JeuUtilitaires.class.getResource(Constantes.CHEMIN_CSS_SOMBRE).toExternalForm());
             }
 
             Stage mainStage = (Stage) ((Button)event.getSource()).getScene().getWindow();
@@ -56,10 +63,19 @@ public class JeuUtilitaires {
         } catch (Exception e) { e.printStackTrace(); }
     }
 
+    /** Masque la calculatrice si elle est affichée. */
     public static void cacherCalculatrice() {
         if (calcPopup != null && calcPopup.isShowing()) calcPopup.hide();
     }
 
+    /**
+     * Sauvegarde une capture d'écran de la grille en PNG.
+     * @param grilleModele la grille modèle
+     * @param vueGrille la vue de la grille
+     * @param vueCaseSelectionnee la case sélectionnée (pour retirer le surlignage)
+     * @param nomFichier le nom du fichier de sortie
+     * @param masquerAide action pour masquer l'aide avant la capture
+     */
     public static void sauvegarderImageGrille(Grille grilleModele, VueGrille vueGrille, VueCase vueCaseSelectionnee, String nomFichier, Runnable masquerAide) {
         try {
             String nomJoueur = MainApp.getProfileManager().getProfilActif();
@@ -88,6 +104,12 @@ public class JeuUtilitaires {
 
     private static Thread hookSauvegardeBrutale;
 
+    /**
+     * Installe les sécurités de fermeture (sauvegarde auto quand on ferme la fenêtre).
+     * @param scene la scène du jeu
+     * @param actionSauvegardeNormale action de sauvegarde en fermeture normale
+     * @param actionSauvegardeBrutale action de sauvegarde en cas de kill du processus
+     */
     public static void installerSecuritesFermeture(Scene scene, Runnable actionSauvegardeNormale, Runnable actionSauvegardeBrutale) {
         hookSauvegardeBrutale = new Thread(() -> actionSauvegardeBrutale.run());
         Runtime.getRuntime().addShutdownHook(hookSauvegardeBrutale);
@@ -99,6 +121,7 @@ public class JeuUtilitaires {
         });
     }
 
+    /** Désinstalle les sécurités de fermeture. */
     public static void desinstallerSecuritesFermeture(Scene scene) {
         if (hookSauvegardeBrutale != null) {
             try { Runtime.getRuntime().removeShutdownHook(hookSauvegardeBrutale); } catch (Exception e) {}

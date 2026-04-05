@@ -6,6 +6,9 @@ import fr.univ.calcudoku.model.Case;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Visiteur qui recherche les blocs (groupements) d'une taille donnée dans la grille.
+ */
 public class VisiteurChercheurBlocN implements VisiteurGrille {
     
     private final int tailleCible;

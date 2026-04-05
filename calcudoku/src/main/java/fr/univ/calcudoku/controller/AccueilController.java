@@ -70,7 +70,7 @@ public class AccueilController {
         carte.setMaxHeight(VBox.USE_PREF_SIZE);
         carte.setStyle("-fx-cursor: hand; -fx-padding: 15; -fx-background-color: transparent; -fx-background-radius: 10;");
 
-        FontIcon iconProfil = new FontIcon("fas-user-circle");
+        FontIcon iconProfil = new FontIcon(Constantes.ICONE_UTILISATEUR);
         iconProfil.setIconSize(80);
 
         Label boutonX = new Label("X");
@@ -116,7 +116,7 @@ public class AccueilController {
             manager.chargerProfil(nom);
             
             java.util.Map<String, String> stats = manager.lireStatistiques(nom);
-            MainApp.setModeSombre(Boolean.parseBoolean(stats.getOrDefault("mode_sombre", "false")));
+            MainApp.setModeSombre(Boolean.parseBoolean(stats.getOrDefault(Constantes.OPTION_MODE_SOMBRE, "false")));
             
             MainApp.changerScene(Constantes.VUE_MENU);
         });
@@ -135,7 +135,7 @@ public class AccueilController {
         carte.setMaxHeight(VBox.USE_PREF_SIZE);
         carte.setStyle("-fx-cursor: hand; -fx-padding: 15; -fx-background-color: transparent; -fx-background-radius: 10;");
 
-        FontIcon iconPlus = new FontIcon("fas-plus-circle");
+        FontIcon iconPlus = new FontIcon(Constantes.ICONE_PLUS);
         iconPlus.setIconSize(80);
 
         Label labelAjout = new Label("Ajouter");
@@ -167,7 +167,7 @@ public class AccueilController {
         Label titre = new Label("Calcudoku");
         titre.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: black; -fx-border-color: transparent transparent transparent; -fx-border-width: 0 0 2 0;");
 
-        FontIcon iconPopup = new FontIcon("fas-user-circle");
+        FontIcon iconPopup = new FontIcon(Constantes.ICONE_UTILISATEUR);
         iconPopup.setIconSize(60);
 
         Label msgErreur = new Label("Ce nom de profil est déjà pris");

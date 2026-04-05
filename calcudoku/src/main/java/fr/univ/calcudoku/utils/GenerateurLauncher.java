@@ -5,7 +5,6 @@ package fr.univ.calcudoku.utils;
  */
 public class GenerateurLauncher {
     public static void main(String[] args) {
-        // Appelle la méthode main de ton vrai générateur
         GenerateurSnapshot.main(args);
     }
 }

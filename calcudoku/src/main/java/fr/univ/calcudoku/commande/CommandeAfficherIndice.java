@@ -10,6 +10,10 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 
+/**
+ * Commande d'affichage d'un indice dans l'interface.
+ * Gère l'affichage progressif (texte, surbrillance) et le masquage.
+ */
 public class CommandeAfficherIndice implements CommandeAide {
     private final Indice indice;
     private final Label labelMessageAide;
@@ -92,8 +96,7 @@ public class CommandeAfficherIndice implements CommandeAide {
 
     @Override
     public boolean peutEtreAmeliore() {
-        if (etapeActuelle == 1 && !possedeNiveau2()) return false; 
-        // L'aide s'arrête obligatoirement à l'étape 2 (plus de solutions dévoilées)
+        if (etapeActuelle == 1 && !possedeNiveau2()) return false;
         return etapeActuelle < 2;
     }
 }

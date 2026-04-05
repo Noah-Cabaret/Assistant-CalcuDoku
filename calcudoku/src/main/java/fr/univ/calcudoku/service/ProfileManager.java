@@ -3,6 +3,7 @@ package fr.univ.calcudoku.service;
 import fr.univ.calcudoku.save.Options;
 import fr.univ.calcudoku.save.Statistiques;
 import fr.univ.calcudoku.save.Sauvegarde;
+import fr.univ.calcudoku.save.GestionnaireRecords;
 import fr.univ.calcudoku.utils.Constantes;
 
 import java.io.File;
@@ -57,6 +58,7 @@ public class ProfileManager {
      * @return true si le profil a été supprimé avec succès, false sinon.
      */
     public boolean supprimerProfil(String nom) {
+        GestionnaireRecords.supprimerRecordsDuJoueur(nom);
         File dossier = new File(Constantes.DOSSIER_PROFILS, nom);
         if (dossier.exists()) return supprimerRecursif(dossier);
         return false;

@@ -4,9 +4,15 @@ import java.io.FileWriter;
 import java.io.File;
 import java.io.BufferedReader;
 import java.io.FileReader;
+import fr.univ.calcudoku.utils.Constantes;
 
+/**
+ * Options de configuration d'un profil (type d'aide au calcul, thème sombre).
+ * Sauvegardées dans le fichier options.ini du profil.
+ */
 public class Options extends Donnees {
 
+    /** Type d'aide au calcul disponible */
     public enum AideAuCalcul { CALCULATRICE, COMBINAISONS }
     private AideAuCalcul aide;
     private boolean themeSombre;
@@ -34,7 +40,7 @@ public class Options extends Donnees {
 
     @Override
     public void enreg(String compte) {
-        try (FileWriter ini = new FileWriter("profils/" + compte + "/options.ini")) {
+        try (FileWriter ini = new FileWriter(Constantes.DOSSIER_PROFILS + compte + Constantes.FICHIER_OPTIONS)) {
             ini.write("[Paramètres]\n");
             ini.write("aide_au_calcul=" + this.aide + "\n");
             ini.write("theme_sombre=" + this.themeSombre + "\n");
@@ -43,7 +49,7 @@ public class Options extends Donnees {
 
     @Override
     public void charger(String compte) {
-        File f = new File("profils/" + compte + "/options.ini");
+        File f = new File(Constantes.DOSSIER_PROFILS + compte + Constantes.FICHIER_OPTIONS);
         if (!f.exists()) return;
         try (BufferedReader br = new BufferedReader(new FileReader(f))) {
             String ligne;

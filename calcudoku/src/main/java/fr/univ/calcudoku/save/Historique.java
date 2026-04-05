@@ -7,10 +7,15 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
 
+/**
+ * Gère l'historique des coups joués pendant une partie.
+ * Supporte le undo/redo, les hypothèses et la reconstruction de la grille.
+ */
 public class Historique {
     private List<Etape> hist;
     private int index;
 
+    /** Crée un historique vide avec une étape initiale. */
     public Historique() {
         this.hist = new ArrayList<>();
         this.index = 0;
@@ -21,6 +26,7 @@ public class Historique {
     public void setIndex(int newIndex) { this.index = newIndex; }
     public List<Etape> getHist() { return Collections.unmodifiableList(this.hist); }
 
+    /** @return une copie de l'étape courante */
     public Etape getEtapeCourante() {
         return new Etape(this.hist.get(this.index));
     }
@@ -32,10 +38,16 @@ public class Historique {
         if (this.index > this.taille() - 1) this.index--;
     }
 
+    /** Supprime toutes les étapes après l'index courant (pour le redo). */
     public void viderQueue() {
         while (this.taille() > this.index + 1) this.removeEtape();
     }
 
+    /**
+     * Ajoute une étape à l'historique.
+     * Si null, réinitialise la suite de l'historique.
+     * @param e l'étape à ajouter
+     */
     public void addEtape(Etape e) {
         if (e == null) {
             this.viderQueue();
@@ -66,6 +78,11 @@ public class Historique {
         return getEtapeCourante();
     }
 
+    /**
+     * Annule le dernier coup et reconstruit la grille.
+     * @param grilleModele la grille à mettre à jour
+     * @param modeHypotheseActif true si le mode hypothèse est actif
+     */
     public void appliquerUndo(Grille grilleModele, boolean modeHypotheseActif) {
         if (this.getIndex() > 0) {
             this.index--;
@@ -73,6 +90,10 @@ public class Historique {
         }
     }
 
+    /**
+     * Rétablit le coup suivant et reconstruit la grille.
+     * @param grilleModele la grille à mettre à jour
+     */
     public void appliquerRedo(Grille grilleModele) {
         if (this.getIndex() < this.taille() - 1) {
             this.index++;
@@ -80,6 +101,7 @@ public class Historique {
         }
     }
 
+    /** Valide toutes les hypothèses en les convertissant en coups normaux. */
     public void validerHypotheses() {
         int curr = this.index;
         while (curr > 0) {
@@ -94,6 +116,11 @@ public class Historique {
         this.viderQueue(); 
     }
 
+    /**
+     * Annule toutes les hypothèses et restaure la grille à l'état précédent.
+     * @param grilleModele la grille à restaurer
+     * @param modeHypotheseActif true si le mode hypothèse est actif
+     */
     public void rollbackHypotheses(Grille grilleModele, boolean modeHypotheseActif) {
         boolean changed = false;
         while (this.getIndex() > 0) {

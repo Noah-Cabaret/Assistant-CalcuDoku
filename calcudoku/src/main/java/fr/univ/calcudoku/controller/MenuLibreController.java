@@ -19,6 +19,10 @@ import javafx.scene.paint.Color;
 import java.io.File;
 import java.util.Scanner;
 
+/**
+ * Contrôleur du menu de sélection des parties en mode libre.
+ * Permet de choisir la taille, la difficulté et de lancer une grille.
+ */
 public class MenuLibreController {
     /** Groupe de boutons radio pour la sélection de la taille de la grille. */
     @FXML 
@@ -104,7 +108,7 @@ public class MenuLibreController {
         String diff = ((ToggleButton) groupeDifficulte.getSelectedToggle()).getText();
 
         for (int i = 1; i <= 3; i++) {
-            String baseName = "libre_" + taille + "_" + diff + "_" + i;
+            String baseName = Constantes.PREFIX_LIBRE + taille + "_" + diff + "_" + i;
             String nomFichierJson = baseName + ".json";
             
             DonneesNiveau niveau = GestionnaireJeu.lireDonneesNiveauRessource(nomFichierJson);
@@ -131,9 +135,9 @@ public class MenuLibreController {
     private VBox creerCarteNiveau(DonneesNiveau niveau, String baseName, int index) {
         String nomProfil = MainApp.getProfileManager().getProfilActif();
 
-        File fichierJsonSave = new File("profils/" + nomProfil + "/parties/" + baseName + ".json");
-        File fichierIniSave = new File("profils/" + nomProfil + "/parties/" + baseName + ".ini");
-        File fichierImageSave = new File("profils/" + nomProfil + "/jeu/images/" + baseName + ".png");
+        File fichierJsonSave = new File(Constantes.DOSSIER_PROFILS + nomProfil + Constantes.SOUS_DOSSIER_PARTIES + baseName + ".json");
+        File fichierIniSave = new File(Constantes.DOSSIER_PROFILS + nomProfil + Constantes.SOUS_DOSSIER_PARTIES + baseName + ".ini");
+        File fichierImageSave = new File(Constantes.DOSSIER_PROFILS + nomProfil + Constantes.SOUS_DOSSIER_IMAGES + baseName + ".png");
 
         Image imageA_Afficher;
         String texteTemps;
@@ -147,13 +151,12 @@ public class MenuLibreController {
             if (fichierImageSave.exists()) {
                 imageA_Afficher = new Image(fichierImageSave.toURI().toString());
             } else {
-                imageA_Afficher = CacheRessources.getImage("/grilles/images/" + baseName + ".png");
+                imageA_Afficher = CacheRessources.getImage(Constantes.CHEMIN_GRILLES_IMAGES + baseName + ".png");
             }
             
             int tempsSave = lireTempsDepuisIni(fichierIniSave);
             texteTemps = String.format("En cours : %02d:%02d", tempsSave / 60, tempsSave % 60);
             
-            // On ajoute le record en dessous s'il existe
             if (rec != null) {
                 texteTemps += String.format("\n🏆 %s : %d pts (%02d:%02d)", rec.joueur, rec.score, rec.temps / 60, rec.temps % 60);
             }
@@ -165,9 +168,8 @@ public class MenuLibreController {
 
         } else {
             
-            imageA_Afficher = CacheRessources.getImage("/grilles/images/" + baseName + ".png");
+            imageA_Afficher = CacheRessources.getImage(Constantes.CHEMIN_GRILLES_IMAGES + baseName + ".png");
             
-            // --- MODIFICATION ICI : On enlève le temps cible ---
             if (rec != null) {
                 texteTemps = String.format("🏆 %s : %d pts (%02d:%02d)", rec.joueur, rec.score, rec.temps / 60, rec.temps % 60);
             } else {

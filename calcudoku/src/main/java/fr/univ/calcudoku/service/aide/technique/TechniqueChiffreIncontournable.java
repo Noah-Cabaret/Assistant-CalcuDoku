@@ -14,6 +14,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Technique d'aide : Chiffre Incontournable.
+ * Détecte un chiffre qui doit obligatoirement apparaître dans toutes les
+ * combinaisons valides d'un bloc aligné sur un axe.
+ */
 public class TechniqueChiffreIncontournable extends TechniqueIntraBloc {
 
     @Override

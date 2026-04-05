@@ -7,6 +7,10 @@ import javafx.animation.Timeline;
 import javafx.scene.control.Label;
 import javafx.util.Duration;
 
+/**
+ * Gère le chronomètre affiché pendant une partie.
+ * Supporte le mode chrono (décompte) et le mode normal (compteur).
+ */
 public class ChronoManager {
 
     private Timeline timeline;
@@ -15,12 +19,19 @@ public class ChronoManager {
     private final Label labelChrono;
     private final Runnable actionDefaiteTemps;
 
+    /**
+     * Crée un gestionnaire de chrono.
+     * @param labelChrono le label d'affichage du temps
+     * @param save la sauvegarde courante (pour récupérer le temps précédent)
+     * @param actionDefaiteTemps action à exécuter si le temps est écoulé (mode chrono)
+     */
     public ChronoManager(Label labelChrono, Sauvegarde save, Runnable actionDefaiteTemps) {
         this.labelChrono = labelChrono;
         this.save = save;
         this.actionDefaiteTemps = actionDefaiteTemps;
     }
 
+    /** Démarre le chronomètre. */
     public void demarrer() {
         if (save.getTemps() != null && save.getTemps().getTempsPrecedent() != null) {
             secondesEcoulees = save.getTemps().getTempsPrecedent().intValue();
@@ -48,6 +59,7 @@ public class ChronoManager {
         if (save.getTemps() != null) save.getTemps().lancer();
     }
 
+    /** Arrête le chronomètre. */
     public void arreter() {
         if (timeline != null) timeline.stop();
         if (save.getTemps() != null) save.getTemps().arreter();

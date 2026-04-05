@@ -3,6 +3,7 @@ package fr.univ.calcudoku.save;
 import fr.univ.calcudoku.challenge.Defi;
 import fr.univ.calcudoku.model.Grille;
 import fr.univ.calcudoku.model.Case;
+import fr.univ.calcudoku.utils.Constantes;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -13,9 +14,15 @@ import java.util.ArrayList;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 
+/**
+ * Gère la sauvegarde et le chargement d'une partie en cours.
+ * Stocke l'état de la grille (valeurs, notes, hypothèses) dans des fichiers INI + JSON.
+ */
 public class Sauvegarde {
 
+    /** Mode de jeu : libre ou aventure */
     public enum ModeDeJeu { LIBR, AVEN }
+    /** Niveau de difficulté */
     public enum Difficulte { FACIL, MOYEN, DIFFI }
 
     private Historique hist;
@@ -41,6 +48,7 @@ public class Sauvegarde {
         }
     }
 
+    /** Crée une sauvegarde vide avec les valeurs par défaut. */
     public Sauvegarde() {
         this.idGrille = "";
         this.tmp = new Temps();
@@ -76,9 +84,14 @@ public class Sauvegarde {
         this.hist = new Historique();
     }
 
+    /**
+     * Enregistre la partie dans les fichiers INI et JSON du profil.
+     * @param compte le nom du profil
+     * @param grille la grille à sauvegarder
+     */
     public void enreg(String compte, Grille grille) {
-        String cheminSave = "profils/" + compte + "/parties/";
-        if (this.mode == ModeDeJeu.AVEN) cheminSave += "aventure/";
+        String cheminSave = Constantes.DOSSIER_PROFILS + compte + Constantes.SOUS_DOSSIER_PARTIES;
+        if (this.mode == ModeDeJeu.AVEN) cheminSave += Constantes.SOUS_DOSSIER_AVENTURE;
         File dossier = new File(cheminSave);
         if (!dossier.exists()) dossier.mkdirs();
         String cheminIni = cheminSave + this.idGrille + ".ini";
@@ -121,9 +134,14 @@ public class Sauvegarde {
         }
     }
 
+    /**
+     * Charge une partie sauvegardée depuis les fichiers INI et JSON.
+     * @param compte le nom du profil
+     * @param grille la grille à remplir avec les valeurs chargées
+     */
     public void charger(String compte, Grille grille) {
-        String cheminSave = "profils/" + compte + "/parties/";
-        if (this.mode == ModeDeJeu.AVEN) cheminSave += "aventure/";
+        String cheminSave = Constantes.DOSSIER_PROFILS + compte + Constantes.SOUS_DOSSIER_PARTIES;
+        if (this.mode == ModeDeJeu.AVEN) cheminSave += Constantes.SOUS_DOSSIER_AVENTURE;
         String cheminIni = cheminSave + this.idGrille + ".ini";
 
         boolean iniFonctionnel = true;
@@ -240,9 +258,13 @@ public class Sauvegarde {
         }
     }
 
+    /**
+     * Supprime les fichiers de sauvegarde de cette partie.
+     * @param compte le nom du profil
+     */
     public void effacer(String compte) {
-        String cheminSave = "profils/" + compte + "/parties/";
-        if (this.mode == ModeDeJeu.AVEN) cheminSave += "aventure/";
+        String cheminSave = Constantes.DOSSIER_PROFILS + compte + Constantes.SOUS_DOSSIER_PARTIES;
+        if (this.mode == ModeDeJeu.AVEN) cheminSave += Constantes.SOUS_DOSSIER_AVENTURE;
         
         File ini = new File(cheminSave + this.idGrille + ".ini");
         if (ini.isFile()) ini.delete();

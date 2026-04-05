@@ -164,11 +164,11 @@ public class MenuAventureController {
      * @param idNiveau L'identifiant du niveau à lancer.
      */
     private void lancerNiveauAventure(int idNiveau) {
-        String nomGrille = "aventure_" + idNiveau;
+        String nomGrille = Constantes.PREFIX_AVENTURE + idNiveau;
         String nomProfil = MainApp.getProfileManager().getProfilActif();
 
-        File fichierJsonSave = new File("profils/" + nomProfil + "/parties/aventure/" + nomGrille + ".json");
-        File fichierIniSave = new File("profils/" + nomProfil + "/parties/aventure/" + nomGrille + ".ini");
+        File fichierJsonSave = new File(Constantes.DOSSIER_PROFILS + nomProfil + Constantes.SOUS_DOSSIER_PARTIES + Constantes.SOUS_DOSSIER_AVENTURE + nomGrille + ".json");
+        File fichierIniSave = new File(Constantes.DOSSIER_PROFILS + nomProfil + Constantes.SOUS_DOSSIER_PARTIES + Constantes.SOUS_DOSSIER_AVENTURE + nomGrille + ".ini");
 
         javafx.stage.Stage stage = (javafx.stage.Stage) boxNiveaux.getScene().getWindow();
 
@@ -197,7 +197,7 @@ public class MenuAventureController {
 
             // Supprimer toutes les sauvegardes aventure (niveaux 1 à NB_NIVEAUX_TOTAL)
             for (int i = 1; i <= NB_NIVEAUX_TOTAL; i++) {
-                String base = "profils/" + nomActuel + "/parties/aventure/aventure_" + i;
+                String base = Constantes.DOSSIER_PROFILS + nomActuel + Constantes.SOUS_DOSSIER_PARTIES + Constantes.SOUS_DOSSIER_AVENTURE + Constantes.PREFIX_AVENTURE + i;
                 java.io.File fJson = new java.io.File(base + ".json");
                 java.io.File fIni = new java.io.File(base + ".ini");
                 if (fJson.exists()) fJson.delete();

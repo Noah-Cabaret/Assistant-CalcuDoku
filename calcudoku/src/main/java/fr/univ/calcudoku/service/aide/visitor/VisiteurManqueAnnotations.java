@@ -24,15 +24,12 @@ public class VisiteurManqueAnnotations implements VisiteurGrille {
     }
 
     @Override
-    public void visiter(Grille g) {
-        // Non utilisé
-    }
+    public void visiter(Grille g) {}
 
     @Override
     public void visiter(GroupementCases groupement) {
         manqueAnnotations = false;
         
-        // 1. On détermine les chiffres de la combinaison qui ne sont pas encore placés
         List<Integer> restants = new ArrayList<>(combinaisonUnique);
         for (Case c : groupement.getListeCases()) {
             if (c.getValeur() != 0) {
@@ -40,10 +37,8 @@ public class VisiteurManqueAnnotations implements VisiteurGrille {
             }
         }
         
-        // 2. Les annotations parfaites attendues sont les chiffres uniques restants
         chiffresRequis = new HashSet<>(restants);
 
-        // 3. On vérifie chaque case du bloc
         for (Case c : groupement.getListeCases()) {
             c.accepter(this);
         }
@@ -52,8 +47,6 @@ public class VisiteurManqueAnnotations implements VisiteurGrille {
     @Override
     public void visiter(Case c) {
         if (c.getValeur() == 0) {
-            // Si les notes de la case ne sont pas EXACTEMENT égales aux chiffres requis
-            // (Soit il en manque, soit il y en a en trop)
             if (!c.getNotes().equals(chiffresRequis)) {
                 manqueAnnotations = true;
             }

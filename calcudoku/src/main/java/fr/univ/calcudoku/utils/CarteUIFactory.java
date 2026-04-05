@@ -12,6 +12,15 @@ import javafx.scene.layout.VBox;
  */
 public class CarteUIFactory {
 
+    /**
+     * Crée une carte cliquable avec miniature, titre et temps.
+     * @param titreText le titre de la grille
+     * @param tempsText le temps affiché sous la miniature
+     * @param imageGrille l'image miniature de la grille
+     * @param conteneurParent le conteneur parent (pour le binding de taille)
+     * @param actionClic l'action au clic sur la carte
+     * @return la VBox de la carte
+     */
     public static VBox creerCarteGrille(String titreText, String tempsText, Image imageGrille, Region conteneurParent, Runnable actionClic) {
         VBox vBox = new VBox(10);
         vBox.setMinSize(0, 0);
@@ -64,6 +73,12 @@ public class CarteUIFactory {
         return vBox;
     }
 
+    /**
+     * Crée une carte vide (grille indisponible).
+     * @param titreText le titre à afficher
+     * @param conteneurParent le conteneur parent
+     * @return la VBox de la carte vide
+     */
     public static VBox creerCarteVide(String titreText, Region conteneurParent) {
         VBox carteVide = new VBox(10);
         carteVide.setAlignment(Pos.CENTER);

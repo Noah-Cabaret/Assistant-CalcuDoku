@@ -51,8 +51,6 @@ public abstract class TechniqueIntraBloc implements TechniqueAide {
         return combinaisonsValides;
     }
 
-    // --- MOTEUR DE VÉRIFICATION DYNAMIQUE ---
-
     private boolean peutPlacerCombinaison(Grille grille, GroupementCases bloc, List<Integer> combinaison) {
         List<Case> cases = bloc.getListeCases();
         boolean[] utilise = new boolean[combinaison.size()];

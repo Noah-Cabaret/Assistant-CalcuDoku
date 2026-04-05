@@ -49,14 +49,12 @@ public class Grille implements ElementVisitable {
         this.matriceGrille = new Case[taille][taille];
         this.listeGroupements = new ArrayList<>();
 
-        // 1. Copie des cases (le constructeur de Case s'occupe de la valeur et des notes)
         for (int x = 0; x < taille; x++) {
             for (int y = 0; y < taille; y++) {
                 this.matriceGrille[x][y] = new Case(source.getCase(x, y));
             }
         }
 
-        // 2. Copie et liaison des groupements
         for (GroupementCases gSource : source.getListeGroupements()) {
             GroupementCases gNouveau = new GroupementCases(gSource);
             for (Case cSource : gSource.getListeCases()) {

@@ -16,7 +16,6 @@ public class Indice {
     private final Map<Case, Integer> solutions;
     private final boolean contientErreur;
     
-    // Attribut pour mémoriser le niveau de l'aide
     private String niveauAide;
 
     /**

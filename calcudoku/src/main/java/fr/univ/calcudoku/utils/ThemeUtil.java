@@ -10,8 +10,8 @@ import javafx.scene.image.ImageView;
 public class ThemeUtil {
 
     /**
-     * Applique un filtre 100% blanc sur les images si le mode sombre est actif.
-     * Les "..." permettent de passer autant d'images que l'on veut séparées par des virgules !
+     * Applique un filtre blanc sur les images si le mode sombre est actif.
+     * @param images les images à filtrer
      */
     public static void appliquerFiltreBlancSiSombre(ImageView... images) {
         if (MainApp.isModeSombre()) {
@@ -24,7 +24,6 @@ public class ThemeUtil {
                 }
             }
         } else {
-            // Si on repasse en mode clair, on enlève le filtre
             for (ImageView img : images) {
                 if (img != null) {
                     img.setEffect(null);

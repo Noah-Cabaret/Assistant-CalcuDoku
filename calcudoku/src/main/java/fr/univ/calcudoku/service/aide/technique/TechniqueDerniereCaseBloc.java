@@ -50,11 +50,19 @@ public class TechniqueDerniereCaseBloc implements TechniqueAide {
             }
 
             if (nbCasesVides == 1 && !contientErreur) {
+                String symbole = bloc.getOperation() != null ? bloc.getOperation().getSymbole() : "";
+
+                // Pour - et /, il peut rester 2 valeurs possibles : on ne déclenche
+                // la technique que si les contraintes de la grille n'en laissent qu'une.
+                if (symbole.equals("-") || symbole.equals("/")) {
+                    bloc.calculerPossibilites(grille);
+                    if (bloc.getCombinaisonsMaths().size() > 1) continue;
+                }
+
                 List<Case> surbrillance = new ArrayList<>(bloc.getListeCases());
                 Map<Case, Integer> solutions = new HashMap<>();
                 List<String> messages = new ArrayList<>();
                 
-                String symbole = bloc.getOperation() != null ? bloc.getOperation().getSymbole() : "";
                 int cible = bloc.getResultatCible();
 
                 messages.add("Un bloc est presque entièrement rempli. C'est le moment idéal pour utiliser les mathématiques.");

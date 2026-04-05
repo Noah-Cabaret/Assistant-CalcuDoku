@@ -18,6 +18,10 @@ import java.io.InputStreamReader;
 
 import fr.univ.calcudoku.save.Sauvegarde;
 
+/**
+ * Coordonne le chargement et le lancement des parties de Calcudoku.
+ * Gère le préchargement du FXML, la création de la sauvegarde et l'initialisation du contrôleur.
+ */
 public class GestionnaireJeu {
 
     private static final Gson GSON = new Gson();
@@ -25,6 +29,7 @@ public class GestionnaireJeu {
     private static JeuController controleurJeuCache = null;
     private static Sauvegarde save;
 
+    /** Précharge le FXML de la vue de jeu pour accélérer l'affichage. */
     public static void prechargerPageJeu() {
         javafx.application.Platform.runLater(() -> {
             try {
@@ -39,9 +44,14 @@ public class GestionnaireJeu {
         });
     }
 
+    /**
+     * Charge et lance une nouvelle partie depuis une ressource JSON.
+     * @param stage la fenêtre principale
+     * @param fichierJsonRessource le nom du fichier JSON de la grille
+     */
     public static void chargerPartie(Stage stage, String fichierJsonRessource) {
         try {            
-            InputStream is = GestionnaireJeu.class.getResourceAsStream("/grilles/json/" + fichierJsonRessource);
+            InputStream is = GestionnaireJeu.class.getResourceAsStream(Constantes.CHEMIN_GRILLES_JSON + fichierJsonRessource);
             if (is == null) return;
             DonneesNiveau data = GSON.fromJson(new InputStreamReader(is), DonneesNiveau.class);
             Grille grille = JsonToModelAdapter.convertir(data);
@@ -52,12 +62,17 @@ public class GestionnaireJeu {
         } catch (Exception e) { e.printStackTrace(); }
     }
 
+    /**
+     * Charge et reprend une partie sauvegardée depuis un fichier.
+     * @param stage la fenêtre principale
+     * @param fichier le fichier JSON de la sauvegarde
+     */
     public static void chargerPartieDepuisFichier(Stage stage, File fichier) {
         if (fichier == null || !fichier.exists()) return;
         try {
             String idGrille = fichier.getName().replace(".json", "");
 
-            InputStream is = GestionnaireJeu.class.getResourceAsStream("/grilles/json/" + idGrille + ".json");
+            InputStream is = GestionnaireJeu.class.getResourceAsStream(Constantes.CHEMIN_GRILLES_JSON + idGrille + ".json");
             if (is == null) {
                 System.err.println("Erreur: Grille de base introuvable pour " + idGrille);
                 return;
@@ -72,6 +87,15 @@ public class GestionnaireJeu {
         }
     }
 
+    /**
+     * Initialise et affiche la scène de jeu.
+     * @param stage la fenêtre principale
+     * @param grille la grille à jouer
+     * @param titre le titre de la fenêtre
+     * @param data les données du niveau
+     * @param idGrille l'identifiant de la grille
+     * @param reprise true si c'est une reprise de partie sauvegardée
+     */
     public static void lancerPartie(Stage stage, Grille grille, String titre, DonneesNiveau data, String idGrille, boolean reprise) {
         try {
             Parent root;
@@ -125,8 +149,8 @@ public class GestionnaireJeu {
                 scene.setRoot(root);
             }
 
-            if (GestionnaireJeu.class.getResource("/styles/style.css") != null) {
-                String css = GestionnaireJeu.class.getResource("/styles/style.css").toExternalForm();
+            if (GestionnaireJeu.class.getResource(Constantes.CHEMIN_CSS_CLAIR) != null) {
+                String css = GestionnaireJeu.class.getResource(Constantes.CHEMIN_CSS_CLAIR).toExternalForm();
                 if (!scene.getStylesheets().contains(css)) scene.getStylesheets().add(css);
             }
 
@@ -136,9 +160,14 @@ public class GestionnaireJeu {
         } catch (Exception e) { e.printStackTrace(); }
     }
 
+    /**
+     * Lit les données d'un niveau depuis les ressources.
+     * @param nomFichierJson le nom du fichier JSON
+     * @return les données du niveau ou null si introuvable
+     */
     public static DonneesNiveau lireDonneesNiveauRessource(String nomFichierJson) {
         try {
-            InputStream is = GestionnaireJeu.class.getResourceAsStream("/grilles/json/" + nomFichierJson);
+            InputStream is = GestionnaireJeu.class.getResourceAsStream(Constantes.CHEMIN_GRILLES_JSON + nomFichierJson);
             if (is != null) {
                 return GSON.fromJson(new InputStreamReader(is), DonneesNiveau.class);
             }

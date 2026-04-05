@@ -52,26 +52,24 @@ public class MenuController {
         Platform.runLater(() -> {
             javafx.scene.Scene scene = boxSousMenu.getScene();
             if (scene != null) {
-                String cssPath = getClass().getResource("/styles/sombre.css").toExternalForm();
+                String cssPath = getClass().getResource(Constantes.CHEMIN_CSS_SOMBRE).toExternalForm();
                 if (MainApp.isModeSombre() && !scene.getStylesheets().contains(cssPath)) {
                     scene.getStylesheets().add(cssPath);
                 } else if (!MainApp.isModeSombre()) {
                     scene.getStylesheets().remove(cssPath);
                 }
                 
-                // --- CORRECTION DU TEXTE DES BOUTONS QUI SE GRISE ---
+                // Forcer la couleur du texte des boutons selon le thème
                 scene.getRoot().lookupAll(".button").forEach(noeud -> {
                     Button btn = (Button) noeud;
                     if (btn.getText() != null && !btn.getText().isEmpty()) {
                         String couleurT = MainApp.isModeSombre() ? "white" : "white";
-                        // On ajoute !important virtuellement en forçant le style
-                        btn.setStyle(btn.getStyle() + " -fx-text-fill: " + couleurT + ";");
+                        btn.setStyle(btn.getStyle() + " -fx-text-fill: " + couleurT + ";");;
                     }
                 });
             }
         });
 
-        // Optimisation : On précharge la vue du jeu pendant que l'utilisateur est sur le menu
         GestionnaireJeu.prechargerPageJeu();
     }
 

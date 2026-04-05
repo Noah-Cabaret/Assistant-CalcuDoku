@@ -29,7 +29,6 @@ public class PopupFactory {
         Platform.runLater(() -> {
             Stage fenetreModale = new Stage(StageStyle.TRANSPARENT);
             
-            // La carte principale blanche
             VBox carte = new VBox(20);
             carte.setAlignment(Pos.CENTER);
             carte.getStyleClass().add("popup-fin-carte");
@@ -39,16 +38,12 @@ public class PopupFactory {
             icone.setIconSize(60);
             icone.setIconColor(Color.web(couleurHex));
 
-            // Les textes stylisés
             Label lblTitre = new Label(titre);
             lblTitre.getStyleClass().add("popup-fin-titre");
             
             Label lblMessage = new Label(message);
             lblMessage.getStyleClass().add("popup-fin-message");
 
-            // --- CRÉATION DES BOUTONS ---
-            
-            // Bouton Rejouer (Coloré — couleur dynamique)
             Button btnRejouer = new Button(victoire ? "Rejouer" : "Réessayer");
             btnRejouer.getStyleClass().add("popup-fin-btn-rejouer");
             btnRejouer.setStyle("-fx-background-color: " + couleurHex + ";");
@@ -59,7 +54,7 @@ public class PopupFactory {
                 }
             });
 
-            // Bouton Quitter (Gris / Transparent)
+            // Bouton Quitter
             Button btnQuitter = new Button("Menu");
             btnQuitter.getStyleClass().add("popup-fin-btn-quitter");
             btnQuitter.setOnAction(e -> { 
@@ -69,24 +64,20 @@ public class PopupFactory {
                 }
             });
 
-            // On place les deux boutons côte à côte dans une HBox
             HBox boxBoutons = new HBox(15);
             boxBoutons.setAlignment(Pos.CENTER);
             boxBoutons.getChildren().addAll(btnQuitter, btnRejouer);
             
-            // --- ASSEMBLAGE FINAL ---
             carte.getChildren().addAll(icone, lblTitre, lblMessage, boxBoutons);
             
-            // Un fond semi-transparent pour assombrir le jeu derrière la pop-up
             StackPane fond = new StackPane(carte);
             fond.getStyleClass().add("popup-fin-fond");
             fond.setPadding(new Insets(50));
             
             Scene scene = new Scene(fond, Color.TRANSPARENT);
-            scene.getStylesheets().add(PopupFactory.class.getResource("/styles/style.css").toExternalForm());
+            scene.getStylesheets().add(PopupFactory.class.getResource(Constantes.CHEMIN_CSS_CLAIR).toExternalForm());
             fenetreModale.setScene(scene);
             
-            // Bloque les clics sur la fenêtre principale tant que la pop-up est ouverte
             fenetreModale.initModality(Modality.APPLICATION_MODAL);
             fenetreModale.show();
         });

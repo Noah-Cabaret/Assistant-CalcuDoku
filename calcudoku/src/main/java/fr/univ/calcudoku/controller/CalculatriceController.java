@@ -48,7 +48,6 @@ public class CalculatriceController {
     private void handleOperateur(ActionEvent event) {
         String op = ((Button)event.getSource()).getText();
         
-        // --- CORRECTION BUG 3 : ENCHAÎNEMENT DES CALCULS ---
         if (!debut) {
             if (!operateur.isEmpty()) {
                 calculer(Double.parseDouble(affichage.getText()));

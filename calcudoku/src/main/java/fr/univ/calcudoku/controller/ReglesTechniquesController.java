@@ -54,7 +54,7 @@ public class ReglesTechniquesController {
     private int indexPageActuelle = 0;
 
     /** Chemin FXML de la page précédente (utilisé si {@link #actionRetour} est null). */
-    public static String pagePrecedente = "/fxml/menu.fxml";
+    public static String pagePrecedente = Constantes.VUE_MENU;
 
     /**
      * Classe interne représentant le contenu d'une seule page dans la section des règles/techniques.
@@ -87,7 +87,6 @@ public class ReglesTechniquesController {
      */
     @FXML
     public void initialize() {
-        // Ajoute un listener pour changer le style de l'onglet sélectionné
         groupeOnglets.selectedToggleProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal == null) {
                 groupeOnglets.selectToggle(oldVal); 
@@ -103,9 +102,7 @@ public class ReglesTechniquesController {
             }
         });
 
-        // --- FORCER LA COULEUR DU TEXTE ET DU FOND ---
         if (MainApp.isModeSombre()) {
-            // TITRE : On ajoute un fond gris foncé et on arrondit le fond
             lblTitreHaut.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: white; -fx-background-color: #3b3b3b; -fx-background-radius: 10; -fx-border-color: #999999; -fx-border-radius: 10; -fx-padding: 10 30 10 30;");
             
             lblTexte.setStyle("-fx-font-size: 16px; -fx-line-spacing: 5px; -fx-text-fill: white;");

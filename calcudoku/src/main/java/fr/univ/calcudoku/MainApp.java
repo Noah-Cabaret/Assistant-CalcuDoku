@@ -1,6 +1,7 @@
 package fr.univ.calcudoku;
 
 import fr.univ.calcudoku.service.ProfileManager;
+import fr.univ.calcudoku.utils.Constantes;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -42,7 +43,7 @@ public class MainApp extends Application {
         primaryStage = stage;
         profileManager = new ProfileManager(); 
 
-        changerScene("/fxml/accueil.fxml"); 
+        changerScene(Constantes.VUE_ACCUEIL); 
         
         stage.setMinWidth(600);
         stage.setMinHeight(500);
@@ -69,7 +70,6 @@ public class MainApp extends Application {
             
             Scene scene = primaryStage.getScene();
             
-            // On crée la scène si elle n'existe pas, sinon on remplace juste le contenu (le "root")
             if (scene == null) {
                 scene = new Scene(root, 800, 600);
                 primaryStage.setScene(scene);
@@ -77,10 +77,9 @@ public class MainApp extends Application {
                 scene.setRoot(root);
             }
 
-            // --- GESTION DU THÈME SOMBRE/CLAIR ---
             scene.getStylesheets().clear();
-            String cssClair = MainApp.class.getResource("/styles/style.css").toExternalForm();
-            String cssSombre = MainApp.class.getResource("/styles/sombre.css").toExternalForm();
+            String cssClair = MainApp.class.getResource(Constantes.CHEMIN_CSS_CLAIR).toExternalForm();
+            String cssSombre = MainApp.class.getResource(Constantes.CHEMIN_CSS_SOMBRE).toExternalForm();
             if (isModeSombre()) {
                 scene.getStylesheets().add(cssSombre);
             } else {

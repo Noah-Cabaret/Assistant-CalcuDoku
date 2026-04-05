@@ -11,12 +11,20 @@ import javafx.scene.control.Label;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Gère la navigation entre les indices d'aide (précédent / suivant / améliorer).
+ * Coordonne l'affichage des commandes d'aide dans l'interface.
+ */
 public class AideNavigateur {
 
     private final List<CommandeAide> listeAides = new ArrayList<>();
     private List<Indice> indicesEnAttente = new ArrayList<>();
     private int indexAideActuelle = 0;
 
+    /**
+     * Met à jour la liste des indices disponibles.
+     * @param indices les indices trouvés par le moteur d'aide
+     */
     public void mettreAJourIndices(List<Indice> indices) {
         this.indicesEnAttente = (indices != null) ? indices : new ArrayList<>();
     }
@@ -29,6 +37,14 @@ public class AideNavigateur {
         return indexAideActuelle;
     }
 
+    /**
+     * Rafraîchit l'affichage des aides avec les indices en attente.
+     * @param labelMessage le label où afficher le message de l'aide
+     * @param vueGrille la vue de la grille pour le surlignage
+     * @param btnAmeliorer bouton "Améliorer"
+     * @param btnPrecedente bouton "Précédent"
+     * @param btnSuivante bouton "Suivant"
+     */
     public void rafraichirContenu(Label labelMessage, VueGrille vueGrille,
             Button btnAmeliorer, Button btnPrecedente, Button btnSuivante) {
         if (!listeAides.isEmpty() && indexAideActuelle < listeAides.size()) {
@@ -52,12 +68,14 @@ public class AideNavigateur {
         }
     }
 
+    /** Masque l'aide actuellement affichée. */
     public void fermer() {
         if (!listeAides.isEmpty() && indexAideActuelle < listeAides.size()) {
             listeAides.get(indexAideActuelle).masquer();
         }
     }
 
+    /** Améliore le niveau de détail de l'aide courante. */
     public void ameliorer(Button btnAmeliorer, Button btnPrecedente, Button btnSuivante) {
         if (!listeAides.isEmpty()) {
             listeAides.get(indexAideActuelle).ameliorerNiveau();
@@ -65,6 +83,7 @@ public class AideNavigateur {
         }
     }
 
+    /** Passe à l'aide suivante. */
     public void suivant(Button btnAmeliorer, Button btnPrecedente, Button btnSuivante) {
         if (indexAideActuelle < listeAides.size() - 1) {
             listeAides.get(indexAideActuelle).masquer();
@@ -74,6 +93,7 @@ public class AideNavigateur {
         }
     }
 
+    /** Revient à l'aide précédente. */
     public void precedent(Button btnAmeliorer, Button btnPrecedente, Button btnSuivante) {
         if (indexAideActuelle > 0) {
             listeAides.get(indexAideActuelle).masquer();
