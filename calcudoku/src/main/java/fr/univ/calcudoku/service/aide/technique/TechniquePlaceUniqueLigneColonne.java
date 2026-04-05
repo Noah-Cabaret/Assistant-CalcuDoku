@@ -2,103 +2,63 @@ package fr.univ.calcudoku.service.aide.technique;
 
 import fr.univ.calcudoku.model.Case;
 import fr.univ.calcudoku.model.Grille;
-import fr.univ.calcudoku.model.GroupementCases;
 import fr.univ.calcudoku.model.Indice;
+import fr.univ.calcudoku.service.aide.visitor.VisiteurScannerAxe;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Random;
 
 /**
- * Technique : Place Unique en Ligne/Colonne.
- * Trouve une ligne ou une colonne où un chiffre n'a plus qu'une seule case disponible.
+ * Technique d'aide : Place Unique sur Ligne/Colonne.
+ * Identifie un chiffre qui ne peut aller qu'à un seul endroit sur un axe donné.
  */
 public class TechniquePlaceUniqueLigneColonne implements TechniqueAide {
 
     @Override
     public Indice analyser(Grille grille) {
         int taille = grille.getTaille();
-        Indice indiceNormal = null;
+        List<Indice> indicesNormaux = new ArrayList<>();
+        List<Indice> indicesErreurs = new ArrayList<>();
 
         for (int i = 0; i < taille; i++) {
-            Indice indLigne = chercherPlaceUnique(grille, i, true);
-            if (indLigne != null) { if (indLigne.aUneErreur()) return indLigne; if (indiceNormal == null) indiceNormal = indLigne; }
-
-            Indice indCol = chercherPlaceUnique(grille, i, false);
-            if (indCol != null) { if (indCol.aUneErreur()) return indCol; if (indiceNormal == null) indiceNormal = indCol; }
-        }
-        return indiceNormal;
-    }
-
-    private Indice chercherPlaceUnique(Grille grille, int indexLigneOuCol, boolean estLigne) {
-        int taille = grille.getTaille();
-        int nbCasesVides = 0;
-
-        for (int i = 0; i < taille; i++) {
-            Case c = grille.getCase(estLigne ? i : indexLigneOuCol, estLigne ? indexLigneOuCol : i);
-            if (c.getValeur() == 0) nbCasesVides++;
+            testerAxe(grille, i, true, indicesErreurs, indicesNormaux);
+            testerAxe(grille, i, false, indicesErreurs, indicesNormaux);
         }
 
-        for (int chiffre = 1; chiffre <= taille; chiffre++) {
-            if (chiffreDejaPlace(grille, indexLigneOuCol, estLigne, chiffre)) continue;
-            if (compterOccurrencesGrille(grille, chiffre) >= taille - 1) continue;
-
-            List<Case> casesPossibles = new ArrayList<>();
-            for (int i = 0; i < taille; i++) {
-                int x = estLigne ? i : indexLigneOuCol;
-                int y = estLigne ? indexLigneOuCol : i;
-                Case c = grille.getCase(x, y);
-
-                if (c.getValeur() != chiffre) {
-                    if (grille.estCoupValide(x, y, chiffre) && blocAccepteChiffre(c.getGroupement(), chiffre)) {
-                        casesPossibles.add(c);
-                    }
-                }
-            }
-
-            if (casesPossibles.size() == 1) {
-                Case caseCible = casesPossibles.get(0);
-                if (caseCible.getGroupement().getListeCases().size() == 1) continue; 
-
-                int valeurJoueur = caseCible.getValeur();
-                if (valeurJoueur == chiffre) continue; 
-
-                boolean contientErreur = (valeurJoueur != 0 && valeurJoueur != caseCible.getSolution()); 
-                if (!contientErreur && nbCasesVides <= 1) continue;
-
-                Map<Case, Integer> solutions = new HashMap<>();
-                solutions.put(caseCible, chiffre);
-                List<Case> casesASurbriller = new ArrayList<>();
-                String axe = estLigne ? "la ligne " + (indexLigneOuCol + 1) : "la colonne " + (indexLigneOuCol + 1);
-                
-                if (contientErreur) {
-                    casesASurbriller.add(caseCible);
-                    return new Indice("Place Unique", "Erreur détectée ! Regardez " + axe + ".\n" +
-                              "Le chiffre " + chiffre + " ne peut mathématiquement aller que dans cette case.", casesASurbriller, solutions, true);
-                } else {
-                    for (int i = 0; i < taille; i++) casesASurbriller.add(grille.getCase(estLigne ? i : indexLigneOuCol, estLigne ? indexLigneOuCol : i));
-                    return new Indice("Place Unique", "Techniques uniques cachées : Regardez " + axe + ".\nPar processus d'élimination, un certain chiffre ne peut être placé que dans une seule case. Trouvez-le !", casesASurbriller, solutions, false);
-                }
-            }
-        }
+        Random random = new Random();
+        if (!indicesErreurs.isEmpty()) return indicesErreurs.get(random.nextInt(indicesErreurs.size()));
+        if (!indicesNormaux.isEmpty()) return indicesNormaux.get(random.nextInt(indicesNormaux.size()));
         return null;
     }
 
-    private boolean chiffreDejaPlace(Grille grille, int index, boolean estLigne, int chiffre) {
-        for (int i = 0; i < grille.getTaille(); i++) if (grille.getCase(estLigne ? i : index, estLigne ? index : i).getValeur() == chiffre) return true;
-        return false;
-    }
+    private void testerAxe(Grille grille, int index, boolean estLigne, List<Indice> erreurs, List<Indice> normaux) {
+        int taille = grille.getTaille();
+        for (int chiffre = 1; chiffre <= taille; chiffre++) {
+            List<Case> placesPossibles = new ArrayList<>();
+            for (int j = 0; j < taille; j++) {
+                Case c = grille.getCase(estLigne ? j : index, estLigne ? index : j);
+                if (c.getValeur() == 0 && grille.estCoupValide(c.getX(), c.getY(), chiffre)) {
+                    placesPossibles.add(c);
+                }
+            }
 
-    private int compterOccurrencesGrille(Grille grille, int chiffre) {
-        int count = 0;
-        for (int y = 0; y < grille.getTaille(); y++) for (int x = 0; x < grille.getTaille(); x++) if (grille.getCase(x, y).getValeur() == chiffre) count++;
-        return count;
-    }
+            if (placesPossibles.size() == 1) {
+                Case cible = placesPossibles.get(0);
+                // Utilisation du scanner pour voir si le chiffre est déjà "bloqué" par erreur ailleurs
+                VisiteurScannerAxe scanner = new VisiteurScannerAxe(index, estLigne, Collections.singletonList(cible), Collections.singletonList(chiffre));
+                scanner.visiter(grille);
 
-    private boolean blocAccepteChiffre(GroupementCases bloc, int chiffre) {
-        if (bloc.getCombinaisonsMaths() == null || bloc.getCombinaisonsMaths().isEmpty()) return true;
-        for (List<Integer> combinaison : bloc.getCombinaisonsMaths()) if (combinaison.contains(chiffre)) return true;
-        return false;
+                List<String> messages = new ArrayList<>();
+                String axeStr = estLigne ? "la ligne " + (index + 1) : "la colonne " + (index + 1);
+                
+                messages.add("Un chiffre spécifique n'a plus qu'une seule place possible dans " + axeStr + ".");
+                messages.add("Technique de la place unique : Le chiffre " + chiffre + " ne peut aller que dans la case en surbrillance !");
+                
+                normaux.add(new Indice("Place Unique", messages, Collections.singletonList(cible), new HashMap<>(), false));
+            }
+        }
     }
 }

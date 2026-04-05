@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<BorderPane xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fr.univ.calcudoku.controller.MenuAventureController">
+   <top>
+      <BorderPane style="-fx-padding: 20;">
+         <left>
+            <Button fx:id="btnRetour" mnemonicParsing="false" onAction="#onRetourClick" style="-fx-background-color: transparent; -fx-cursor: hand;">
+               <graphic>
+                   <FontIcon iconLiteral="fas-arrow-left" iconSize="35" />
+               </graphic>
+            </Button>
+         </left>
+         <right>
+            <Button mnemonicParsing="false" onAction="#onParametresClick" style="-fx-background-color: transparent; -fx-cursor: hand;">
+               <graphic>
+                  <FontIcon fx:id="imgParametres" iconLiteral="fas-cog" iconSize="35" />
+               </graphic>
+            </Button>
+         </right>
+      </BorderPane>
+   </top>
+   
+   <center>
+      <ScrollPane fitToWidth="true" fitToHeight="true" style="-fx-background-color: transparent;" vbarPolicy="AS_NEEDED" hbarPolicy="AS_NEEDED" BorderPane.alignment="CENTER">
+         <content>
+            <VBox alignment="CENTER" spacing="50.0" minWidth="0" minHeight="0" style="-fx-padding: 20;">
+               <children>
+                  <Label text="Mode Aventure">
+                     <font>
+                        <Font name="System Bold" size="28.0" />
+                     </font>
+                  </Label>
+
+                  <StackPane minWidth="0" minHeight="0" VBox.vgrow="ALWAYS">
+                      <HBox fx:id="boxNiveaux" alignment="CENTER" spacing="0.0" minWidth="0" minHeight="0" />
+                  </StackPane>
+                  
+               </children>
+            </VBox>
+         </content>
+      </ScrollPane>
+   </center>
+   
+   <bottom>
+       <HBox alignment="BOTTOM_RIGHT" style="-fx-padding: 30;">
+           <Button mnemonicParsing="false" onAction="#onResetClick" style="-fx-background-color: transparent; -fx-cursor: hand;">
+               <graphic>
+                  <FontIcon fx:id="imgReset" iconLiteral="fas-trash-alt" iconSize="40" />
+               </graphic>
+           </Button>
+       </HBox>
+   </bottom>
+</BorderPane>

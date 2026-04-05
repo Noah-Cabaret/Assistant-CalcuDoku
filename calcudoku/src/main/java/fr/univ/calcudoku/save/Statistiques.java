@@ -1,162 +1,81 @@
 package fr.univ.calcudoku.save;
 
 import java.io.FileWriter;
+import fr.univ.calcudoku.utils.Constantes;
 import java.io.File;
-import java.io.IOException;
-import java.util.Scanner;
-import java.util.Locale;
+import java.io.BufferedReader;
+import java.io.FileReader;
 
-public class Statistiques extends Donnees
-{
-	/* Attributs :
-	 * partiesJouees : nombre de parties commencées ou terminées
-	 * victoires : nombre de parties terminées
-	 * ratioVictoires : victoires / partiesJouees
-	 * moyenne : temps moyen passé sur les grilles terminées
-	 * progressionAventure : nombre unique désignant le niveau du
-	 * mode aventure sur lequel s'est arrêté le joueur
-	 *
-	 * diffMax : difficulté de la grille terminée la plus dure
-	 * score : score total de toutes les grilles terminées
-	 */
-	private int partiesJouees;
-	private int victoires;
-	private Double ratioVictoires;
-	private Double moyenne;
-	private int progressionAventure;
-	private Sauvegarde.Difficulte diffMax;
-	private long score;
+/**
+ * Statistiques d'un profil joueur (parties jouées, victoires, progression, score).
+ * Sauvegardées dans le fichier statistiques.ini du profil.
+ */
+public class Statistiques extends Donnees {
+	private int partiesJouees = 0;
+	private int victoires = 0;
+	private Double ratioVictoires = 0.0;
+	private Double moyenne = 0.0;
+	private int progressionAventure = 1;
+	private Sauvegarde.Difficulte diffMax = Sauvegarde.Difficulte.FACIL;
+	private long score = 0;
 
 	public Statistiques() {}
 
-	/* Méthodes get() et set() */
-
-	public int getPartiesJouees()
-	{
-		return this.partiesJouees;
+	public int getPartiesJouees() { return this.partiesJouees; }
+	public void setPartiesJouees(int newPartiesJouees) { this.partiesJouees = newPartiesJouees; }
+	public int getVictoires() { return this.victoires; }
+	public void setVictoires(int newVictoires) { this.victoires = newVictoires; }
+	public Double getRatioVictoires() { return this.ratioVictoires; }
+	public void setRatioVictoires() { 
+		if (this.partiesJouees > 0) this.ratioVictoires = (double) this.victoires / this.partiesJouees; 
+		else this.ratioVictoires = 0.0;
 	}
-
-	public void setPartiesJouees(int newPartiesJouees)
-	{
-		this.partiesJouees = newPartiesJouees;
-	}
-
-	public int getVictoires()
-	{
-		return this.victoires;
-	}
-
-	public void setVictoires(int newVictoires)
-	{
-		this.victoires = newVictoires;
-	}
-
-	public Double getRatioVictoires()
-	{
-		return this.ratioVictoires;
-	}
-
-	public void setRatioVictoires()
-	{
-		this.ratioVictoires = Double.valueOf(this.partiesJouees / this.victoires);
-	}
-
-	public Double getMoyenne()
-	{
-		return this.moyenne;
-	}
-
-	public void setMoyenne(Double newMoyenne)
-	{
-		this.moyenne = newMoyenne;
-	}
-
-	public int getProgressionAventure()
-	{
-		return this.progressionAventure;
-	}
-
-	public void setProgressionAventure(int newProgressionAventure)
-	{
-		this.progressionAventure = newProgressionAventure;
-	}
-
-	public Sauvegarde.Difficulte getDiffMax()
-	{
-		return this.diffMax;
-	}
-
-	public void setDiffMax(Sauvegarde.Difficulte newDiffMax)
-	{
-		this.diffMax = newDiffMax;
-	}
-
-	public long getScore()
-	{
-		return this.score;
-	}
-
-	public void setScore(long newScore)
-	{
-		this.score = newScore;
-	}
-
-	/* Sauvegarde en format INI pour plus de facilité à scanner
-	 * le fichier dans le chargement
-	 */
-
+	public Double getMoyenne() { return this.moyenne; }
+	public void setMoyenne(Double newMoyenne) { this.moyenne = newMoyenne; }
+	public int getProgressionAventure() { return this.progressionAventure; }
+	public void setProgressionAventure(int newProgressionAventure) { this.progressionAventure = newProgressionAventure; }
+	public Sauvegarde.Difficulte getDiffMax() { return this.diffMax; }
+	public void setDiffMax(Sauvegarde.Difficulte newDiffMax) { this.diffMax = newDiffMax; }
+	public long getScore() { return this.score; }
+	public void setScore(long newScore) { this.score = newScore; }
 	@Override
-	public void enreg(String compte)
-	{
-		try
-		{
-			FileWriter ini = new FileWriter("profils/" + compte + "/statistiques.ini");
-
+	public void enreg(String compte) {
+		try (FileWriter ini = new FileWriter(Constantes.DOSSIER_PROFILS + compte + Constantes.FICHIER_STATISTIQUES)) {
 			ini.write("[Statistiques]\n");
-			ini.write("parties_jouees=" + this.partiesJouees + "\n");
-			ini.write("victoires=" + this.victoires + "\n");
-			ini.write("ratio_victoires=" + this.ratioVictoires);
-			ini.write("temps_moyen=" + this.moyenne + "\n");
-			ini.write("progression_aventure=" + this.progressionAventure + "\n");
-			ini.write("difficulte_max=" + this.diffMax + "\n");
-			ini.write("score=" + this.score + "\n");
-
-			ini.close();
-		}
-		catch(IOException e)
-		{
-			System.out.println(e);
-		}
+			ini.write(Constantes.STAT_PARTIES_JOUEES + "=" + this.partiesJouees + "\n");
+			ini.write(Constantes.STAT_VICTOIRES + "=" + this.victoires + "\n");
+			ini.write(Constantes.STAT_RATIO + "=" + this.ratioVictoires + "\n");
+			ini.write(Constantes.STAT_TEMPS_MOYEN + "=" + this.moyenne + "\n");
+			ini.write(Constantes.STAT_PROGRESSION + "=" + this.progressionAventure + "\n");
+			ini.write(Constantes.STAT_DIFF_MAX + "=" + this.diffMax + "\n");
+			ini.write(Constantes.STAT_SCORE + "=" + this.score + "\n");
+		} catch(Exception e) { e.printStackTrace(); }
 	}
-
-	/* Copie des données du fichier dans l'objet Statistiques
-	 * (utilisation de Scanner inspirée du fscanf du C pour
-	 * une lecture du code plus facile)
-	 */
-
 	@Override
-	public void charger(String compte)
-	{
-		try
-		{
-			Scanner sc = new Scanner(new File("profils/" + compte + "/statistiques.ini"));
-			sc.useLocale(Locale.US);
-			sc.useDelimiter("[=\n]");
-
-			sc.next();
-			sc.next(); this.partiesJouees = sc.nextInt();
-			sc.next(); this.victoires = sc.nextInt();
-			sc.next(); this.ratioVictoires = sc.nextDouble();
-			sc.next(); this.moyenne = sc.nextDouble();
-			sc.next(); this.progressionAventure = Integer.parseInt(sc.next());
-			sc.next(); this.diffMax = Sauvegarde.Difficulte.valueOf(sc.next());
-			sc.next(); this.score = Long.valueOf(sc.next());
-
-			sc.close();
-		}
-		catch(IOException e)
-		{
-			System.out.println(e);
-		}
+	public void charger(String compte) {
+		File f = new File(Constantes.DOSSIER_PROFILS + compte + Constantes.FICHIER_STATISTIQUES);
+		if (!f.exists()) return;
+		try (BufferedReader br = new BufferedReader(new FileReader(f))) {
+			String ligne;
+			while ((ligne = br.readLine()) != null) {
+				ligne = ligne.trim();
+				if (ligne.isEmpty() || ligne.startsWith("[")) continue;
+				String[] parts = ligne.split("=", 2);
+				if (parts.length < 2) continue;
+				String cle = parts[0].trim();
+				String valeur = parts[1].trim();
+				switch(cle) {
+					case Constantes.STAT_PARTIES_JOUEES: this.partiesJouees = Integer.parseInt(valeur); break;
+					case Constantes.STAT_VICTOIRES: this.victoires = Integer.parseInt(valeur); break;
+					case Constantes.STAT_RATIO: this.ratioVictoires = Double.parseDouble(valeur); break;
+                    case Constantes.STAT_TEMPS_MOYEN: this.moyenne = Double.parseDouble(valeur); break;
+                    case Constantes.STAT_PROGRESSION: this.progressionAventure = Integer.parseInt(valeur); break;
+                    case Constantes.STAT_DIFF_MAX: 
+                        if (!valeur.equals("null")) this.diffMax = Sauvegarde.Difficulte.valueOf(valeur); 
+                        break;
+                    case Constantes.STAT_SCORE: this.score = Long.parseLong(valeur); break;
+                }
+            }
+		} catch(Exception e) { System.out.println("Erreur chargement Statistiques: " + e.getMessage()); }
 	}
 }

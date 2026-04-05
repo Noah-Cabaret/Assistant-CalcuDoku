@@ -10,27 +10,47 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 /**
- * Technique : Reste de Grille 2 (Exclusion).
- * Identifie un bloc qui déborde de la zone ciblée par une seule case.
- * Utilise l'algèbre pour trouver cette case "orpheline".
+ * Technique d'aide : Reste de Grille Type 2 (Outie / Extérieur).
+ * Identifie un bloc qui déborde d'une ligne ou colonne complète par une seule case.
+ * Soustrait la valeur théorique de la zone au total des blocs touchés.
  */
 public class TechniqueResteDeGrilleType2 implements TechniqueAide {
 
+    /**
+     * Analyse chaque ligne et colonne pour y chercher un débordement logique d'une case.
+     * @param grille La grille à analyser.
+     * @return Un Indice avec des messages progressifs.
+     */
     @Override
     public Indice analyser(Grille grille) {
         int taille = grille.getTaille();
-        Indice indiceNormal = null;
+        
+        List<Indice> indicesErreurs = new ArrayList<>();
+        List<Indice> indicesNormaux = new ArrayList<>();
 
         for (int i = 0; i < taille; i++) {
             Indice indLigne = analyserLigneOuColonne(grille, i, true);
-            if (indLigne != null) { if (indLigne.aUneErreur()) return indLigne; if (indiceNormal == null) indiceNormal = indLigne; }
+            if (indLigne != null) { 
+                if (indLigne.aUneErreur()) indicesErreurs.add(indLigne); 
+                else indicesNormaux.add(indLigne); 
+            }
+            
             Indice indCol = analyserLigneOuColonne(grille, i, false);
-            if (indCol != null) { if (indCol.aUneErreur()) return indCol; if (indiceNormal == null) indiceNormal = indCol; }
+            if (indCol != null) { 
+                if (indCol.aUneErreur()) indicesErreurs.add(indCol); 
+                else indicesNormaux.add(indCol); 
+            }
         }
-        return indiceNormal;
+        
+        Random random = new Random();
+        if (!indicesErreurs.isEmpty()) return indicesErreurs.get(random.nextInt(indicesErreurs.size()));
+        else if (!indicesNormaux.isEmpty()) return indicesNormaux.get(random.nextInt(indicesNormaux.size()));
+
+        return null;
     }
 
     private Indice analyserLigneOuColonne(Grille grille, int index, boolean estLigne) {
@@ -46,12 +66,26 @@ public class TechniqueResteDeGrilleType2 implements TechniqueAide {
             if (c.getGroupement() != null) blocsTouches.add(c.getGroupement());
         }
 
+        boolean contientPlus = false;
+        boolean contientFois = false;
+        boolean operateurInvalide = false;
+
+        for (GroupementCases b : blocsTouches) {
+            if (b.getListeCases().size() > 1 && b.getOperation() != null) {
+                String sym = b.getOperation().getSymbole();
+                if (sym.equals("+")) contientPlus = true;
+                else if (sym.equals("x") || sym.equals("*")) contientFois = true;
+                else { operateurInvalide = true; break; }
+            }
+        }
+
+        if (operateurInvalide || (contientPlus && contientFois)) return null;
+
         List<GroupementCases> blocsPartiels = new ArrayList<>();
         for (GroupementCases bloc : blocsTouches) {
             if (!casesDeLaZone.containsAll(bloc.getListeCases())) blocsPartiels.add(bloc);
         }
 
-        // Forme "Outie" : Un seul bloc partiel possède la case orpheline
         if (blocsPartiels.size() == 1) {
             GroupementCases blocCible = blocsPartiels.get(0);
             int compteurExterne = 0;
@@ -63,20 +97,22 @@ public class TechniqueResteDeGrilleType2 implements TechniqueAide {
 
             if (compteurExterne == 1 && blocCible.getListeCases().size() > 1) {
                 
-                boolean calculSommeValide = true;
-                int sommeTousBlocs = 0;
-                for (GroupementCases b : blocsTouches) {
-                    int s = getSommeBlocConstante(b);
-                    if (s == -1) { calculSommeValide = false; break; }
-                    sommeTousBlocs += s;
-                }
-
                 int reponseExacte = -1;
                 
-                if (calculSommeValide) {
-                    int sommeTheoriqueZone = taille * (taille + 1) / 2;
-                    reponseExacte = sommeTousBlocs - sommeTheoriqueZone;
-                } else {
+                if (!contientFois) {
+                    boolean calculSommeValide = true;
+                    int sommeTousBlocs = 0;
+                    for (GroupementCases b : blocsTouches) {
+                        int s = getSommeBlocConstante(b);
+                        if (s == -1) { calculSommeValide = false; break; }
+                        sommeTousBlocs += s;
+                    }
+                    if (calculSommeValide) {
+                        int sommeTheoriqueZone = taille * (taille + 1) / 2;
+                        reponseExacte = sommeTousBlocs - sommeTheoriqueZone;
+                    }
+                } 
+                else {
                     boolean calculProdValide = true;
                     int prodTousBlocs = 1;
                     for (GroupementCases b : blocsTouches) {
@@ -103,23 +139,29 @@ public class TechniqueResteDeGrilleType2 implements TechniqueAide {
 
                 List<Case> surbrillance = new ArrayList<>();
                 Map<Case, Integer> solutions = new HashMap<>();
-                solutions.put(caseExterne, reponseExacte);
+                List<String> messages = new ArrayList<>();
 
                 if (contientErreur) {
                     surbrillance.add(caseExterne); 
-                    return new Indice("Reste de Grille (Extérieur)", "Erreur détectée !\nEn soustrayant la zone aux blocs, la case externe orpheline doit valoir " + reponseExacte + ".", surbrillance, solutions, true);
+                    messages.add("Une anomalie globale a été détectée en utilisant la technique du 'Reste de Grille'.");
+                    messages.add("La valeur d'une case orpheline, déduite par soustraction globale des blocs avec la ligne entière, ne correspond pas à votre saisie.");
+                    messages.add("Erreur détectée ! En soustrayant la zone aux blocs, la case en surbrillance doit valoir " + reponseExacte + ".");
+                    return new Indice("Reste de Grille (Extérieur)", messages, surbrillance, solutions, true);
                 } else {
                     surbrillance.addAll(casesDeLaZone);
                     for(Case c : blocCible.getListeCases()) if(!surbrillance.contains(c)) surbrillance.add(c);
-                    String msg = "Techniques de reste de grille : Ce bloc est entièrement dans cette zone, à l'exception d'une seule case \"orpheline\".\nEn soustrayant (ou divisant) la valeur de la zone par les blocs, vous trouverez cette case externe !";
-                    return new Indice("Reste de Grille (Extérieur)", msg, surbrillance, solutions, false);
+                    
+                    messages.add("Regardez les lignes et les colonnes globalement. Parfois, un bloc 'déborde' d'une seule case d'une zone complète.");
+                    messages.add("Additionnez les blocs qui touchent cette zone et soustrayez le total théorique connu de la zone pour isoler la case qui déborde.");
+                    messages.add("Reste de grille (Extérieur) : Regardez la zone en surbrillance. Soustrayez la valeur théorique de la zone au total des blocs impliqués pour trouver la case orpheline !");
+                    
+                    return new Indice("Reste de Grille (Extérieur)", messages, surbrillance, solutions, false);
                 }
             }
         }
         return null;
     }
 
-    // (Les méthodes getSommeBlocConstante et getProduitBlocConstant sont identiques à la technique Type 1)
     private int getSommeBlocConstante(GroupementCases b) {
         if (b.getListeCases().size() == 1) return b.getResultatCible();
         if (b.getOperation() != null && b.getOperation().getSymbole().equals("+")) return b.getResultatCible();
@@ -135,7 +177,7 @@ public class TechniqueResteDeGrilleType2 implements TechniqueAide {
 
     private int getProduitBlocConstant(GroupementCases b) {
         if (b.getListeCases().size() == 1) return b.getResultatCible();
-        if (b.getOperation() != null && b.getOperation().getSymbole().equals("x")) return b.getResultatCible();
+        if (b.getOperation() != null && (b.getOperation().getSymbole().equals("x") || b.getOperation().getSymbole().equals("*"))) return b.getResultatCible();
         List<List<Integer>> combos = b.getCombinaisonsMaths();
         if (combos == null || combos.isEmpty()) return -1;
         int prod = -1;

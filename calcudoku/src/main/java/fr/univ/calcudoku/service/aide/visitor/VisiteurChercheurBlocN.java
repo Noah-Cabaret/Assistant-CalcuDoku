@@ -6,19 +6,24 @@ import fr.univ.calcudoku.model.Case;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Visiteur qui recherche les blocs (groupements) d'une taille donnée dans la grille.
+ */
 public class VisiteurChercheurBlocN implements VisiteurGrille {
     
     private final int tailleCible;
     private List<GroupementCases> blocsTrouves = new ArrayList<>();
 
-    // Le constructeur prend la taille recherchée en paramètre
+    /**
+     * Initialise le visiteur pour chercher des blocs d'une taille spécifique.
+     * @param tailleCible le nombre de cases composant le bloc recherché
+     */
     public VisiteurChercheurBlocN(int tailleCible) {
         this.tailleCible = tailleCible;
     }
 
     @Override
-    public void visiter(Grille g) {
-    }
+    public void visiter(Grille g) {}
 
     @Override
     public void visiter(GroupementCases groupement) {
@@ -28,8 +33,7 @@ public class VisiteurChercheurBlocN implements VisiteurGrille {
     }
 
     @Override
-    public void visiter(Case c) {
-    }
+    public void visiter(Case c) {}
 
     public List<GroupementCases> getBlocsTrouves() {
         return blocsTrouves;

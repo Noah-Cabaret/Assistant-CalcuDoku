@@ -1,6 +1,6 @@
 package fr.univ.calcudoku.commande;
 
-import java.util.Map;
+import java.util.List;
 import fr.univ.calcudoku.model.Case;
 import fr.univ.calcudoku.model.Indice;
 import fr.univ.calcudoku.view.VueCase;
@@ -10,6 +10,10 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 
+/**
+ * Commande d'affichage d'un indice dans l'interface.
+ * Gère l'affichage progressif (texte, surbrillance) et le masquage.
+ */
 public class CommandeAfficherIndice implements CommandeAide {
     private final Indice indice;
     private final Label labelMessageAide;
@@ -27,15 +31,23 @@ public class CommandeAfficherIndice implements CommandeAide {
         return indice.getCasesASurbriller() != null && !indice.getCasesASurbriller().isEmpty();
     }
 
-    private boolean possedeNiveau3() {
-        return indice.getSolutions() != null && !indice.getSolutions().isEmpty();
-    }
-
     @Override
     public void afficher() {
         labelMessageAide.setText("");
 
-        Text texteBase = new Text("[" + indice.getNomTechnique() + "] \n" + indice.getMessageExplicatif());
+        String niveauTexte = (indice.getNiveauAide() != null) ? "Niveau " + indice.getNiveauAide() + " | " : "";
+        
+        List<String> messages = indice.getMessagesExplicatifs();
+        String texteExplicatif = "";
+        
+        if (messages != null && !messages.isEmpty()) {
+            int index = Math.min(etapeActuelle - 1, messages.size() - 1);
+            texteExplicatif = messages.get(index);
+        } else {
+            texteExplicatif = indice.getMessageExplicatif(); 
+        }
+
+        Text texteBase = new Text("[" + niveauTexte + indice.getNomTechnique() + "] \n" + texteExplicatif);
         texteBase.setFill(Color.web("#2c3e50"));
         texteBase.setStyle("-fx-font-weight: bold; -fx-font-size: 13px;");
 
@@ -44,8 +56,9 @@ public class CommandeAfficherIndice implements CommandeAide {
         if (etapeActuelle >= 2 && possedeNiveau2()) {
             for (Case c : indice.getCasesASurbriller()) {
                 VueCase vueCase = vueGrille.getGrilleVueCases(c.getX(), c.getY());
-                if (!vueCase.getStyleClass().contains("case-indice-surbrillance")) {
-                    vueCase.getStyleClass().add("case-indice-surbrillance");
+                vueCase.getStyleClass().remove("case-indice-surbrillance");
+                if (!vueCase.getStyleClass().contains("case-aide-surbrillance")) {
+                    vueCase.getStyleClass().add("case-aide-surbrillance");
                 }
             }
             
@@ -55,18 +68,6 @@ public class CommandeAfficherIndice implements CommandeAide {
                 texteErreur.setStyle("-fx-font-weight: bold; -fx-font-size: 13px;");
                 textFlow.getChildren().add(texteErreur);
             }
-        }
-
-        if (etapeActuelle >= 3 && possedeNiveau3()) {
-            StringBuilder texteSol = new StringBuilder("\n\nSolution : ");
-            for (Map.Entry<Case, Integer> reponse : indice.getSolutions().entrySet()) {
-                Case c = reponse.getKey();
-                texteSol.append("Saisissez ").append(reponse.getValue()).append(" dans la case (").append(c.getX() + 1).append(",").append(c.getY() + 1).append("). ");
-            }
-            Text texteSolution = new Text(texteSol.toString());
-            texteSolution.setFill(Color.web("#2c3e50"));
-            texteSolution.setStyle("-fx-font-weight: bold; -fx-font-size: 13px;");
-            textFlow.getChildren().add(texteSolution);
         }
 
         labelMessageAide.setGraphic(textFlow);
@@ -79,7 +80,8 @@ public class CommandeAfficherIndice implements CommandeAide {
         if (possedeNiveau2()) {
             for (Case c : indice.getCasesASurbriller()) {
                 VueCase vueCase = vueGrille.getGrilleVueCases(c.getX(), c.getY());
-                vueCase.getStyleClass().remove("case-indice-surbrillance");
+                vueCase.getStyleClass().remove("case-aide-surbrillance");
+                vueCase.getStyleClass().remove("case-indice-surbrillance"); 
             }
         }
     }
@@ -94,9 +96,7 @@ public class CommandeAfficherIndice implements CommandeAide {
 
     @Override
     public boolean peutEtreAmeliore() {
-        if (etapeActuelle == 1 && !possedeNiveau2()) return false; 
-        if (etapeActuelle == 2 && !possedeNiveau3()) return false; 
-        
-        return etapeActuelle < 3;
+        if (etapeActuelle == 1 && !possedeNiveau2()) return false;
+        return etapeActuelle < 2;
     }
 }

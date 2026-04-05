@@ -1,65 +1,82 @@
 package fr.univ.calcudoku.service.aide.technique;
 
+import fr.univ.calcudoku.model.Case;
 import fr.univ.calcudoku.model.Grille;
 import fr.univ.calcudoku.model.GroupementCases;
 import fr.univ.calcudoku.model.Indice;
-import fr.univ.calcudoku.model.Case;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 /**
- * Technique : Intra Bloc (Grand L).
- * Analyse un grand bloc (>=4) en "L" qui nécessite un chiffre en double.
- * L'alignement de la ligne principale du bloc restreint les places du doublon.
+ * Technique d'aide : Intra-bloc pour les formes en "Grand L" (4+ cases).
+ * Aide à déduire le placement astucieux de doublons obligatoires dans des blocs asymétriques.
  */
 public class TechniqueIntraBloc_3_5 extends TechniqueIntraBloc {
 
+    /**
+     * Analyse les grands blocs nécessitant des doublons.
+     * @param grille La grille à analyser.
+     * @return Un Indice avec des messages progressifs.
+     */
     @Override
     public Indice analyser(Grille grille) {
-        Indice indiceNormal = null;
+        List<Indice> indicesErreurs = new ArrayList<>();
+        List<Indice> indicesNormaux = new ArrayList<>();
 
         for (GroupementCases bloc : grille.getListeGroupements()) {
             
-            // On vérifie la topologie : >= 4 cases, formant une ligne avec un débordement
             if (bloc.getListeCases().size() >= 4 && verifierTopologieGrandL(bloc)) {
                 
-                List<Integer> combinaisonUnique = getUniqueCombinaison(bloc);
+                List<List<Integer>> combosPossibles = bloc.getCombinaisonsMaths();
+                List<List<Integer>> combosValides = getCombinaisonsValides(grille, bloc);
                 
-                if (combinaisonUnique != null && aDesChiffresIdentiques(combinaisonUnique)) {
+                if (combosValides.size() == 1) {
+                    List<Integer> combinaisonUnique = combosValides.get(0);
                     
-                    boolean contientErreur = false;
-                    List<Case> casesFausses = new ArrayList<>();
-                    Map<Case, Integer> solutions = new HashMap<>();
-
-                    for (Case c : bloc.getListeCases()) {
-                        solutions.put(c, c.getSolution());
+                    if (aDesChiffresIdentiques(combinaisonUnique)) {
                         
-                        if (c.getValeur() != 0 && c.getValeur() != c.getSolution()) {
-                            contientErreur = true;
-                            casesFausses.add(c);
+                        int nbCasesVides = 0;
+                        boolean contientErreur = false;
+                        List<Case> casesFausses = new ArrayList<>();
+
+                        for (Case c : bloc.getListeCases()) {
+                            if (c.getValeur() == 0) nbCasesVides++;
+                            else if (c.getValeur() != c.getSolution()) { contientErreur = true; casesFausses.add(c); }
                         }
-                    }
 
-                    boolean estParfait = true;
-                    for (Case c : bloc.getListeCases()) {
-                        if (c.getValeur() != c.getSolution()) estParfait = false;
-                    }
+                        if (!contientErreur && nbCasesVides <= 1) continue;
 
-                    if (!estParfait) {
+                        Map<Case, Integer> solutions = new HashMap<>();
+                        List<String> messages = new ArrayList<>();
+
                         if (contientErreur) {
-                            return new Indice("Technique Intra-bloc", "Erreur détectée ! Ce bloc allongé force l'utilisation d'un doublon.\nCertains de ces chiffres sont mal placés pour éviter les conflits.", casesFausses, solutions, true);
-                        } else if (indiceNormal == null) {
-                            String msg = "Techniques intra-bloc : Observez ce grand bloc en 'L' allongé. Sa seule combinaison nécessite des doublons !\nVous devez ruser pour placer ces doublons sans violer les règles sur la ligne principale du bloc.";
-                            indiceNormal = new Indice("Technique Intra-bloc", msg, bloc.getListeCases(), solutions, false);
+                            messages.add("Un conflit a été détecté dans un grand bloc complexe.");
+                            messages.add("Ce bloc nécessite obligatoirement des doublons, mais le placement actuel brise la règle d'unicité.");
+                            messages.add("Erreur détectée ! Ce bloc allongé force l'utilisation d'un doublon. Les cases en surbrillance sont mal placées.");
+                            indicesErreurs.add(new Indice("Technique Intra-bloc (Grand L)", messages, casesFausses, solutions, true));
+                        } else {
+                            String comboStr = combinaisonUnique.toString().replace("[", "").replace("]", "");
+                            
+                            messages.add("Les grands blocs allongés ou coudés cachent souvent des déductions intéressantes basées sur les doublons.");
+                            messages.add("Il ne reste qu'une seule combinaison valable pour ce grand bloc, et elle nécessite d'utiliser des chiffres en double.");
+                            messages.add("Technique intra-bloc : La combinaison de ce grand bloc en surbrillance est (" + comboStr + "). Placez astucieusement les doublons pour éviter les conflits !");
+                            
+                            indicesNormaux.add(new Indice("Technique Intra-bloc (Grand L)", messages, bloc.getListeCases(), solutions, false));
                         }
                     }
                 }
             }
         }
-        return indiceNormal; 
+
+        Random rand = new Random();
+        if (!indicesErreurs.isEmpty()) return indicesErreurs.get(rand.nextInt(indicesErreurs.size()));
+        if (!indicesNormaux.isEmpty()) return indicesNormaux.get(rand.nextInt(indicesNormaux.size()));
+
+        return null; 
     }
 
     private boolean verifierTopologieGrandL(GroupementCases bloc) {
@@ -73,7 +90,6 @@ public class TechniqueIntraBloc_3_5 extends TechniqueIntraBloc {
             
             for (int j = 0; j < taille; j++) {
                 if (i == j) continue; 
-                
                 if (commonX == null) commonX = cases.get(j).getX();
                 else if (commonX != cases.get(j).getX()) commonX = -1; 
                 

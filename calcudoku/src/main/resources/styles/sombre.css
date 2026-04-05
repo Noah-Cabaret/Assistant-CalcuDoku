@@ -1,0 +1,111 @@
+.root {
+    -fx-base: #2b2b2b;
+    -fx-background: #1e1e1e; 
+}
+
+/* On force le texte à devenir blanc clair */
+.label, .radio-button, .text {
+    -fx-text-fill: #ffffff;
+}
+/* .label, .radio-button, .text {
+    -fx-text-fill: #cccccc;
+    -fx-fill: #cccccc;
+} */
+
+/* Grille : force toutes les inscriptions en noir comme en mode clair */
+.label-valeur, .label-indice, .label-note, .case-grille, .case-grille * {
+    -fx-text-fill: black !important;
+    -fx-fill: black !important;
+}
+
+.label-hypothese {
+    -fx-text-fill: #737373 !important; 
+}
+
+/* Boutons Chiffres */
+.root .bouton-chiffre {
+    -fx-text-fill: #f0f0f0;
+    -fx-background-color: #444444;
+    -fx-border-color: #888888;
+    -fx-font-weight: bold;
+}
+.root .bouton-chiffre:hover {
+    -fx-background-color: #555555;
+}
+
+/* Boutons Ronds */
+.bouton-rond, .bouton-rond-petit {
+    -fx-background-color: #444444 !important;
+    -fx-border-color: #888888 !important;
+}
+.bouton-rond:hover, .bouton-rond-petit:hover {
+    -fx-background-color: #555555 !important;
+}
+
+
+/* Menus & Popups */
+/* --- Style des boutons du Menu Déroulant (Mode Sombre) --- */
+.root .menu-deroulant .button {
+    -fx-background-color: #444444;
+    -fx-text-fill: white !important;
+    -fx-border-color: #666666;
+}
+.root .menu-deroulant .button:hover {
+    -fx-background-color: #555555;
+}
+/* Force les textes en gris clair en mode sombre */
+.root .menu-deroulant .label, .root .menu-deroulant .radio-button {
+    -fx-text-fill: #cccccc !important;
+}
+.boite-combinaisons {
+    -fx-background-color: #2b2b2b !important;
+    -fx-border-color: #888888 !important;
+    -fx-text-fill: black !important;
+    -fx-fill: black !important;
+}
+.calculatrice-popup {
+    -fx-background-color: #2b2b2b;
+    -fx-border-color: #555555;
+}
+.vbox {
+    -fx-border-color: #555555;
+}
+
+/* Contraste des boutons actifs dans les menus */
+.button:focused, .button:hover, .button:armed,
+.toggle-button:selected, .toggle-button:focused, .toggle-button:hover {
+    -fx-text-fill: #ffffff !important;
+}
+.toggle-button:selected {
+    -fx-background-color: #555555 !important;
+    -fx-border-color: #888888 !important;
+}
+
+/* Menu Déroulant (sombre) */
+.menu-deroulant {
+    -fx-background-color: #3b3b3b !important;
+    -fx-border-color: #888888 !important;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 5);
+}
+.menu-deroulant .sous-section {
+    -fx-border-color: #888888 !important;
+}
+
+/* Popup Abandon (sombre) */
+.popup-abandon-boite {
+    -fx-background-color: #3b3b3b !important;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 15, 0, 0, 0);
+}
+.popup-abandon-avertissement {
+    -fx-text-fill: #ff6b6b !important;
+}
+.popup-abandon-btn-annuler {
+    -fx-background-color: #555555 !important;
+    -fx-border-color: #888888 !important;
+}
+
+/* Bouton hypothèse texte */
+.bouton-hypothese {
+    -fx-text-fill: white !important;
+}
+

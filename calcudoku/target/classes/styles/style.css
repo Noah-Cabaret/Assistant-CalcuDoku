@@ -1,57 +1,186 @@
-/* Style de base d'une case */
-.case-grille {
-    -fx-background-color: white; 
-    -fx-border-color: #d0d0d0;
-    -fx-border-width: 0.5px;
+/* Navigation Icon (Back Arrow) */
+.icon-retour {
+    -fx-icon-size: 35px;
+    -fx-icon-color: black;
+    -fx-translate-y: 2px;
+}
+/* Grille */
+.case-grille { -fx-background-color: white; -fx-border-color: #d0d0d0; -fx-border-width: 0.5px; }
+.case-selectionnee { -fx-background-color: #bbdefb !important; } 
+.label-valeur { -fx-font-family: 'Arial'; -fx-font-weight: bold; -fx-text-fill: black; -fx-alignment: center; -fx-font-size: 36px;}
+.label-hypothese { -fx-font-family: 'Times New Roman'; -fx-font-style: italic; -fx-text-fill: #737373 !important; -fx-font-weight: normal; -fx-font-size: 36px;}
+.label-indice { -fx-font-family: 'Arial'; -fx-font-weight: bold; -fx-text-fill: #333333; -fx-padding: 2px 0 0 4px; }
+.label-note { -fx-font-family: 'Arial'; -fx-text-fill: #666666; -fx-alignment: center; -fx-font-size: 10px; }
+.case-erreur { -fx-background-color: #ffcdd2 !important; }
+
+/* Boutons Chiffres */
+.bouton-chiffre {
+    -fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: black;
+    -fx-background-color: #ffffff; -fx-border-color: #cccccc; -fx-border-width: 2px;
+    -fx-border-radius: 10px; -fx-background-radius: 10px; -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2);
+}
+.bouton-chiffre:hover { -fx-background-color: #f0f0f0; }
+
+/* Boutons Ronds (Valider, Aide, etc.) */
+.bouton-rond {
+    -fx-background-color: white; -fx-border-color: black;
+    -fx-border-width: 3px; -fx-border-radius: 50%; -fx-background-radius: 50%;
+    -fx-cursor: hand; -fx-min-width: 60px; -fx-min-height: 60px;
+}
+.bouton-rond-petit {
+    -fx-background-color: white; -fx-border-color: black;
+    -fx-border-width: 3px; -fx-border-radius: 50%; -fx-background-radius: 50%;
+    -fx-cursor: hand; -fx-min-width: 45px; -fx-min-height: 45px;
+}
+.bouton-rond:hover, .bouton-rond-petit:hover { -fx-background-color: #f0f0f0; }
+
+.bouton-hypothese {
+    -fx-font-size: 38px; -fx-font-family: 'Times New Roman';
+    -fx-font-style: italic; -fx-text-fill: black; -fx-padding: 0;
 }
 
-/* Case actuellement sélectionnée par le joueur */
-.case-selectionnee {
-    -fx-background-color: #bbdefb; 
-}
-
-/* Chiffre principal rempli par le joueur */
-.label-valeur {
-    -fx-font-family: 'Arial', sans-serif;
+/* Menus & Popups */
+.menu-deroulant .button {
+    -fx-background-color: #f4f4f4;
+    -fx-text-fill: black !important;
+    -fx-border-color: #cccccc;
+    -fx-border-width: 1px;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-padding: 8px 15px;
     -fx-font-weight: bold;
-    -fx-text-fill: black;
-    -fx-alignment: center;
+    -fx-cursor: hand;
 }
 
-/* Style pour le mode HYPOTHÈSE (Grisé et Italique) */
-.label-hypothese {
-    -fx-font-family: 'Times New Roman', serif;
-    -fx-font-style: italic;
+.menu-deroulant .button:hover {
+    -fx-background-color: #e0e0e0;
+}
+
+/* Force les textes (Aide au calcul) en noir en mode clair */
+.menu-deroulant .label, .menu-deroulant .radio-button {
+    -fx-text-fill: black !important;
+}
+.boite-combinaisons {
+    -fx-background-color: white; -fx-border-color: black;
+    -fx-border-width: 1px; -fx-padding: 10px;
+}
+.calculatrice-popup {
+    -fx-background-color: #ffffff; -fx-border-color: #cccccc;
+    -fx-border-width: 2px; -fx-background-radius: 12px; -fx-border-radius: 12px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 15, 0, 0, 0); -fx-padding: 10px;
+}
+
+.case-guide-visuel {
+    -fx-background-color: #f0f0f0; /* Un gris très très léger */
+}
+
+.case-aide-surbrillance {
+    -fx-background-color: #b9f6ca !important; 
+
+}
+
+.case-aide-surbrillance.case-selectionnee {
+    -fx-background-color: #bbdefb !important;
+}
+
+/* Menu Déroulant */
+.menu-deroulant {
+    -fx-background-color: white;
+    -fx-border-color: #dddddd;
+    -fx-border-width: 1px;
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+    -fx-padding: 15px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 10, 0, 0, 5);
+}
+.menu-deroulant .sous-section {
+    -fx-border-color: #eeeeee;
+    -fx-border-width: 1 0 0 0;
+    -fx-padding: 10 0 0 0;
+}
+.menu-deroulant .sous-section .label {
     -fx-font-weight: bold;
-    -fx-text-fill: #9e9e9e; /* Gris clair */
-    -fx-font-weight: normal;
+    -fx-font-size: 13px;
+}
+.menu-deroulant .radio-button {
+    -fx-cursor: hand;
 }
 
-/* Petit chiffre de l'opération en haut à gauche (ex: 16+) */
-.label-indice {
-    -fx-font-family: 'Arial', sans-serif;
+/* Popup Abandon */
+.popup-abandon-fond {
+    -fx-background-color: rgba(0, 0, 0, 0.4);
+}
+.popup-abandon-boite {
+    -fx-background-color: white;
+    -fx-background-radius: 12px;
+    -fx-padding: 20px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 15, 0, 0, 0);
+}
+.popup-abandon-titre {
+    -fx-font-size: 18px;
     -fx-font-weight: bold;
-    -fx-text-fill: #333333; 
-    -fx-padding: 2px 0 0 4px; 
+}
+.popup-abandon-avertissement {
+    -fx-font-size: 13px;
+    -fx-text-fill: #e57373;
+}
+.popup-abandon-btn-annuler {
+    -fx-background-color: #f5f5f5;
+    -fx-border-color: #cccccc;
+    -fx-cursor: hand;
+    -fx-min-width: 90px;
+}
+.popup-abandon-btn-quitter {
+    -fx-background-color: #e57373;
+    -fx-text-fill: white;
+    -fx-cursor: hand;
+    -fx-min-width: 90px;
 }
 
-/* Petits chiffres des notes (Mode Crayon) */
-.label-note {
-    -fx-font-family: 'Arial', sans-serif;
-    -fx-font-weight: normal;
-    -fx-text-fill: #666666; 
-    -fx-alignment: center;
-    -fx-font-size: 10px; /* Taille réduite pour tenir à plusieurs */
+/* Label Chrono */
+.label-chrono {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-font-family: 'System Bold';
 }
 
-/* Surbrillance lors de l'utilisation du système d'aide */
-.case-indice-surbrillance {
-    -fx-background-color: #7dec91; /* Vert clair pour l'indice */
+/* Popup Fin de Partie */
+.popup-fin-carte {
+    -fx-background-color: white;
+    -fx-background-radius: 15;
+    -fx-padding: 30;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 20, 0, 0, 0);
 }
-
-/* Style d'erreur lors du clic sur le bouton Vérifier (✔) */
-.case-erreur {
-    -fx-background-color: #ffcdd2; /* Rouge très clair */
-    -fx-border-color: #e57373;
+.popup-fin-titre {
+    -fx-font-size: 26px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #333333;
+}
+.popup-fin-message {
+    -fx-font-size: 15px;
+    -fx-text-fill: #666666;
+    -fx-text-alignment: center;
+}
+.popup-fin-btn-rejouer {
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 10 25;
+    -fx-background-radius: 20;
+    -fx-cursor: hand;
+}
+.popup-fin-btn-quitter {
+    -fx-background-color: transparent;
+    -fx-border-color: #cccccc;
     -fx-border-width: 2px;
+    -fx-border-radius: 20;
+    -fx-text-fill: #666666;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 8 25;
+    -fx-cursor: hand;
+}
+.popup-fin-fond {
+    -fx-background-color: rgba(0, 0, 0, 0.3);
 }
