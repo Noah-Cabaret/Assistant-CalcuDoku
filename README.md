@@ -14,18 +14,31 @@ Cette application est un projet étudiant et le fruit de travail réalisé dans 
 
 Afin de pouvoir tourner de manière [_cross-platform_](https://fr.wiktionary.org/wiki/cross-platform) et éviter de rendre la compilation depuis le code source mandatoire, des [_Java Archives_](https://docs.oracle.com/javase/8/docs/technotes/guides/jar/jarGuide.html) (fichiers `.jar`) sont distribuées sur GitHub, la plateforme hôte du code source de l'_Assistant CalcuDoku_. Vous pouvez en retrouver la dernière version en vous rendant sur [l'onglet _Releases_ du dépôt du projet](https://github.com/Noah-Cabaret/Assistant-CalcuDoku/releases).
 
+### Prérequis
+
+- [Java 17](https://adoptium.net/) ou supérieur (JDK)
+- [Apache Maven](https://maven.apache.org/) 3.8+
+
 ### Option n°2: Compilation à partir du code source
 
 #### Compilation en elle-même
 
-Si désiré, il est évidemment posible de compiler le code source de ce projet en un fichier exécutable. Pour ce faire, il suffit de suivre la procédure Maven standard, [détaillée dans sa documentation officielle](https://maven.apache.org/run.html).
+Si désiré, il est évidemment possible de compiler le code source de ce projet en un fichier exécutable. Pour ce faire, il suffit de suivre la procédure Maven standard, [détaillée dans sa documentation officielle](https://maven.apache.org/run.html).
 
-Pour compiler une archive Java (`.jar`) permettant d'appliquer le principe du *Write Once, Run Everywhere*, positionnez un terminal dans le répertoire du `pom.xml` du projet et lancez la commande suivante:
+Pour compiler une archive Java (`.jar`) multi-plateforme (*fat JAR*), positionnez un terminal dans le répertoire `calcudoku/` (celui du `pom.xml`) et lancez la commande suivante:
 
 ```sh
 # Cette commande part du principe que Apache Maven est correctement
 # installé sur votre machine.
-mvn clean deploy site-deploy
+mvn clean package -Pfatjar
+```
+
+Le fichier `.jar` exécutable sera généré dans le répertoire `calcudoku/target/`.
+
+Pour lancer l'application directement en mode développement (sans générer de JAR):
+
+```sh
+mvn javafx:run
 ```
 
 ## Documentation
@@ -42,7 +55,7 @@ Le code source de l'_Assistant CalcuDoku_ est documenté via Javadoc. Cette dern
 # Cette commande part du principe que votre "Current Working Directory"
 # est celle du `pom.xml` Maven.
 # Voir aussi: <https://maven.apache.org/plugins/maven-javadoc-plugin/usage.html>
-mvn javadoc::javadoc
+mvn javadoc:javadoc
 ```
 
 Après quoi la documentation (sous forme de pages HTML) peut être trouvée dans son dossier au sein du répertoire [`calcudoku/target`](calcudoku/target/).

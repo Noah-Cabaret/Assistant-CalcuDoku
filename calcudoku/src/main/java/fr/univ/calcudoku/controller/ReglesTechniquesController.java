@@ -241,30 +241,117 @@ public class ReglesTechniquesController {
     private void afficherFonctionnalites() {
         List<PageContenu> pages = new ArrayList<>();
         pages.add(new PageContenu(
-            "Le jeu propose des aides pour vous assister dans vos calculs.\n\n" +
-            "Dans votre Profil, vous pouvez choisir entre :\n" +
-            "- Combinaisons : Affiche toutes les additions/multiplications possibles pour une cage donnée.\n" +
-            "- Calculatrice : Ouvre une petite calculatrice classique pour faire vos propres essais.\n" +
-            "De même, vous trouvez les statistiques liées à votre profil et les parties en cours depuis l'onglet de Profile.", 
-            null, 
-            ""
-        ));
-        pages.add(new PageContenu(
-            "Vous pouvez remplir la grille avec les touches du clavier et la souris :\n\n" +
-            "- Déplacement : les 4 flèches du clavier.\n" +
-            "- Placer chiffre : à l'aide de touches numériques.\n" +
-            "- Annotation : Permet d'écrire des petits chiffres 'brouillon' dans une case. En appuyant sur la touche 'A'", 
-            "/grilles/images/touches.png", 
+            "Contrôles de base\n\n" +
+            "Vous pouvez remplir la grille avec la souris et le clavier :\n\n" +
+            "- Déplacement : cliquez sur une case ou utilisez les flèches ↑ ↓ ← →\n" +
+            "- Placer un chiffre : cliquez sur le bouton correspondant ou appuyez sur la touche numérique (1-9)\n" +
+            "- Effacer : appuyez sur la touche Retour arrière (⟵)\n" +
+            "- La case sélectionnée met en surbrillance sa ligne, sa colonne et toutes les cases contenant le même chiffre.",
+            "/grilles/images/touches.png",
             "Contrôles du jeu"
         ));
         pages.add(new PageContenu(
-            "Depuis une partie du jeu, vous possedez le menu roulant qui permet de :\n\n" +
-            "- Abondonner : abondonnez la partie.\n" +
-            "- Recommencer : reinitialisez la partie.\n" +
-            "- Changer le mode d'aide au calcul : combinaisons, calculatrice.\n" +
-            "- Retour à Règles & Techniques : Consulter les règles du jeu, les fonctionnalités et les techniques.\n",
-            "/grilles/images/menu.png", 
-            "Menu roulant"
+            "Mode Annotation\n\n" +
+            "Le mode annotation permet de noter les candidats possibles dans une case sans placer de valeur définitive.\n\n" +
+            "- Appuyez sur la touche 'A' ou cliquez sur le bouton Annotation pour activer/désactiver ce mode.\n" +
+            "- En mode annotation, les chiffres saisis apparaissent en petit dans la case.\n" +
+            "- Cliquez à nouveau sur un chiffre annoté pour le retirer.\n" +
+            "- Lorsqu'un chiffre est placé définitivement, ses annotations sont automatiquement retirées de la même ligne et colonne.",
+            null,
+            ""
+        ));
+        pages.add(new PageContenu(
+            "Mode Hypothèse\n\n" +
+            "Le mode hypothèse permet de tester une piste sans perdre votre progression actuelle.\n\n" +
+            "- Activez le mode hypothèse via le bouton dédié.\n" +
+            "- Les valeurs placées en hypothèse sont visuellement distinctes (couleur différente).\n" +
+            "- Valider : transforme toutes les hypothèses en valeurs définitives.\n" +
+            "- Annuler : efface toutes les hypothèses et restaure la grille à son état précédent.\n\n" +
+            "C'est idéal pour explorer une piste incertaine sans risque !",
+            null,
+            ""
+        ));
+        pages.add(new PageContenu(
+            "Vérification\n\n" +
+            "Le bouton Vérifier contrôle les chiffres que vous avez placés :\n\n" +
+            "- Les cases correctes restent inchangées.\n" +
+            "- Les cases incorrectes sont brièvement mises en rouge pendant 3 secondes.\n" +
+            "- Chaque vérification avec des erreurs entraîne une pénalité de 50 points sur le score.\n\n" +
+            "⚠ En mode Survie (aventure), chaque vérification avec erreurs coûte une vie !",
+            null,
+            ""
+        ));
+        pages.add(new PageContenu(
+            "Annuler / Rétablir\n\n" +
+            "L'application conserve un historique complet de vos actions :\n\n" +
+            "- Annuler (↶) : revient en arrière d'une action.\n" +
+            "- Rétablir (↷) : rétablit l'action annulée.\n\n" +
+            "L'historique inclut les placements de chiffres, les annotations et les hypothèses. Il est conservé même après une sauvegarde.",
+            null,
+            ""
+        ));
+        pages.add(new PageContenu(
+            "Aide au calcul\n\n" +
+            "Deux modes d'aide au calcul sont disponibles (configurable dans votre Profil) :\n\n" +
+            "- Combinaisons : affiche toutes les combinaisons de chiffres valides pour le bloc sélectionné.\n" +
+            "  Exemple : pour un bloc « 12× » → [3, 4] | [2, 6]\n\n" +
+            "- Calculatrice : ouvre une calculatrice intégrée (+, −, ×, ÷) pour vos propres calculs.\n\n" +
+            "Vous pouvez changer de mode depuis le menu déroulant en partie.",
+            null,
+            ""
+        ));
+        pages.add(new PageContenu(
+            "Aide intelligente (bouton ?)\n\n" +
+            "Le bouton d'aide analyse la grille et propose des indices progressifs :\n\n" +
+            "- Cliquez sur '?' : l'assistant détecte une déduction possible et vous donne un indice.\n" +
+            "- Flèches ◀ / ▶ : naviguez entre les différents indices disponibles.\n" +
+            "- Bouton '+' : obtenez un indice plus détaillé sur la même déduction.\n" +
+            "- Chaque indice est lié à une technique de résolution ; un lien permet de la consulter.\n\n" +
+            "⚠ Chaque utilisation coûte 50 points de pénalité sur le score.\n" +
+            "⚠ Désactivé en mode Sans Aide (aventure).",
+            null,
+            ""
+        ));
+        pages.add(new PageContenu(
+            "Menu de partie\n\n" +
+            "Le menu déroulant en haut de l'écran donne accès à :\n\n" +
+            "- Abandonner : abandonne la partie (compte comme défaite, supprime la sauvegarde).\n" +
+            "- Recommencer : remet la grille à zéro avec le même puzzle.\n" +
+            "- Changer le mode d'aide au calcul.\n" +
+            "- Retour à Règles & Techniques : consulter ce guide depuis la partie.\n" +
+            "- Retour au menu : sauvegarde automatiquement et retourne au menu principal.",
+            "/grilles/images/menu.png",
+            "Menu déroulant"
+        ));
+        pages.add(new PageContenu(
+            "Sauvegarde automatique\n\n" +
+            "Vos parties sont sauvegardées automatiquement lorsque vous :\n\n" +
+            "- Retournez au menu principal.\n" +
+            "- Fermez la fenêtre de l'application.\n\n" +
+            "La sauvegarde conserve l'état complet : valeurs, annotations, hypothèses, chronomètre, historique d'actions, et un aperçu visuel de la grille.\n\n" +
+            "Pour reprendre, cliquez sur la carte de la partie dans le menu ou depuis votre Profil.",
+            null,
+            ""
+        ));
+        pages.add(new PageContenu(
+            "Système de score\n\n" +
+            "Un score est calculé à chaque victoire :\n\n" +
+            "- Score de base = (taille de la grille)² × 100\n" +
+            "- Pénalités : temps écoulé, erreurs de vérification (×50), aides utilisées (×50)\n" +
+            "- Multiplicateur de difficulté : Facile ×1, Moyenne ×1.5, Difficile ×2\n\n" +
+            "Les meilleurs scores sont enregistrés dans le tableau des records (🏆), partagé entre tous les profils.",
+            null,
+            ""
+        ));
+        pages.add(new PageContenu(
+            "Défis du mode Aventure\n\n" +
+            "Chaque niveau du mode Aventure impose un défi spécial :\n\n" +
+            "- Survie : nombre de vies limité. Chaque vérification avec erreurs coûte une vie.\n" +
+            "- Chrono : temps limité pour résoudre la grille.\n" +
+            "- Sans aide : le bouton d'aide et les combinaisons sont désactivés.\n\n" +
+            "Résolvez le niveau actuel pour débloquer le suivant. Vous pouvez réinitialiser votre progression depuis le menu Aventure.",
+            null,
+            ""
         ));
         chargerSection("Fonctionnalités et Outils", pages);
     }

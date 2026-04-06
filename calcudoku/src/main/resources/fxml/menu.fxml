@@ -35,7 +35,7 @@
                     </VBox>
                 </HBox>
 
-                <Button text="Règlages et Techniques" onAction="#onReglesClick" GridPane.columnIndex="1" GridPane.rowIndex="2" maxWidth="Infinity" minHeight="0" prefHeight="65" style="-fx-background-color: #fdd835; -fx-text-fill: white; -fx-font-size: 22px; -fx-font-weight: bold; -fx-cursor: hand;"/>
+                <Button text="Règles et Techniques" onAction="#onReglesClick" GridPane.columnIndex="1" GridPane.rowIndex="2" maxWidth="Infinity" minHeight="0" prefHeight="65" style="-fx-background-color: #fdd835; -fx-text-fill: white; -fx-font-size: 22px; -fx-font-weight: bold; -fx-cursor: hand;"/>
 
                 <Button text="Quitter" onAction="#onQuitterClick" GridPane.columnIndex="1" GridPane.rowIndex="3" maxWidth="Infinity" minHeight="0" prefHeight="65" style="-fx-background-color: #e57373; -fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold; -fx-cursor: hand;"/>
 

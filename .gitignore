@@ -31,11 +31,18 @@ target/
 profils/
 profil/
 
+# Maven Shade Plugin
+dependency-reduced-pom.xml
+
+# VS Code Code Runner
+tempCodeRunnerFile*
+
+# Sphinx
+doc/sphinx/.venv/
+doc/sphinx/build/
+
 # Eclipse m2e generated files
 # Eclipse Core
 .project
 # JDT-specific (Eclipse Java Development Tools)
 .classpath
-
-# IDE specific ignores
-.vscode

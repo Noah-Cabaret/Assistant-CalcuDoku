@@ -7,7 +7,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'Assistant-CalcuDoku'
-author = 'NTH'
+author = 'Nathanael BRETEAU et Noah CABARET'
 copyright = '2026, l\'équipe d\'Assistant-CalcuDoku'
 
 release = '0.0.0'
